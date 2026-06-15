@@ -17,126 +17,134 @@ If something is unclear, document it as unknown and continue with the next safe 
 
 Current status:
 
-* AccountFileParser exists for source-confirmed GRACC001 parsing.
-* GraalFileQueue exists for confirmed passthrough behavior.
-* WarpPackets exists for confirmed warp packet builders.
+* Login/session boundary exists.
+* Pre-world auth/server-list boundary exists.
+* Player::sendLogin pre-world boundary exists.
 * ReadyForLevelWarp boundary exists.
+* AccountFileParser exists.
+* AccountLoadService exists for source-confirmed account file resolution.
+* Player property serialization has a source-confirmed login subset and `__sendLogin` table.
+* GraalFileQueue passthrough behavior exists.
+* WarpPackets has isolated confirmed builders.
 * Tests are green.
 
 Now continue through these next safe milestones:
 
-# 1. Production account file resolution
+# 1. Warp/setLevel packet flow
 
-Trace and implement the production account file resolution boundary only where source-confirmed.
+Trace and document the beginning of `warp(...)`, `setLevel(...)`, and related level-entry functions.
 
-Focus on:
-
-* `FileSystem::findi`
-* account path lookup
-* account filename normalization
-* fallback to `defaultaccount.txt`
-* startlevel/startx/starty overrides
-* guest account behavior if source-confirmed
-* missing account behavior
-* malformed account behavior
-* side effect of saving/adding account when loaded from default
-* exact behavior when account exists but fields are missing
-* exact behavior when account is banned/staff/admin/RC/NC
-
-Allowed:
-
-* Add filesystem abstraction/interfaces.
-* Add a source-confirmed account resolver service.
-* Add test-only in-memory filesystem.
-* Add tests for exact lookup/fallback behavior.
-* Add docs and golden fixtures where relevant.
-* Implement production parsing only if exact behavior is confirmed.
-
-Not allowed:
-
-* Do not invent filesystem paths or defaults.
-* Do not invent guest RNG behavior.
-* Do not implement real persistence writes unless exact C++ behavior is traced.
-* Do not fake production auth behavior.
-
-# 2. Complete CFileQueue behavior in source-confirmed layers
-
-Expand GraalFileQueue only where exact C++/gs2lib behavior is confirmed.
+Stop before full level runtime, NPC runtime, scripting execution, or gameplay simulation.
 
 Focus on:
 
-* queue thresholds
-* compression trigger behavior
-* compression flags
-* encryption during flush
-* socket write partial behavior
-* websocket behavior if present
-* raw-data/file-transfer queue behavior
-* board/file routing
-* exact byte output for confirmed cases
+* Exact function chain from `warp(m_levelName, getX(), getY())`
+* How level name is normalized/validated
+* How x/y are handled
+* When PLO_LEVELNAME is sent
+* When PLO_PLAYERWARP or PLO_PLAYERWARP2 is sent
+* When PLO_WARPFAILED is sent
+* Packet order during first level entry
+* Any branch for GMAP vs single level
+* Any branch for missing level
+* Any branch for client version
+* Where real runtime begins
 
 Allowed:
 
-* Add tests for uncompressed and confirmed compressed cases.
-* Add golden fixtures.
-* Keep unsupported compression/encryption/websocket cases documented as blocked if not byte-confirmed.
-
-Do not approximate compression or socket flushing.
-
-# 3. Warp/setLevel boundary and level resource packets
-
-Trace `warp(...)`, `setLevel(...)`, `sendLevel`, and related file/resource packet builders.
-
-Stop before full gameplay simulation.
-
-Focus on:
-
-* first packet sequence after warp
-* level name handling
-* coordinate handling
-* map vs single-level behavior
-* level file lookup
-* level data transfer packets
-* file/resource transfer packets
-* PLO_LEVELNAME, PLO_PLAYERWARP, PLO_PLAYERWARP2, PLO_WARPFAILED usage
-* where NPC/script/runtime behavior starts
-
-Allowed:
-
-* Implement confirmed level/resource packet builders.
-* Add interfaces/stubs for level/resource provider.
-* Add tests for exact packet bytes.
-* Add docs for the boundary.
+* Implement source-confirmed packet flow/state machine up to the first runtime boundary.
+* Add DTOs/interfaces for level lookup results.
+* Add packet builders only when exact bytes are confirmed.
+* Add tests and golden fixtures.
 
 Not allowed:
 
 * Do not implement full level runtime.
 * Do not implement NPC logic.
 * Do not execute scripts.
-* Do not invent level file format behavior.
+* Do not invent level defaults.
+* Do not fake level file content behavior as production.
 
-# 4. Continue player property expansion only where safe
+# 2. Level/resource lookup boundary
 
-Expand player properties only when backed by Account.cpp / PlayerProps.cpp / confirmed defaults.
+Trace how the C++ server finds and loads level/resource files needed during warp.
 
 Focus on:
 
-* properties required before/around warp
-* nickname/account/level/position properties
-* movement-relevant props
-* version-specific props
-* blocked props list
+* FileSystem usage
+* level path lookup
+* map/gmap lookup
+* level file extension behavior
+* missing level behavior
+* resource/file transfer trigger points
+* which file packets are queued
+* how CFileQueue is used for level/resource transfer
+
+Allowed:
+
+* Add interfaces for level/resource lookup.
+* Add test-only in-memory providers.
+* Implement source-confirmed lookup behavior only.
+* Document unsupported runtime behavior.
+
+# 3. First level-entry packets
+
+Implement the first source-confirmed packets emitted during warp/world-entry.
+
+Focus on:
+
+* packet IDs
+* packet body structure
+* packet order
+* newline/bundle/filequeue behavior
+* player position encoding
+* level name encoding
+* any required player props around warp
+
+Allowed:
+
+* Add golden byte fixtures.
+* Add tests for exact packet bytes and ordering.
+* Integrate with existing ReadyForLevelWarp boundary if safe.
+
+# 4. CFileQueue expansion for resource transfer
+
+Expand GraalFileQueue only if warp/resource transfer proves exact behavior.
+
+Focus on:
+
+* file packet queuing
+* rawdata packets
+* PLO_FILE/PLO_RAWDATA behavior
+* compression threshold
+* encrypted flush if source-confirmed
+* socket partial write behavior if needed
+
+Do not approximate compression/encryption/websocket behavior.
+
+# 5. Player props around warp
+
+Expand only properties directly required by first world-entry packets.
+
+Focus on:
+
+* level name
+* x/y
+* animation/gani if used
+* direction if used
+* sprite/head/body/sword/shield/colors if used
+* any prop sent immediately around warp
 
 Add tests for exact bytes.
 
-# 5. Docs, tests, report
+# 6. Docs, tests, report
 
 Update docs:
 
 ```txt
-docs/spec/ACCOUNT_LOADING_SPEC.md
-docs/spec/CFILEQUEUE_FLUSH_SPEC.md
 docs/spec/WARP_WORLD_ENTRY_SPEC.md
+docs/spec/LEVEL_RESOURCE_SPEC.md
+docs/spec/CFILEQUEUE_FLUSH_SPEC.md
 docs/spec/PLAYER_PROPS_SPEC.md
 docs/spec/GOLDEN_FIXTURES.md
 docs/spec/KNOWN_BLOCKERS.md
