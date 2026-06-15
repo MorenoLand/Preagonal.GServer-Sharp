@@ -55,7 +55,7 @@ The response overwrites the local player account name with the server-list accou
 
 If `message != "SUCCESS"`, C++ sends `PLO_DISCMESSAGE` with that message, sets load-only, disconnects, and does not call `Player::sendLogin`.
 
-If `message == "SUCCESS"`, C++ calls `Player::sendLogin`. The C# milestone stops at `ServerListAuthAcceptedPreWorld` and deliberately does not enter `Player::sendLogin`.
+If `message == "SUCCESS"`, C++ calls `Player::sendLogin`. The C# implementation now continues through the source-confirmed beginning of `Player::sendLogin` in `PlayerSendLoginContinuation`, then stops at `ReadyForWorldEntry` before `Server::playerLoggedIn`.
 
 ## `Player::sendLogin` Pre-World Checks
 
@@ -67,5 +67,4 @@ If `message == "SUCCESS"`, C++ calls `Player::sendLogin`. The C# milestone stops
 - Client admin IP mismatch unless `IPRANGE` contains `0.0.0.0`: `"Your IP doesn't match one of the allowed IPs for this account."`.
 - Same non-guest account already in use by the same client family and active within 30 seconds: `"Account is already in use."`.
 
-The success path sends `PLO_SIGNATURE`, optional login-server ghost/fullstop packets, `PLO_UNKNOWN168` for clients, registers the player with the list server through `Server::playerLoggedIn`, and then enters `sendLoginClient`, `sendLoginRC`, or `sendLoginNC`. That is beyond this milestone because it begins account state, world, level, props, RC, NC, and scripting behavior.
-
+The implemented success-boundary path sends `PLO_SIGNATURE`, skips the unresolved login-server-name branch unless the missing `PLO_FULLSTOP` opcode is recovered, sends `PLO_UNKNOWN168` for clients, checks duplicate account sessions, and stops before registering the player with the list server through `Server::playerLoggedIn`. Everything after that point is beyond this milestone because it begins account state, world, level, props, RC, NC, and scripting behavior.

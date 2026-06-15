@@ -18,6 +18,34 @@ Packet bytes before queue newline/compression:
 [57, 105]
 ```
 
+With `Player::sendPacket` newline append:
+
+```txt
+[57, 105, 10]
+```
+
+### PLO_UNKNOWN168
+
+C++:
+
+```cpp
+sendPacket(CString() >> (char)PLO_UNKNOWN168);
+```
+
+`PLO_UNKNOWN168 = 168`; `GCHAR 168` writes `168 + 32 = 200`.
+
+Packet bytes before queue newline/compression:
+
+```txt
+[200]
+```
+
+With `Player::sendPacket` newline append:
+
+```txt
+[200, 10]
+```
+
 ### PLO_DISCMESSAGE
 
 C++:
@@ -50,6 +78,32 @@ Confirmed response:
 
 ```txt
 [48] + ASCII("Your client type is unknown.  Please inform the OpenGraal Team.  Type: 512.") + [10]
+```
+
+## Player::sendLogin Pre-World Boundary
+
+Normal client success continuation before `Server::playerLoggedIn`:
+
+```txt
+[57, 105, 10, 200, 10]
+```
+
+This is:
+
+```txt
+PLO_SIGNATURE, GCHAR 73, "\n", PLO_UNKNOWN168, "\n"
+```
+
+Active duplicate client rejection preserves C++ ordering, with early client packets already queued:
+
+```txt
+[57, 105, 10, 200, 10] + [48] + ASCII("Account is already in use.") + [10]
+```
+
+Banned account example with ban reason `"cheating"`:
+
+```txt
+[48] + ASCII("You have been banned.  Reason: cheating") + [10]
 ```
 
 ## Framing

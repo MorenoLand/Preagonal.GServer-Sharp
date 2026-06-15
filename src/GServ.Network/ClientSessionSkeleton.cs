@@ -73,8 +73,18 @@ public sealed class ClientSessionSkeleton
         Lifecycle = SessionLifecycle.Rejected;
     }
 
+    internal void QueuePacket(byte[] packet)
+    {
+        _outbound.Write(packet);
+    }
+
     internal void MarkWaitingForServerListAuth()
     {
         Lifecycle = SessionLifecycle.WaitingForServerListAuth;
+    }
+
+    internal void MarkReadyForWorldEntry()
+    {
+        Lifecycle = SessionLifecycle.ReadyForWorldEntry;
     }
 }

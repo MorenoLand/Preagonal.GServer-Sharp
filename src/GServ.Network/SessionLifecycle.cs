@@ -6,6 +6,7 @@ public enum SessionLifecycle
     LoginPreludeParsed,
     WaitingForServerListAuth,
     ServerListAuthAcceptedPreWorld,
+    ReadyForWorldEntry,
     Authenticated,
     Rejected,
     Disconnecting,
