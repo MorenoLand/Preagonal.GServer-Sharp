@@ -102,4 +102,14 @@ public sealed class ClientSessionSkeleton
     {
         Lifecycle = SessionLifecycle.LevelPayloadSent;
     }
+
+    internal void MarkDynamicLevelPayloadSent()
+    {
+        Lifecycle = SessionLifecycle.DynamicLevelPayloadSent;
+    }
+
+    internal void MarkLevelRuntimePacketsSent()
+    {
+        Lifecycle = SessionLifecycle.LevelRuntimePacketsSent;
+    }
 }

@@ -3,6 +3,17 @@ using GServ.Protocol;
 namespace GServ.Network;
 
 public sealed record LevelLayerPayload(int LayerIndex, byte[] Packet);
+public sealed record LevelBoardChangePayload(long ModTime, byte[] BoardString);
+public sealed record LevelChestPayload(bool HasChest, byte X, byte Y, byte ItemIndex, byte SignIndex);
+public sealed record LevelHorsePayload(byte[] HorseString);
+public sealed record LevelBaddyPayload(byte BaddyId, byte[] Props);
+public sealed record LevelRuntimeContinuationPayload(
+    string? GmapName,
+    bool HasMapContext,
+    bool IsLevelLeader,
+    bool IsSingleplayer,
+    uint NewWorldTime,
+    byte[] NpcsPacket);
 
 public sealed record ModernLevelPayload(
     string LevelName,
@@ -10,7 +21,12 @@ public sealed record ModernLevelPayload(
     byte[] BoardPacket,
     IReadOnlyList<LevelLayerPayload> Layers,
     byte[] LinksPacket,
-    byte[] SignsPacket);
+    byte[] SignsPacket,
+    IReadOnlyList<LevelBoardChangePayload>? BoardChanges = null,
+    IReadOnlyList<LevelChestPayload>? Chests = null,
+    IReadOnlyList<LevelHorsePayload>? Horses = null,
+    IReadOnlyList<LevelBaddyPayload>? Baddies = null,
+    LevelRuntimeContinuationPayload? RuntimeContinuation = null);
 
 public sealed record SendLevelRequest(
     long RequestedModTime,
@@ -19,7 +35,9 @@ public sealed record SendLevelRequest(
 
 public enum SendLevelStopPoint
 {
-    BeforeDynamicLevelRuntime
+    BeforeDynamicLevelRuntime,
+    BeforeGmapCorrection,
+    BeforeNearbyPlayerProps
 }
 
 public sealed record SendLevelBoundaryResult(
@@ -68,7 +86,38 @@ public static class SendLevelBoundary
         }
 
         session.MarkLevelPayloadSent();
-        return new SendLevelBoundaryResult(true, SendLevelStopPoint.BeforeDynamicLevelRuntime);
+
+        if (!request.FromAdjacent)
+        {
+            QueuePacket(session, BoardChangesPacket(level.BoardChanges ?? Array.Empty<LevelBoardChangePayload>(), cachedLevelModTime));
+            QueuePacket(session, ChestPacket(level.Chests ?? Array.Empty<LevelChestPayload>()));
+            QueuePacket(session, HorsePacket(level.Horses ?? Array.Empty<LevelHorsePayload>()));
+            QueuePacket(session, BaddyPacket(level.Baddies ?? Array.Empty<LevelBaddyPayload>()));
+        }
+
+        session.MarkDynamicLevelPayloadSent();
+        if (level.RuntimeContinuation is not { } runtime)
+            return new SendLevelBoundaryResult(true, SendLevelStopPoint.BeforeGmapCorrection);
+
+        if (!string.IsNullOrEmpty(runtime.GmapName))
+            QueuePacket(session, WarpPackets.BuildLevelName(runtime.GmapName));
+
+        QueuePacket(session, GhostIcon(false));
+
+        var shouldSendMapScopedPackets = !request.FromAdjacent || runtime.HasMapContext;
+        if (shouldSendMapScopedPackets && (runtime.IsLevelLeader || runtime.IsSingleplayer))
+            QueuePacket(session, IsLeader());
+
+        QueuePacket(session, NewWorldTime(runtime.NewWorldTime));
+
+        if (shouldSendMapScopedPackets)
+        {
+            QueuePacket(session, SetActiveLevel(runtime.GmapName ?? level.LevelName));
+            QueuePacket(session, runtime.NpcsPacket);
+        }
+
+        session.MarkLevelRuntimePacketsSent();
+        return new SendLevelBoundaryResult(true, SendLevelStopPoint.BeforeNearbyPlayerProps);
     }
 
     private static byte[] RawDataHeader(int length)
@@ -84,6 +133,105 @@ public static class SendLevelBoundary
         var writer = new GraalBinaryWriter();
         writer.WriteGChar((byte)ServerToPlayerPacketId.LevelModTime);
         writer.WriteGInt5(unchecked((uint)modTime));
+        return writer.ToArray();
+    }
+
+    private static byte[] BoardChangesPacket(
+        IReadOnlyList<LevelBoardChangePayload> changes,
+        long cachedLevelModTime)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.LevelBoard);
+
+        foreach (var change in changes)
+        {
+            if (change.ModTime >= cachedLevelModTime)
+                writer.WriteBytes(change.BoardString);
+        }
+
+        return writer.ToArray();
+    }
+
+    private static byte[] ChestPacket(IReadOnlyList<LevelChestPayload> chests)
+    {
+        var writer = new GraalBinaryWriter();
+
+        foreach (var chest in chests)
+        {
+            writer.WriteGChar((byte)ServerToPlayerPacketId.LevelChest);
+            writer.WriteGChar((byte)(chest.HasChest ? 1 : 0));
+            writer.WriteGChar(chest.X);
+            writer.WriteGChar(chest.Y);
+
+            if (!chest.HasChest)
+            {
+                writer.WriteGChar(chest.ItemIndex);
+                writer.WriteGChar(chest.SignIndex);
+            }
+
+            writer.WriteByte((byte)'\n');
+        }
+
+        return writer.ToArray();
+    }
+
+    private static byte[] HorsePacket(IReadOnlyList<LevelHorsePayload> horses)
+    {
+        var writer = new GraalBinaryWriter();
+
+        foreach (var horse in horses)
+        {
+            writer.WriteGChar((byte)ServerToPlayerPacketId.HorseAdd);
+            writer.WriteBytes(horse.HorseString);
+            writer.WriteByte((byte)'\n');
+        }
+
+        return writer.ToArray();
+    }
+
+    private static byte[] BaddyPacket(IReadOnlyList<LevelBaddyPayload> baddies)
+    {
+        var writer = new GraalBinaryWriter();
+
+        foreach (var baddy in baddies)
+        {
+            writer.WriteGChar((byte)ServerToPlayerPacketId.BaddyProps);
+            writer.WriteGChar(baddy.BaddyId);
+            writer.WriteBytes(baddy.Props);
+            writer.WriteByte((byte)'\n');
+        }
+
+        return writer.ToArray();
+    }
+
+    private static byte[] GhostIcon(bool enabled)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.GhostIcon);
+        writer.WriteGChar((byte)(enabled ? 1 : 0));
+        return writer.ToArray();
+    }
+
+    private static byte[] IsLeader()
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.IsLeader);
+        return writer.ToArray();
+    }
+
+    private static byte[] NewWorldTime(uint newWorldTime)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.NewWorldTime);
+        writer.WriteGInt4(newWorldTime);
+        return writer.ToArray();
+    }
+
+    private static byte[] SetActiveLevel(string levelName)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.SetActiveLevel);
+        writer.WriteBytes(System.Text.Encoding.ASCII.GetBytes(levelName));
         return writer.ToArray();
     }
 

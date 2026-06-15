@@ -21,12 +21,17 @@ Confirmed packet IDs used in the C# foundation:
 | `PLI_SENDTEXT` | client to server | 154 |
 | `PLI_SET_ENC_KEY` | client to server | 252 |
 | `PLI_BUNDLE` | client to server | 253 |
-| `PLO_PLAYERPROPS` | server to client | 9 |
+| `PLO_LEVELBOARD` | server to client | 0 |
+| `PLO_BADDYPROPS` | server to client | 2 |
+| `PLO_LEVELCHEST` | server to client | 4 |
 | `PLO_LEVELNAME` | server to client | 6 |
+| `PLO_BOARDMODIFY` | server to client | 7 |
+| `PLO_PLAYERPROPS` | server to client | 9 |
 | `PLO_ISLEADER` | server to client | 10 |
 | `PLO_PLAYERWARP` | server to client | 14 |
 | `PLO_WARPFAILED` | server to client | 15 |
 | `PLO_DISCMESSAGE` | server to client | 16 |
+| `PLO_HORSEADD` | server to client | 17 |
 | `PLO_SIGNATURE` | server to client | 25 |
 | `PLO_FLAGSET` | server to client | 28 |
 | `PLO_NPCWEAPONDEL` | server to client | 34 |
@@ -39,6 +44,7 @@ Confirmed packet IDs used in the C# foundation:
 | `PLO_RAWDATA` | server to client | 100 |
 | `PLO_BOARDPACKET` | server to client | 101 |
 | `PLO_FILE` | server to client | 102 |
+| `PLO_BOARDLAYER` | server to client | 107 |
 | `PLO_SETACTIVELEVEL` | server to client | 156 |
 | `PLO_UNKNOWN168` | server to client | 168 |
 | `PLO_GHOSTICON` | server to client | 174 |

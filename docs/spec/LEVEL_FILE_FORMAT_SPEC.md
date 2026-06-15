@@ -92,3 +92,6 @@ No production level-file parser is implemented yet.
 The current C# `sendLevel` boundary accepts pre-serialized board/layer/link/sign
 packet bytes through DTOs. This avoids inventing parser defaults while still
 locking the packet order and framing behavior confirmed in `Player::sendLevel`.
+Dynamic board-change/chest/horse/baddy and first post-dynamic packets are now
+wrapped from explicit snapshots or pre-serialized payload bytes, but no
+production level-file parser or runtime level object has been implemented.

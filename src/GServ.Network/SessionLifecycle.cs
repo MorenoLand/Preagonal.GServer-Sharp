@@ -10,6 +10,8 @@ public enum SessionLifecycle
     ReadyForLevelWarp,
     ReadyForLevelRuntime,
     LevelPayloadSent,
+    DynamicLevelPayloadSent,
+    LevelRuntimePacketsSent,
     Authenticated,
     Rejected,
     Disconnecting,

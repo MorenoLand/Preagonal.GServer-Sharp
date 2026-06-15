@@ -69,6 +69,11 @@ The current C# boundary implements only the static beginning of the modern
 parse level files or construct board/layer/link/sign packets from real runtime
 state.
 
+The next safe slice now also wraps source-confirmed dynamic and post-dynamic
+packets from snapshots/pre-serialized runtime payloads. It does not construct
+real level resources, NPCs, horses, baddies, or nearby-player props from
+production world state.
+
 ## C# Boundary
 
 Implemented:
@@ -80,6 +85,9 @@ Implemented:
 - `WarpWorldEntryBoundary.BeginSetLevel` pre-runtime packet selection
 - `SendLevelBoundary.BeginModern` for `CLVER_2_1+` static level payload:
   `PLO_LEVELNAME`, optional raw board/layers, `PLO_LEVELMODTIME`, links, signs
+- `SendLevelBoundary.BeginModern` dynamic wrappers for board changes, chests,
+  horses, baddies, GMAP correction, ghost icon, leader, new world time, active
+  level, and opaque NPC packet bytes
 
 Not implemented:
 
@@ -91,4 +99,4 @@ Not implemented:
 - board/layer/resource packet construction from parsed level state
 - `sendFile`/large-file resource transfer during level entry
 - old-client `sendLevel141`
-- dynamic level-entry runtime packets after links/signs
+- production level-entry runtime data construction after links/signs

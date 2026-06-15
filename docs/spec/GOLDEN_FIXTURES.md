@@ -440,11 +440,13 @@ PLO_LEVELNAME "start.nw"
 PLO_LEVELMODTIME GINT5(1)
 opaque links packet "links\n"
 opaque signs packet "signs\n"
+empty board-changes packet
 
 => [38, 115, 116, 97, 114, 116, 46, 110, 119, 10,
     71, 32, 32, 32, 32, 33, 10,
     108, 105, 110, 107, 115, 10,
-    115, 105, 103, 110, 115, 10]
+    115, 105, 103, 110, 115, 10,
+    32, 10]
 ```
 
 Modern level payload when cache is empty and requested mod time differs:
@@ -463,10 +465,105 @@ If `getCachedLevelModTime(level) != 0`, the C# boundary currently emits only:
 
 ```txt
 PLO_LEVELNAME "start.nw"
+empty board-changes packet
+=> [38, 115, 116, 97, 114, 116, 46, 110, 119, 10, 32, 10]
+```
+
+When `fromAdjacent == true`, dynamic board changes/chests/horses/baddies are
+skipped:
+
+```txt
+PLO_LEVELNAME "start.nw"
 => [38, 115, 116, 97, 114, 116, 46, 110, 119, 10]
 ```
 
-It then stops before board changes/chests/horses/baddies.
+## Modern sendLevel Dynamic And Runtime Boundary
+
+These fixtures include `Player::sendPacket` newline behavior.
+
+Empty board-change list when `fromAdjacent == false`:
+
+```txt
+PLO_LEVELBOARD + "\n"
+=> [32, 10]
+```
+
+Board-change filtering with cached mod time `10` includes changes whose
+`modTime >= 10`:
+
+```txt
+PLO_LEVELNAME "start.nw"
+PLO_LEVELBOARD
+change 10: x=1 y=2 width=3 height=4 raw tiles [80,81]
+change 11: x=5 y=6 width=7 height=8 raw tiles [82]
+
+=> [38, 115, 116, 97, 114, 116, 46, 110, 119, 10,
+    32, 33, 34, 35, 36, 80, 81, 37, 38, 39, 40, 82, 10]
+```
+
+Chest list with one unopened and one already opened chest:
+
+```txt
+PLO_LEVELNAME "start.nw"
+PLO_LEVELBOARD empty
+PLO_LEVELCHEST has=0 x=10 y=11 item=2 sign=3
+PLO_LEVELCHEST has=1 x=12 y=13
+
+=> [38, 115, 116, 97, 114, 116, 46, 110, 119, 10,
+    32, 10,
+    36, 32, 42, 43, 34, 35, 10,
+    36, 33, 44, 45, 10]
+```
+
+Horse and baddy packets using pre-serialized runtime payloads:
+
+```txt
+PLO_LEVELNAME "start.nw"
+PLO_LEVELBOARD empty
+PLO_HORSEADD raw "horse"
+PLO_BADDYPROPS id=5 raw props [70,71]
+
+=> [38, 115, 116, 97, 114, 116, 46, 110, 119, 10,
+    32, 10,
+    49, 104, 111, 114, 115, 101, 10,
+    34, 37, 70, 71, 10]
+```
+
+Post-dynamic non-GMAP continuation:
+
+```txt
+PLO_LEVELNAME "start.nw"
+PLO_LEVELBOARD empty
+PLO_GHOSTICON GCHAR(0)
+PLO_NEWWORLDTIME GINT4(1)
+PLO_SETACTIVELEVEL "start.nw"
+opaque NPC packet [70,10]
+
+=> [38, 115, 116, 97, 114, 116, 46, 110, 119, 10,
+    32, 10,
+    206, 32, 10,
+    74, 32, 32, 32, 33, 10,
+    188, 115, 116, 97, 114, 116, 46, 110, 119, 10,
+    70, 10]
+```
+
+Adjacent GMAP continuation with map context and leader:
+
+```txt
+PLO_LEVELNAME "inside.nw"
+PLO_LEVELNAME "world.gmap"
+PLO_GHOSTICON GCHAR(0)
+PLO_ISLEADER
+PLO_NEWWORLDTIME GINT4(1)
+PLO_SETACTIVELEVEL "world.gmap"
+
+=> [38, 105, 110, 115, 105, 100, 101, 46, 110, 119, 10,
+    38, 119, 111, 114, 108, 100, 46, 103, 109, 97, 112, 10,
+    206, 32, 10,
+    42, 10,
+    74, 32, 32, 32, 33, 10,
+    188, 119, 111, 114, 108, 100, 46, 103, 109, 97, 112, 10]
+```
 
 ## Server-List Auth
 

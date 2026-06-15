@@ -14,12 +14,17 @@ public enum PlayerToServerPacketId : byte
 
 public enum ServerToPlayerPacketId : byte
 {
+    LevelBoard = 0,
+    BaddyProps = 2,
+    LevelChest = 4,
     LevelName = 6,
-    IsLeader = 10,
+    BoardModify = 7,
     PlayerProps = 9,
+    IsLeader = 10,
     PlayerWarp = 14,
     WarpFailed = 15,
     DisconnectMessage = 16,
+    HorseAdd = 17,
     Signature = 25,
     FlagSet = 28,
     NpcWeaponDelete = 34,
@@ -33,6 +38,7 @@ public enum ServerToPlayerPacketId : byte
     RawData = 100,
     BoardPacket = 101,
     File = 102,
+    BoardLayer = 107,
     SetActiveLevel = 156,
     Unknown168 = 168,
     GhostIcon = 174,

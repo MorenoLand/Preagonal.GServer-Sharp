@@ -19,10 +19,12 @@
 - First isolated warp packet builders are implemented. The C# port now has a
   source-confirmed `setLevel` pre-runtime boundary for missing levels,
   `PLO_PLAYERWARP`, `PLO_PLAYERWARP2`, and modern non-zero-modtime no-warp
-  packet behavior. Modern `sendLevel` is implemented only through the static
-  payload boundary (`PLO_LEVELNAME`, optional raw board/layers,
-  `PLO_LEVELMODTIME`, links, signs). Full `warp(...)`, fallback to
-  previous/unstick levels, singleplayer/group-map cloning, old `sendLevel141`,
-  dynamic board changes/chests/horses/baddies/NPCs, and nearby player props
-  remain blocked because they enter level/map/NPC/resource runtime.
+  packet behavior. Modern `sendLevel` is implemented through dynamic
+  board-change/chest/horse/baddy packet wrappers and the first post-dynamic
+  packets (`PLO_GHOSTICON`, optional `PLO_ISLEADER`, `PLO_NEWWORLDTIME`,
+  `PLO_SETACTIVELEVEL`, and opaque NPC packet bytes). Full `warp(...)`,
+  fallback to previous/unstick levels, singleplayer/group-map cloning, old
+  `sendLevel141`, production horse/baddy/NPC state construction, and nearby
+  player props remain blocked because they enter level/map/NPC/player-list
+  runtime.
 - Server-list connection lifecycle, reconnect backoff, registration, and text/listserver side channels need a dedicated milestone.

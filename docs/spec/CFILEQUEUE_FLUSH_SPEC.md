@@ -88,10 +88,11 @@ zlib/bzip2/encryption/websocket fixtures are byte-exact.
 
 ## Current Pass Status
 
-No new `CFileQueue` production behavior was implemented in the `sendLevel`
-static-payload pass. The new C# boundary queues `PLO_RAWDATA` headers and
-pre-serialized board/layer payload bytes in the same order C++ calls
-`Player::sendPacket`, and the existing `GraalFileQueue` tests already cover the
+No new `CFileQueue` production behavior was implemented in the current
+`sendLevel` passes. The C# boundary queues normal newline packets,
+`PLO_RAWDATA` headers, pre-serialized board/layer payload bytes, dynamic level
+packets, and first post-dynamic runtime packets in the same order C++ calls
+`Player::sendPacket`. Existing `GraalFileQueue` tests already cover the
 confirmed raw-data transition for board payloads.
 
 Still blocked:
@@ -99,4 +100,4 @@ Still blocked:
 - compressed/encrypted socket-level flush bytes
 - websocket wrapping
 - production file transfer through `PLO_FILE`
-- level resource transfer beyond pre-serialized board/layer payloads
+- level resource transfer beyond pre-serialized board/layer and runtime payloads

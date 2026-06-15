@@ -19,8 +19,9 @@ else
     succeed = sendLevel141(newLevel, modTime, false);
 ```
 
-The current C# milestone implements only the beginning of the modern
-`sendLevel` path for `CLVER_2_1+`.
+The current C# milestone implements the modern `sendLevel` path for
+`CLVER_2_1+` through the first post-dynamic runtime packets, then stops before
+nearby player prop forwarding.
 
 ## Modern sendLevel Order
 
@@ -84,20 +85,38 @@ Implemented:
 
 - `ModernLevelPayload`
 - `LevelLayerPayload`
+- `LevelBoardChangePayload`
+- `LevelChestPayload`
+- `LevelHorsePayload`
+- `LevelBaddyPayload`
+- `LevelRuntimeContinuationPayload`
 - `SendLevelRequest`
 - `SendLevelBoundary.BeginModern`
 - `SessionLifecycle.LevelPayloadSent`
+- `SessionLifecycle.DynamicLevelPayloadSent`
+- `SessionLifecycle.LevelRuntimePacketsSent`
 
-The C# boundary queues only:
+The C# boundary queues:
 
 - `PLO_LEVELNAME`
 - optional raw board/layer payloads using pre-serialized bytes
 - `PLO_LEVELMODTIME`
 - pre-serialized links packet bytes
 - pre-serialized signs packet bytes
+- source-confirmed board-change packets
+- source-confirmed chest packets
+- horse packets using pre-serialized `LevelHorse::getHorseStr()` bytes
+- baddy packets using pre-serialized `LevelBaddy::getProps(...)` bytes
+- optional GMAP correction `PLO_LEVELNAME`
+- `PLO_GHOSTICON + GCHAR(0)`
+- conditional `PLO_ISLEADER`
+- `PLO_NEWWORLDTIME + GINT4(server.getNWTime())`
+- conditional `PLO_SETACTIVELEVEL`
+- optional pre-serialized NPC packet bytes
 
-The boundary stops before board changes/chests/horses/baddies and marks the
-session `LevelPayloadSent`.
+The boundary stops before nearby player prop forwarding. Runtime data that C#
+cannot yet compute safely is accepted only as already serialized/snapshotted
+input.
 
 Not implemented:
 
@@ -106,7 +125,6 @@ Not implemented:
 - production `Level::getBoardPacket` from tile state
 - production `Level::getLayerPacket`
 - links/signs builders from parsed level state
-- board changes, chests, horses, baddies
-- GMAP correction packet after dynamic payloads
-- ghost icon, leadership, world time, active-level, NPC packets
+- production horse and baddy runtime state
+- production NPC packet construction
 - nearby player prop forwarding

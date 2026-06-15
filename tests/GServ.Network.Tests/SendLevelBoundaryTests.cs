@@ -24,15 +24,16 @@ public sealed class SendLevelBoundaryTests
             new SendLevelRequest(RequestedModTime: 1, CachedLevelModTime: 0, FromAdjacent: false));
 
         Assert.True(result.Accepted);
-        Assert.Equal(SendLevelStopPoint.BeforeDynamicLevelRuntime, result.StopPoint);
-        Assert.Equal(SessionLifecycle.LevelPayloadSent, session.Lifecycle);
+        Assert.Equal(SendLevelStopPoint.BeforeGmapCorrection, result.StopPoint);
+        Assert.Equal(SessionLifecycle.DynamicLevelPayloadSent, session.Lifecycle);
         Assert.Equal(
             new byte[]
             {
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
                 71, 32, 32, 32, 32, 33, 10,
                 (byte)'l', (byte)'i', (byte)'n', (byte)'k', (byte)'s', 10,
-                (byte)'s', (byte)'i', (byte)'g', (byte)'n', (byte)'s', 10
+                (byte)'s', (byte)'i', (byte)'g', (byte)'n', (byte)'s', 10,
+                32, 10
             },
             session.TakeOutboundBytes());
     }
@@ -65,7 +66,7 @@ public sealed class SendLevelBoundaryTests
         var layerHeaderStart = 15 + board.Length;
         Assert.Equal(new byte[] { 132, 32, 32, 39, 10 }, bytes[layerHeaderStart..(layerHeaderStart + 5)]);
         Assert.Equal(layer, bytes[(layerHeaderStart + 5)..(layerHeaderStart + 5 + layer.Length)]);
-        Assert.Equal(new byte[] { 71, 32, 32, 32, 32, 33, 10 }, bytes[^7..]);
+        Assert.Equal(new byte[] { 71, 32, 32, 32, 32, 33, 10, 32, 10 }, bytes[^9..]);
     }
 
     [Fact]
@@ -89,7 +90,208 @@ public sealed class SendLevelBoundaryTests
             new byte[]
             {
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
-                71, 32, 32, 32, 32, 33, 10
+                71, 32, 32, 32, 32, 33, 10,
+                32, 10
+            },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernSkipsDynamicLevelPacketsWhenWarpCameFromAdjacentLevel()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "start.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            BoardChanges: [new LevelBoardChangePayload(1, [1, 2, 3])],
+            Chests: [new LevelChestPayload(false, 10, 11, 2, 3)],
+            Horses: [new LevelHorsePayload("horse"u8.ToArray())],
+            Baddies: [new LevelBaddyPayload(5, [70, 71])]);
+
+        var result = SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
+
+        Assert.True(result.Accepted);
+        Assert.Equal(SendLevelStopPoint.BeforeGmapCorrection, result.StopPoint);
+        Assert.Equal(
+            new byte[] { 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10 },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernFiltersBoardChangesByCachedLevelModTime()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "start.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            BoardChanges:
+            [
+                new LevelBoardChangePayload(9, [1]),
+                new LevelBoardChangePayload(10, BoardChangePayload(1, 2, 3, 4, [80, 81])),
+                new LevelBoardChangePayload(11, BoardChangePayload(5, 6, 7, 8, [82]))
+            ]);
+
+        SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 10, FromAdjacent: false));
+
+        Assert.Equal(
+            new byte[]
+            {
+                38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
+                32, 33, 34, 35, 36, 80, 81, 37, 38, 39, 40, 82, 10
+            },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernQueuesChestPacketsWithOwnedAndUnownedBranches()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "start.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            Chests:
+            [
+                new LevelChestPayload(false, 10, 11, 2, 3),
+                new LevelChestPayload(true, 12, 13, 4, 5)
+            ]);
+
+        SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+
+        Assert.Equal(
+            new byte[]
+            {
+                38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
+                32, 10,
+                36, 32, 42, 43, 34, 35, 10,
+                36, 33, 44, 45, 10
+            },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernQueuesHorseAndBaddyPacketsAfterChests()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "start.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            Horses: [new LevelHorsePayload("horse"u8.ToArray())],
+            Baddies: [new LevelBaddyPayload(5, [70, 71])]);
+
+        SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+
+        Assert.Equal(
+            new byte[]
+            {
+                38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
+                32, 10,
+                49, (byte)'h', (byte)'o', (byte)'r', (byte)'s', (byte)'e', 10,
+                34, 37, 70, 71, 10
+            },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernQueuesPostDynamicNonGmapPacketsBeforeNearbyPlayerProps()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "start.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            RuntimeContinuation: new LevelRuntimeContinuationPayload(
+                GmapName: null,
+                HasMapContext: false,
+                IsLevelLeader: false,
+                IsSingleplayer: false,
+                NewWorldTime: 1,
+                NpcsPacket: [70, 10]));
+
+        var result = SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+
+        Assert.True(result.Accepted);
+        Assert.Equal(SendLevelStopPoint.BeforeNearbyPlayerProps, result.StopPoint);
+        Assert.Equal(SessionLifecycle.LevelRuntimePacketsSent, session.Lifecycle);
+        Assert.Equal(
+            new byte[]
+            {
+                38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
+                32, 10,
+                206, 32, 10,
+                74, 32, 32, 32, 33, 10,
+                188, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
+                70, 10
+            },
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void BeginModernQueuesGmapCorrectionAndLeaderWhenAdjacentWithMapContext()
+    {
+        var session = ReadyForLevelRuntimeSession();
+        var level = new ModernLevelPayload(
+            LevelName: "inside.nw",
+            LevelModTime: 1,
+            BoardPacket: EmptyBoardPacket(),
+            Layers: [],
+            LinksPacket: [],
+            SignsPacket: [],
+            RuntimeContinuation: new LevelRuntimeContinuationPayload(
+                GmapName: "world.gmap",
+                HasMapContext: true,
+                IsLevelLeader: true,
+                IsSingleplayer: false,
+                NewWorldTime: 1,
+                NpcsPacket: []));
+
+        SendLevelBoundary.BeginModern(
+            session,
+            level,
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
+
+        Assert.Equal(
+            new byte[]
+            {
+                38, (byte)'i', (byte)'n', (byte)'s', (byte)'i', (byte)'d', (byte)'e', (byte)'.', (byte)'n', (byte)'w', 10,
+                38, (byte)'w', (byte)'o', (byte)'r', (byte)'l', (byte)'d', (byte)'.', (byte)'g', (byte)'m', (byte)'a', (byte)'p', 10,
+                206, 32, 10,
+                42, 10,
+                74, 32, 32, 32, 33, 10,
+                188, (byte)'w', (byte)'o', (byte)'r', (byte)'l', (byte)'d', (byte)'.', (byte)'g', (byte)'m', (byte)'a', (byte)'p', 10
             },
             session.TakeOutboundBytes());
     }
@@ -112,7 +314,7 @@ public sealed class SendLevelBoundaryTests
             new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Equal(
-            new byte[] { 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10 },
+            new byte[] { 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10, 32, 10 },
             session.TakeOutboundBytes());
     }
 
@@ -157,6 +359,17 @@ public sealed class SendLevelBoundaryTests
         board[0] = 133;
         board[^1] = 10;
         return board;
+    }
+
+    private static byte[] BoardChangePayload(byte x, byte y, byte width, byte height, byte[] tiles)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar(x);
+        writer.WriteGChar(y);
+        writer.WriteGChar(width);
+        writer.WriteGChar(height);
+        writer.WriteBytes(tiles);
+        return writer.ToArray();
     }
 
     private static PostLoginPlayerSnapshot BaseSnapshot()
