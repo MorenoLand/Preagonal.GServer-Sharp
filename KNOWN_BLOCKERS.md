@@ -4,6 +4,7 @@
 - Full `IEnums.h` packet catalog is large; only foundation-critical IDs are implemented in C# so far.
 - Full login success is blocked on account/default account loading, password/server-list verification response flow, server capacity/list-server checks, player property emission, and world warp behavior.
 - The login packet parse boundary is implemented, but account validation and `Player::sendLogin` success continuation are intentionally not.
+- Server-list auth request/response is implemented only through the pre-world boundary. `Player::sendLogin` is still intentionally blocked before account/world entry.
 - `CFileQueue` compression and socket flushing are documented but not implemented in C# yet.
 - WebSocket handling is gated by `WOLFSSL_ENABLED` code paths and needs a dedicated pass.
 - `Server::doMain()` timing branches need a dedicated timing recovery pass.

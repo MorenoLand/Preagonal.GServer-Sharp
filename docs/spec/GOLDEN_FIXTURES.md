@@ -71,3 +71,38 @@ With client/newer-RC raw newline stripping enabled, raw payload becomes:
 ```txt
 "abc"
 ```
+
+## Server-List Auth
+
+### SVO_VERIACC2
+
+Input:
+
+```txt
+account="Ruan", password="pw", playerId=7, type=PLTYPE_CLIENT3, identity="win"
+```
+
+Packet body before `ServerList::sendPacket` newline and `CFileQueue` compression:
+
+```txt
+[49, 36, 82, 117, 97, 110, 34, 112, 119, 32, 39, 64, 32, 35, 119, 105, 110]
+```
+
+Notes:
+
+- `49` is `GCHAR SVO_VERIACC2` (`17 + 32`).
+- `64` is `GCHAR PLTYPE_CLIENT3` (`32 + 32`), because C++ sends the type bitfield, not the login exponent.
+
+### SVI_VERIACC2 Failure
+
+For `message != "SUCCESS"`, C++ sends the message directly as:
+
+```txt
+PLO_DISCMESSAGE + message + "\n"
+```
+
+Example message `"Bad password."`:
+
+```txt
+[48] + ASCII("Bad password.") + [10]
+```

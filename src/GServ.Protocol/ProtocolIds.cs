@@ -25,6 +25,16 @@ public enum ServerToPlayerPacketId : byte
     Bundle = 253
 }
 
+public enum ServerToListServerPacketId : byte
+{
+    VerifyAccount2 = 17
+}
+
+public enum ListServerToServerPacketId : byte
+{
+    VerifyAccount2 = 11
+}
+
 [Flags]
 public enum PlayerSessionType
 {

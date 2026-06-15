@@ -50,4 +50,31 @@ public sealed class ClientSessionSkeleton
         _outbound.SetLength(0);
         return bytes;
     }
+
+    public bool ReceiveServerListAuthResponse(ServerListVerifyAccount2Response response)
+    {
+        if (LoginPacket is null)
+            throw new InvalidOperationException("Login packet must be parsed before server-list auth response.");
+
+        LoginPacket = LoginPacket with { AccountName = response.AccountName };
+        if (!response.IsSuccess)
+        {
+            QueueDisconnect(response.Message);
+            return false;
+        }
+
+        Lifecycle = SessionLifecycle.ServerListAuthAcceptedPreWorld;
+        return true;
+    }
+
+    internal void QueueDisconnect(string message)
+    {
+        _outbound.Write(OutboundLoginPackets.DisconnectMessage(message, appendNewline: true));
+        Lifecycle = SessionLifecycle.Rejected;
+    }
+
+    internal void MarkWaitingForServerListAuth()
+    {
+        Lifecycle = SessionLifecycle.WaitingForServerListAuth;
+    }
 }
