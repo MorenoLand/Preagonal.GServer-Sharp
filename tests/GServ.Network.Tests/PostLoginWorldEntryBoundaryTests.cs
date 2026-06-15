@@ -1,0 +1,123 @@
+using GServ.Network;
+using GServ.Protocol;
+using Xunit;
+
+namespace GServ.Network.Tests;
+
+public sealed class PostLoginWorldEntryBoundaryTests
+{
+    [Fact]
+    public void PlayerLoggedInBuildsServerListAddPlayerPacketWithConfirmedPropertyOrder()
+    {
+        var snapshot = BaseSnapshot();
+
+        var packet = PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket(snapshot);
+
+        Assert.Equal(
+            new byte[]
+            {
+                46, 0, 7, 64,
+                66, 39, (byte)'p', (byte)'c', (byte)':', (byte)'R', (byte)'u', (byte)'a', (byte)'n',
+                32, 36, (byte)'R', (byte)'u', (byte)'a', (byte)'n',
+                52, 40, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w',
+                47, 70,
+                48, 71,
+                64, 72,
+                62, 32, 32, 32, 32, 33
+            },
+            packet);
+    }
+
+    [Fact]
+    public void ClientBoundaryQueuesConfirmedPacketsBeforeWarpAndStops()
+    {
+        var session = ReadyForWorldEntrySession();
+        var snapshot = BaseSnapshot() with
+        {
+            LoginPropertiesPayload = [33, 44],
+            PlayerFlags =
+            [
+                new LoginFlag("client.flag", "yes"),
+                new LoginFlag("empty.flag", "")
+            ],
+            ServerFlags =
+            [
+                new LoginFlag("server.flag", "1")
+            ]
+        };
+
+        var result = PostLoginWorldEntryBoundary.BeginClient(session, snapshot);
+
+        Assert.True(result.Accepted);
+        Assert.Equal(SessionLifecycle.ReadyForLevelWarp, session.Lifecycle);
+        Assert.Equal(PostLoginClientStopPoint.BeforeWarp, result.StopPoint);
+        Assert.Equal(
+            new byte[]
+            {
+                41, 33, 44, 10,
+                226, 10,
+                60, (byte)'c', (byte)'l', (byte)'i', (byte)'e', (byte)'n', (byte)'t', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'y', (byte)'e', (byte)'s', 10,
+                60, (byte)'e', (byte)'m', (byte)'p', (byte)'t', (byte)'y', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', 10,
+                60, (byte)'s', (byte)'e', (byte)'r', (byte)'v', (byte)'e', (byte)'r', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'1', 10,
+                66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
+                66, (byte)'B', (byte)'o', (byte)'w', 10,
+                222, 10
+            },
+            session.TakeOutboundBytes());
+        Assert.Equal(
+            PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket(snapshot),
+            result.ServerListAddPlayerPacket);
+    }
+
+    private static PostLoginPlayerSnapshot BaseSnapshot()
+    {
+        var account = new GraalBinaryWriter();
+        account.WriteGChar(7);
+        account.WriteBytes("pc:Ruan"u8);
+
+        var nickname = new GraalBinaryWriter();
+        nickname.WriteGChar(4);
+        nickname.WriteBytes("Ruan"u8);
+
+        var level = new GraalBinaryWriter();
+        level.WriteGChar(8);
+        level.WriteBytes("start.nw"u8);
+
+        return new PostLoginPlayerSnapshot(
+            PlayerId: 7,
+            Type: PlayerSessionType.Client3,
+            AccountNameProperty: account.ToArray(),
+            NicknameProperty: nickname.ToArray(),
+            CurrentLevelProperty: level.ToArray(),
+            XProperty: [70],
+            YProperty: [71],
+            AlignmentProperty: [72],
+            IpAddressProperty: [32, 32, 32, 32, 33],
+            LoginPropertiesPayload: [],
+            PlayerFlags: [],
+            ServerFlags: []);
+    }
+
+    private static ClientSessionSkeleton ReadyForWorldEntrySession()
+    {
+        var session = new ClientSessionSkeleton(7);
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar(5);
+        packet.WriteGChar(42);
+        packet.WriteBytes("G3D0311C"u8);
+        packet.WriteGChar(4);
+        packet.WriteBytes("Ruan"u8);
+        packet.WriteGChar(2);
+        packet.WriteBytes("pw"u8);
+        packet.WriteBytes("win"u8);
+        Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
+        Assert.True(session.ReceiveServerListAuthResponse(
+            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+        Assert.True(PlayerSendLoginContinuation.Begin(
+            session,
+            new PlayerSendLoginAccount("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
+            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+        _ = session.TakeOutboundBytes();
+        return session;
+    }
+}

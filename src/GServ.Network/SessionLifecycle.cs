@@ -7,6 +7,7 @@ public enum SessionLifecycle
     WaitingForServerListAuth,
     ServerListAuthAcceptedPreWorld,
     ReadyForWorldEntry,
+    ReadyForLevelWarp,
     Authenticated,
     Rejected,
     Disconnecting,

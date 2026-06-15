@@ -14,19 +14,25 @@ public enum PlayerToServerPacketId : byte
 
 public enum ServerToPlayerPacketId : byte
 {
+    PlayerProps = 9,
     DisconnectMessage = 16,
     Signature = 25,
+    FlagSet = 28,
+    NpcWeaponDelete = 34,
     StaffGuilds = 47,
     RawData = 100,
     BoardPacket = 101,
     File = 102,
     Unknown168 = 168,
+    ServerListConnected = 190,
+    ClearWeapons = 194,
     SetEncryptionKey = 252,
     Bundle = 253
 }
 
 public enum ServerToListServerPacketId : byte
 {
+    PlayerAdd = 14,
     VerifyAccount2 = 17
 }
 

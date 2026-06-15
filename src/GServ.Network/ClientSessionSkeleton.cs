@@ -87,4 +87,9 @@ public sealed class ClientSessionSkeleton
     {
         Lifecycle = SessionLifecycle.ReadyForWorldEntry;
     }
+
+    internal void MarkReadyForLevelWarp()
+    {
+        Lifecycle = SessionLifecycle.ReadyForLevelWarp;
+    }
 }

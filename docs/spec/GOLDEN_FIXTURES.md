@@ -106,6 +106,82 @@ Banned account example with ban reason `"cheating"`:
 [48] + ASCII("You have been banned.  Reason: cheating") + [10]
 ```
 
+## Server::playerLoggedIn / sendLoginClient Pre-Warp Boundary
+
+### SVO_PLYRADD
+
+Input fixture:
+
+```txt
+playerId=7
+type=PLTYPE_CLIENT3
+account prop=GCHAR length 7 + "pc:Ruan"
+nickname prop=GCHAR length 4 + "Ruan"
+current level prop=GCHAR length 8 + "start.nw"
+x prop=[70]
+y prop=[71]
+alignment prop=[72]
+ip prop=[32,32,32,32,33]
+```
+
+Packet body before list-server queue newline/compression:
+
+```txt
+[46, 0, 7, 64,
+ 66, 39, 112, 99, 58, 82, 117, 97, 110,
+ 32, 36, 82, 117, 97, 110,
+ 52, 40, 115, 116, 97, 114, 116, 46, 110, 119,
+ 47, 70,
+ 48, 71,
+ 64, 72,
+ 62, 32, 32, 32, 32, 33]
+```
+
+Notes:
+
+- `46` is `GCHAR SVO_PLYRADD` (`14 + 32`).
+- `64` after player id is `GCHAR PLTYPE_CLIENT3` (`32 + 32`).
+- Property ids are also written as `GCHAR`.
+
+### Minimal Client Pre-Warp Packet Sequence
+
+Input fixture:
+
+```txt
+login prop payload=[33,44]
+player flags: client.flag=yes, empty.flag
+server flags: server.flag=1
+no weapons/classes/protected weapons/zlib-fix branch
+```
+
+Queued bytes before socket compression/encryption:
+
+```txt
+[41, 33, 44, 10,
+ 226, 10,
+ 60, 99, 108, 105, 101, 110, 116, 46, 102, 108, 97, 103, 61, 121, 101, 115, 10,
+ 60, 101, 109, 112, 116, 121, 46, 102, 108, 97, 103, 10,
+ 60, 115, 101, 114, 118, 101, 114, 46, 102, 108, 97, 103, 61, 49, 10,
+ 66, 66, 111, 109, 98, 10,
+ 66, 66, 111, 119, 10,
+ 222, 10]
+```
+
+This is:
+
+```txt
+PLO_PLAYERPROPS + payload + "\n"
+PLO_CLEARWEAPONS + "\n"
+PLO_FLAGSET "client.flag=yes" + "\n"
+PLO_FLAGSET "empty.flag" + "\n"
+PLO_FLAGSET "server.flag=1" + "\n"
+PLO_NPCWEAPONDEL "Bomb" + "\n"
+PLO_NPCWEAPONDEL "Bow" + "\n"
+PLO_SERVERLISTCONNECTED/PLO_UNKNOWN190 + "\n"
+```
+
+The C# boundary stops here before `warp(m_levelName, getX(), getY())`.
+
 ## Framing
 
 Outer socket frame:

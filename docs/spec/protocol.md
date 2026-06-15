@@ -21,12 +21,17 @@ Confirmed packet IDs used in the C# foundation:
 | `PLI_SENDTEXT` | client to server | 154 |
 | `PLI_SET_ENC_KEY` | client to server | 252 |
 | `PLI_BUNDLE` | client to server | 253 |
+| `PLO_PLAYERPROPS` | server to client | 9 |
 | `PLO_DISCMESSAGE` | server to client | 16 |
 | `PLO_SIGNATURE` | server to client | 25 |
+| `PLO_FLAGSET` | server to client | 28 |
+| `PLO_NPCWEAPONDEL` | server to client | 34 |
 | `PLO_RAWDATA` | server to client | 100 |
 | `PLO_BOARDPACKET` | server to client | 101 |
 | `PLO_FILE` | server to client | 102 |
 | `PLO_UNKNOWN168` | server to client | 168 |
+| `PLO_SERVERLISTCONNECTED` / C++ `PLO_UNKNOWN190` | server to client | 190 |
+| `PLO_CLEARWEAPONS` | server to client | 194 |
 | `PLO_SET_ENC_KEY` | server to client | 252 |
 | `PLO_BUNDLE` | server to client | 253 |
 

@@ -11,13 +11,19 @@ public sealed class ProtocolConstantTests
         Assert.Equal(50, (int)PlayerToServerPacketId.RawData);
         Assert.Equal(252, (int)PlayerToServerPacketId.SetEncryptionKey);
         Assert.Equal(253, (int)PlayerToServerPacketId.Bundle);
+        Assert.Equal(9, (int)ServerToPlayerPacketId.PlayerProps);
         Assert.Equal(16, (int)ServerToPlayerPacketId.DisconnectMessage);
         Assert.Equal(25, (int)ServerToPlayerPacketId.Signature);
+        Assert.Equal(28, (int)ServerToPlayerPacketId.FlagSet);
+        Assert.Equal(34, (int)ServerToPlayerPacketId.NpcWeaponDelete);
         Assert.Equal(100, (int)ServerToPlayerPacketId.RawData);
         Assert.Equal(101, (int)ServerToPlayerPacketId.BoardPacket);
         Assert.Equal(102, (int)ServerToPlayerPacketId.File);
+        Assert.Equal(190, (int)ServerToPlayerPacketId.ServerListConnected);
+        Assert.Equal(194, (int)ServerToPlayerPacketId.ClearWeapons);
         Assert.Equal(252, (int)ServerToPlayerPacketId.SetEncryptionKey);
         Assert.Equal(253, (int)ServerToPlayerPacketId.Bundle);
+        Assert.Equal(14, (int)ServerToListServerPacketId.PlayerAdd);
     }
 
     [Fact]
