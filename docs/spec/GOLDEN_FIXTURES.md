@@ -127,7 +127,7 @@ ip prop=[32,32,32,32,33]
 Packet body before list-server queue newline/compression:
 
 ```txt
-[46, 0, 7, 64,
+[46, 32, 39, 64,
  66, 39, 112, 99, 58, 82, 117, 97, 110,
  32, 36, 82, 117, 97, 110,
  52, 40, 115, 116, 97, 114, 116, 46, 110, 119,
@@ -140,15 +140,53 @@ Packet body before list-server queue newline/compression:
 Notes:
 
 - `46` is `GCHAR SVO_PLYRADD` (`14 + 32`).
+- `[32, 39]` is `GSHORT playerId 7`.
 - `64` after player id is `GCHAR PLTYPE_CLIENT3` (`32 + 32`).
 - Property ids are also written as `GCHAR`.
+
+## Player Property Serialization
+
+### Confirmed Login Subset Payload
+
+Input:
+
+```txt
+properties: PLPROP_MAXPOWER, PLPROP_CURPOWER, PLPROP_ACCOUNTNAME
+maxPower=3
+hitpoints=4.0
+accountName="pc:Ruan"
+```
+
+Payload:
+
+```txt
+[33, 35, 34, 40, 66, 39, 112, 99, 58, 82, 117, 97, 110]
+```
+
+Wrapped as `PLO_PLAYERPROPS` with newline:
+
+```txt
+[41, 33, 35, 34, 40, 66, 39, 112, 99, 58, 82, 117, 97, 110, 10]
+```
+
+### GINT Property Example
+
+`PLPROP_RUPEESCOUNT` with value `1234`:
+
+```txt
+[35, 32, 41, 114]
+```
+
+`35` is `GCHAR PLPROP_RUPEESCOUNT`; `[32, 41, 114]` is `GINT 1234`.
 
 ### Minimal Client Pre-Warp Packet Sequence
 
 Input fixture:
 
 ```txt
-login prop payload=[33,44]
+login prop ids: PLPROP_MAXPOWER, PLPROP_CURPOWER
+maxPower=3
+hitpoints=4.0
 player flags: client.flag=yes, empty.flag
 server flags: server.flag=1
 no weapons/classes/protected weapons/zlib-fix branch
@@ -157,7 +195,7 @@ no weapons/classes/protected weapons/zlib-fix branch
 Queued bytes before socket compression/encryption:
 
 ```txt
-[41, 33, 44, 10,
+[41, 33, 35, 34, 40, 10,
  226, 10,
  60, 99, 108, 105, 101, 110, 116, 46, 102, 108, 97, 103, 61, 121, 101, 115, 10,
  60, 101, 109, 112, 116, 121, 46, 102, 108, 97, 103, 10,
@@ -170,7 +208,7 @@ Queued bytes before socket compression/encryption:
 This is:
 
 ```txt
-PLO_PLAYERPROPS + payload + "\n"
+PLO_PLAYERPROPS + serialized confirmed login subset + "\n"
 PLO_CLEARWEAPONS + "\n"
 PLO_FLAGSET "client.flag=yes" + "\n"
 PLO_FLAGSET "empty.flag" + "\n"

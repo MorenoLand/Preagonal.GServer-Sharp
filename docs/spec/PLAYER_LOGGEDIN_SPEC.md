@@ -47,7 +47,7 @@ for each NPC. Scripting execution is not implemented in C#.
 
 ```txt
 GCHAR SVO_PLYRADD
-raw short player id
+GSHORT player id
 GCHAR player type bitfield
 GCHAR PLPROP_ACCOUNTNAME + encoded account-name prop
 GCHAR PLPROP_NICKNAME + encoded nickname prop
@@ -69,7 +69,7 @@ Confirmed IDs:
 - `PLPROP_ALIGNMENT = 32`
 - `PLPROP_IPADDR = 30`
 
-The C# `PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket` accepts already encoded property payloads. It does not invent account/player defaults.
+The C# `PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket` accepts already encoded property payloads for the list-server properties. It does not invent account/player defaults.
 
 ## Client Visibility
 

@@ -51,6 +51,7 @@ Confirmed player type bits:
 Packet byte convention:
 
 - Packet IDs are usually written with `CString::operator>>(char)`, which calls `writeGChar`; wire byte is packet ID plus 32, clamped at 223 before adding 32.
+- C++ `CString::operator>>(char/short/int/long long)` writes Graal-packed `GCHAR`/`GSHORT`/`GINT`/`GINT5`.
 - Raw C++ `operator<<(char/short/int)` writes non-Graal raw values; raw short/int are big-endian.
 - Socket receive frames in `Player::doMain` begin with a raw big-endian short length before compression/decryption and inner packet parsing.
 - `PLI_RAWDATA` switches the next inner packet from newline-delimited to exact-byte-count parsing. Clients and RC versions greater than `RCVER_1_1` strip a trailing newline from that raw payload.

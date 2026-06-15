@@ -38,4 +38,20 @@ public sealed class ProtocolConstantTests
         Assert.Equal(64, (int)PlayerSessionType.RemoteControl2);
         Assert.Equal(256, (int)PlayerSessionType.Web);
     }
+
+    [Fact]
+    public void PlayerPropertyIdsMatchAccountHeader()
+    {
+        Assert.Equal(0, (int)PlayerPropertyId.Nickname);
+        Assert.Equal(1, (int)PlayerPropertyId.MaxPower);
+        Assert.Equal(2, (int)PlayerPropertyId.CurrentPower);
+        Assert.Equal(3, (int)PlayerPropertyId.RupeesCount);
+        Assert.Equal(8, (int)PlayerPropertyId.SwordPower);
+        Assert.Equal(20, (int)PlayerPropertyId.CurrentLevel);
+        Assert.Equal(30, (int)PlayerPropertyId.IpAddress);
+        Assert.Equal(34, (int)PlayerPropertyId.AccountName);
+        Assert.Equal(37, (int)PlayerPropertyId.GAttrib1);
+        Assert.Equal(74, (int)PlayerPropertyId.GAttrib30);
+        Assert.Equal(82, (int)PlayerPropertyId.CommunityName);
+    }
 }

@@ -8,6 +8,12 @@ CString raw primitives:
 - `writeInt3`: three-byte big-endian low 24 bits.
 - Matching reads use the same order.
 
+CString stream operators:
+
+- `operator>>(char/short/int/long long)` writes `GCHAR`/`GSHORT`/`GINT`/`GINT5`.
+- `operator<<(char/short/int)` writes raw byte/big-endian short/big-endian int.
+- `operator<<(CString)` writes raw string bytes.
+
 Graal-packed integers:
 
 - `GCHAR`: one byte, `min(value, 223) + 32`; read subtracts 32.

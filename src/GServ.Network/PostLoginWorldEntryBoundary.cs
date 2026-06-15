@@ -15,7 +15,8 @@ public sealed record PostLoginPlayerSnapshot(
     byte[] YProperty,
     byte[] AlignmentProperty,
     byte[] IpAddressProperty,
-    byte[] LoginPropertiesPayload,
+    PlayerPropertySource LoginPropertySource,
+    IReadOnlyList<PlayerPropertyId> LoginPropertyIds,
     IReadOnlyList<LoginFlag> PlayerFlags,
     IReadOnlyList<LoginFlag> ServerFlags);
 
@@ -40,7 +41,10 @@ public static class PostLoginWorldEntryBoundary
 
         var serverListAddPlayerPacket = BuildServerListAddPlayerPacket(snapshot);
 
-        session.QueuePacket(PlayerProperties(snapshot.LoginPropertiesPayload, appendNewline: true));
+        var loginPropertiesPayload = PlayerPropertySerializer.SerializeConfirmedLoginSubset(
+            snapshot.LoginPropertySource,
+            snapshot.LoginPropertyIds);
+        session.QueuePacket(PlayerPropertySerializer.BuildPlayerPropsPacket(loginPropertiesPayload, appendNewline: true));
         session.QueuePacket(BlankPacket(ServerToPlayerPacketId.ClearWeapons, appendNewline: true));
 
         foreach (var flag in snapshot.PlayerFlags)
@@ -64,7 +68,7 @@ public static class PostLoginWorldEntryBoundary
     {
         var writer = new GraalBinaryWriter();
         writer.WriteGChar((byte)ServerToListServerPacketId.PlayerAdd);
-        writer.WriteRawShort(snapshot.PlayerId);
+        writer.WriteGShort(snapshot.PlayerId);
         writer.WriteGChar((byte)snapshot.Type);
         WriteProperty(writer, 34, snapshot.AccountNameProperty);
         WriteProperty(writer, 0, snapshot.NicknameProperty);
@@ -73,16 +77,6 @@ public static class PostLoginWorldEntryBoundary
         WriteProperty(writer, 16, snapshot.YProperty);
         WriteProperty(writer, 32, snapshot.AlignmentProperty);
         WriteProperty(writer, 30, snapshot.IpAddressProperty);
-        return writer.ToArray();
-    }
-
-    private static byte[] PlayerProperties(ReadOnlySpan<byte> propertyPayload, bool appendNewline)
-    {
-        var writer = new GraalBinaryWriter();
-        writer.WriteGChar((byte)ServerToPlayerPacketId.PlayerProps);
-        writer.WriteBytes(propertyPayload);
-        if (appendNewline)
-            writer.WriteByte((byte)'\n');
         return writer.ToArray();
     }
 

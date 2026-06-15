@@ -27,7 +27,7 @@ PLO_PLAYERPROPS + encoded property payload
 
 ## Implemented C# Boundary
 
-`PostLoginWorldEntryBoundary.BeginClient` implements the source-confirmed packet wrappers and ordering above using caller-provided encoded player-property payloads and ordered flag lists.
+`PostLoginWorldEntryBoundary.BeginClient` implements the source-confirmed packet wrappers and ordering above using `PlayerPropertySerializer.SerializeConfirmedLoginSubset` for the tested property payload and ordered flag lists.
 
 It marks the session:
 
@@ -57,4 +57,4 @@ These are traced but not implemented yet:
 - class packet emission for `m_versionId >= CLVER_4_0211`
 - zlib-fix NPC weapon for client versions 2.21 through 2.31
 
-The C# boundary only emits packets whose bytes are directly confirmed and whose input data is supplied as encoded fixture data.
+The C# boundary only emits packets whose bytes are directly confirmed. Full `__sendLogin` is still blocked, so callers provide the explicit confirmed property IDs to serialize.

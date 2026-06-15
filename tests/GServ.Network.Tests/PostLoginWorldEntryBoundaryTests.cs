@@ -14,9 +14,9 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var packet = PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket(snapshot);
 
         Assert.Equal(
-            new byte[]
+                new byte[]
             {
-                46, 0, 7, 64,
+                46, 32, 39, 64,
                 66, 39, (byte)'p', (byte)'c', (byte)':', (byte)'R', (byte)'u', (byte)'a', (byte)'n',
                 32, 36, (byte)'R', (byte)'u', (byte)'a', (byte)'n',
                 52, 40, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w',
@@ -34,7 +34,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var session = ReadyForWorldEntrySession();
         var snapshot = BaseSnapshot() with
         {
-            LoginPropertiesPayload = [33, 44],
+            LoginPropertyIds = [PlayerPropertyId.MaxPower, PlayerPropertyId.CurrentPower],
             PlayerFlags =
             [
                 new LoginFlag("client.flag", "yes"),
@@ -54,7 +54,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         Assert.Equal(
             new byte[]
             {
-                41, 33, 44, 10,
+                41, 33, 35, 34, 40, 10,
                 226, 10,
                 60, (byte)'c', (byte)'l', (byte)'i', (byte)'e', (byte)'n', (byte)'t', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'y', (byte)'e', (byte)'s', 10,
                 60, (byte)'e', (byte)'m', (byte)'p', (byte)'t', (byte)'y', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', 10,
@@ -93,10 +93,55 @@ public sealed class PostLoginWorldEntryBoundaryTests
             YProperty: [71],
             AlignmentProperty: [72],
             IpAddressProperty: [32, 32, 32, 32, 33],
-            LoginPropertiesPayload: [],
+            LoginPropertySource: BasePropertySource(),
+            LoginPropertyIds: [],
             PlayerFlags: [],
             ServerFlags: []);
     }
+
+    private static PlayerPropertySource BasePropertySource() =>
+        new(
+            Nickname: "Ruan",
+            MaxPower: 3,
+            Hitpoints: 4.0f,
+            Rupees: 1234,
+            Arrows: 30,
+            Bombs: 8,
+            GlovePower: 2,
+            SwordPower: 2,
+            SwordImage: "sword.png",
+            ShieldPower: 1,
+            ShieldImage: "shield.png",
+            Gani: "idle",
+            HeadImage: "head1.png",
+            ChatMessage: "hi",
+            Colors: [0, 1, 2, 3, 4],
+            PlayerId: 7,
+            X: 560,
+            Y: 568,
+            Sprite: 2,
+            Status: 1,
+            CarrySprite: 0,
+            CurrentLevel: "start.nw",
+            HorseImage: "horse.png",
+            HorseBombCount: 0,
+            CarryNpcId: 0,
+            ApCounter: 4,
+            MagicPoints: 7,
+            Kills: 11,
+            Deaths: 12,
+            OnlineSeconds: 99,
+            AccountIp: 1,
+            Alignment: 40,
+            AdditionalFlags: 0,
+            AccountName: "pc:Ruan",
+            BodyImage: "body.png",
+            EloRating: 1500,
+            EloDeviation: 50,
+            GaniAttributes: new Dictionary<int, string>(),
+            Os: "win",
+            TextCodePage: 1252,
+            CommunityName: "Ruan");
 
     private static ClientSessionSkeleton ReadyForWorldEntrySession()
     {
