@@ -80,6 +80,7 @@ public static class IncomingPlayerPropsParser
 
                 case PlayerPropertyId.CurrentLevel:
                 case PlayerPropertyId.Gani:
+                case PlayerPropertyId.HorseGif:
                 case PlayerPropertyId.BodyImage:
                 case PlayerPropertyId.PlayerLanguage:
                 case PlayerPropertyId.OsType:

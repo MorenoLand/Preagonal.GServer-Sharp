@@ -586,6 +586,12 @@ behavior, and movement-loop invocation.
     applier stores the player-list status-message index. The C++ loaded/id-gated
     `PLO_OTHERPLPROPS` broadcast remains blocked until production player-list
     recipient routing can match the original exactly.
+  - 2026-06-16: Implemented the source-confirmed modern-client
+    `PLPROP_HORSEGIF` state mutation boundary. The parser reads
+    `GCHAR len + bytes`, and the runtime applier stores the horse image. The
+    old-client extensionless `.gif` append branch remains blocked until the
+    runtime property applier is version-aware, and generic forwarding remains
+    blocked until it can serialize the current state exactly.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -618,6 +624,9 @@ behavior, and movement-loop invocation.
     `GInt` parsing and runtime state mutation.
   - 2026-06-16: Added source-confirmed `PLPROP_PSTATUSMSG` fixtures for exact
     `GUChar` parsing and runtime state mutation.
+  - 2026-06-16: Added source-confirmed modern `PLPROP_HORSEGIF` fixtures for
+    exact string parsing and runtime state mutation. Old-client suffix fixtures
+    remain open.
 
 Completion criteria:
 

@@ -2198,3 +2198,14 @@ the player is loaded and has a valid id, C++ broadcasts
 `PLO_OTHERPLPROPS + id + PLPROP_PSTATUSMSG + GCHAR(status)` to all except self.
 That broadcast remains blocked until production player-list routing can choose
 recipients exactly.
+
+Source-confirmed modern `PLPROP_HORSEGIF` update:
+
+```txt
+PLPROP_HORSEGIF + GCHAR(9) + "horse.png"
+```
+
+C++ stores the decoded horse image in `m_character.horseImage`. For clients
+older than `CLVER_2_1`, extensionless horse images append `.gif`; that branch
+remains blocked until runtime property mutation is version-aware. Generic
+forwarding also remains blocked until it can serialize current state exactly.

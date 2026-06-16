@@ -210,6 +210,22 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedHorseImagePropForModernClientShape()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.HorseGif);
+        body.WriteGChar(9);
+        body.WriteBytes("horse.png"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray());
+
+        Assert.True(result.Success);
+        var update = Assert.Single(result.Updates);
+        Assert.Equal(PlayerPropertyId.HorseGif, update.PropertyId);
+        Assert.Equal("horse.png", update.StringValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedColorPropAsFiveGChars()
     {
         var body = new GraalBinaryWriter();
