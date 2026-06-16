@@ -41,6 +41,9 @@ The packet is queued through `ServerList::sendPacket`, which appends `\n` if mis
 
 ## Server-List Registration Boundary
 
+See also `docs/spec/SERVERLIST_LIFECYCLE_SPEC.md` for the dedicated
+connect/reconnect/register/ping lifecycle documentation.
+
 `ServerList::connectServer` performs these confirmed packet steps after the
 socket connects:
 
@@ -67,9 +70,9 @@ Implemented C# packet body builders:
 - `AllowedVersionsText`
 - `SetPlayers`
 
-The exact socket connection lifecycle, reconnect behavior, local IP discovery,
-and `CFileQueue` gen1-to-gen2 flush sequencing are still not a production
-socket implementation.
+The C# port now has `ProductionServerListLifecycle` behind
+`IProductionServerListSocket`, which preserves this source-confirmed ordering
+and local-IP behavior without implementing the concrete remote TCP client yet.
 
 ## Server-List Auth Response
 

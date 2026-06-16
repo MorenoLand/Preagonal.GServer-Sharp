@@ -216,9 +216,17 @@ without fake auth.
 - `external/gs2lib/include/CFileQueue.h`
 - `external/gs2lib/include/CSocket.h`
 
-- [ ] Document server-list connect/reconnect/register/ping/request-list flow in
+- [x] Document server-list connect/reconnect/register/ping/request-list flow in
   `docs/spec/SERVERLIST_LIFECYCLE_SPEC.md`.
-- [ ] Implement confirmed server-list socket lifecycle behind an interface.
+  - 2026-06-16: Added dedicated lifecycle spec covering constructor/socket
+    shape, receive/decode loop, timed reconnect, connect/register packet order,
+    ping, auth response, and C# mapping.
+- [x] Implement confirmed server-list socket lifecycle behind an interface.
+  - 2026-06-16: Added `ProductionServerListLifecycle` behind
+    `IProductionServerListSocket`, preserving confirmed initialize/connect/
+    register, queue clear, gen1 register immediate send, gen2 follow-up packet
+    order, and local-IP loopback clearing. Concrete remote TCP client remains
+    blocked.
 - [ ] Wire real `SVO_VERIACC2` request/`SVI_VERIACC2` response path into
   production login.
 - [ ] Preserve fake/dev auth only behind explicit dev-only settings.

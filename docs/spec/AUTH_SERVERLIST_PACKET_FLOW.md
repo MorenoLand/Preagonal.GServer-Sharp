@@ -41,8 +41,9 @@ connectServer success
 ```
 
 The C# protocol project now has byte-level body builders for these confirmed
-packets. Production socket connection and queue flushing remain separate from
-the packet body builders.
+packets. `ProductionServerListLifecycle` now sequences these builders through a
+socket-boundary interface, but the concrete remote list-server TCP client and
+live response loop remain blocked.
 
 ## Queue Behavior
 

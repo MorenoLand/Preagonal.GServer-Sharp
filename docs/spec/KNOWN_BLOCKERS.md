@@ -24,8 +24,12 @@
 - Real account/password validation must not be invented. The C++ server delegates password/auth verification to the list server through `SVO_VERIACC2`/`SVI_VERIACC2`.
 - Production auth now has confirmed list-server packet body builders for
   registration/HQ/version config and a non-fake `IProductionServerListGateway`
-  boundary for `SVO_VERIACC2`. Real list-server socket lifecycle, reconnect,
-  local IP discovery, and queue codec transition timing remain blocked.
+  boundary for `SVO_VERIACC2`. A source-confirmed
+  `ProductionServerListLifecycle` now sequences connect/register packets,
+  local-IP selection, and gen1-to-gen2 codec transition timing behind
+  `IProductionServerListSocket`. The concrete remote TCP client, live
+  list-server receive loop, reconnect host wiring, and player replay from live
+  repositories remain blocked.
 - Account file parsing for confirmed `GRACC001` fields/defaults is implemented.
   The C# account loading boundary now also performs source-confirmed
   case-insensitive lookup, default-account fallback, startlevel/startx/starty

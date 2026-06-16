@@ -17,9 +17,12 @@
   production auth wiring, and gameplay dispatch are not implemented yet.
 - Production auth now has source-confirmed list-server packet body builders for
   registration, HQ settings, allowed-version text, and `SVO_VERIACC2`, plus a
-  gateway boundary that queues auth requests without fake validation. Real
-  list-server sockets, reconnects, local IP discovery, and gen1-to-gen2
-  connection sequencing remain blocked.
+  gateway boundary that queues auth requests without fake validation. A
+  source-confirmed `ProductionServerListLifecycle` now sequences
+  connect/register packets, local-IP selection, and gen1-to-gen2 codec
+  transition timing behind `IProductionServerListSocket`. Real remote
+  list-server TCP sockets, live response receive loop, reconnect host wiring,
+  and player replay from live repositories remain blocked.
 - Full login success is blocked on production account/default account loading side effects, remaining `sendLoginClient` branches, `sendLoginRC`/`sendLoginNC`, and world warp behavior.
 - The login packet parse boundary, server-list auth boundary, source-confirmed beginning of `Player::sendLogin`, `Server::playerLoggedIn` list-server add side effect, minimal pre-warp `sendLoginClient` packet order, the confirmed `__sendLogin` property ID table, and login property serialization are implemented. The current stop point is `ReadyForLevelWarp`, immediately before `warp(m_levelName, getX(), getY())`.
 - Old-version map-file workaround, `flaghack_ip`, weapons, protected weapons, classes, and zlib-fix NPC weapon branches in `sendLoginClient` are traced but not implemented.
