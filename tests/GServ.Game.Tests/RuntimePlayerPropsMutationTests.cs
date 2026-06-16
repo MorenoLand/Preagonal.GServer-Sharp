@@ -213,4 +213,19 @@ public sealed class RuntimePlayerPropsMutationTests
         Assert.False(player.MovementUpdated);
         Assert.False(player.TouchTestRequested);
     }
+
+    [Fact]
+    public void AppliesConfirmedHeadImagePropWithCppLengthLimit()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+        var longImage = new string('h', 130);
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, longImage)]);
+
+        Assert.Equal(new string('h', 123), player.HeadImage);
+        Assert.False(player.MovementUpdated);
+        Assert.False(player.TouchTestRequested);
+    }
 }

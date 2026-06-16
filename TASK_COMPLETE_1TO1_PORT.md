@@ -593,6 +593,16 @@ behavior, and movement-loop invocation.
     old-client extensionless `.gif` append branch remains blocked until the
     runtime property applier is version-aware, and generic forwarding remains
     blocked until it can serialize the current state exactly.
+  - 2026-06-16: Implemented the source-confirmed `PLPROP_HEADGIF` state
+    mutation and generic local forwarding boundary. The parser preserves the
+    C++ `len < 100` default-head mapping, `len == 100` no-change sentinel,
+    `len > 100` custom image bytes, newline truncation only when the newline is
+    after byte zero, and old-client extensionless `.gif` suffix. The runtime
+    applier mirrors `Account::setHeadImage` by truncating to 123 bytes/chars,
+    and forwarding uses the C++ `getProp` payload shape
+    `GCHAR(headImage.length + 100) + headImage`. Loaded/global forwarding
+    recipient routing remains blocked until production session routing can
+    match the original exactly.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -628,6 +638,10 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed modern `PLPROP_HORSEGIF` fixtures for
     exact string parsing and runtime state mutation. Old-client suffix fixtures
     remain open.
+  - 2026-06-16: Added source-confirmed `PLPROP_HEADGIF` fixtures for
+    modern/old default heads, custom `len - 100` images, newline truncation,
+    old-client `.gif` suffix, `len == 100` no-change parsing, 123-char runtime
+    storage truncation, and generic local forwarding bytes.
 
 Completion criteria:
 

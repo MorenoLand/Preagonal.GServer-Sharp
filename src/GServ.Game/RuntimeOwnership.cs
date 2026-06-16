@@ -48,6 +48,7 @@ public sealed class RuntimePlayer
     public byte StatusMessage { get; internal set; }
     public string CurrentLevelName { get; internal set; } = string.Empty;
     public string Gani { get; internal set; } = string.Empty;
+    public string HeadImage { get; internal set; } = "head0.png";
     public string HorseImage { get; internal set; } = string.Empty;
     public string BodyImage { get; internal set; } = string.Empty;
     public string Language { get; internal set; } = string.Empty;
@@ -191,6 +192,11 @@ public static class RuntimePlayerPropsApplier
 
                 case GServ.Protocol.PlayerPropertyId.Gani:
                     player.Gani = update.StringValue ?? string.Empty;
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.HeadGif:
+                    if (update.StringValue is not null)
+                        player.HeadImage = LimitString(update.StringValue, 123);
                     break;
 
                 case GServ.Protocol.PlayerPropertyId.HorseGif:

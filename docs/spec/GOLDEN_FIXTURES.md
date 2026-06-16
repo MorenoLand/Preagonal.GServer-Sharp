@@ -2209,3 +2209,30 @@ C++ stores the decoded horse image in `m_character.horseImage`. For clients
 older than `CLVER_2_1`, extensionless horse images append `.gif`; that branch
 remains blocked until runtime property mutation is version-aware. Generic
 forwarding also remains blocked until it can serialize current state exactly.
+
+Source-confirmed `PLPROP_HEADGIF` updates:
+
+```txt
+modern default head:
+PLPROP_HEADGIF + GCHAR(25) => "head25.png"
+
+old-client default head:
+PLPROP_HEADGIF + GCHAR(25) => "head25.gif"
+
+modern custom head with embedded newline after byte zero:
+PLPROP_HEADGIF + GCHAR(114) + "headcustom\nbad" => "headcustom"
+
+old-client extensionless custom head:
+PLPROP_HEADGIF + GCHAR(104) + "head" => "head.gif"
+
+no-change sentinel:
+PLPROP_HEADGIF + GCHAR(100) => no invented mutation value
+```
+
+`Account::setHeadImage` truncates stored head images to 123 bytes/chars. Generic
+local forwarding uses C++ `getProp(PLPROP_HEADGIF)` shape:
+
+```txt
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_HEADGIF + GCHAR(108) + "head.png" + "\n"
+bytes: 40 32 39 43 140 104 101 97 100 46 112 110 103 10
+```

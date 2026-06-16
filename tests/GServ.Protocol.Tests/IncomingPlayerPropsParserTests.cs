@@ -226,6 +226,61 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedDefaultHeadImageNumberForModernAndOldClients()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.HeadGif);
+        body.WriteGChar(25);
+
+        var modern = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client21);
+        var old = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client1411);
+
+        Assert.True(modern.Success);
+        Assert.True(old.Success);
+        Assert.Equal("head25.png", Assert.Single(modern.Updates).StringValue);
+        Assert.Equal("head25.gif", Assert.Single(old.Updates).StringValue);
+    }
+
+    [Fact]
+    public void ParsesConfirmedCustomHeadImageOffsetAndOldClientGifSuffix()
+    {
+        var modernBody = new GraalBinaryWriter();
+        modernBody.WriteGChar((byte)PlayerPropertyId.HeadGif);
+        modernBody.WriteGChar(114);
+        modernBody.WriteBytes("headcustom\nbad"u8);
+
+        var oldBody = new GraalBinaryWriter();
+        oldBody.WriteGChar((byte)PlayerPropertyId.HeadGif);
+        oldBody.WriteGChar(104);
+        oldBody.WriteBytes("head"u8);
+
+        var modern = IncomingPlayerPropsParser.Parse(modernBody.ToArray(), ClientVersionId.Client21);
+        var old = IncomingPlayerPropsParser.Parse(oldBody.ToArray(), ClientVersionId.Client1411);
+
+        Assert.True(modern.Success);
+        Assert.True(old.Success);
+        Assert.Equal("headcustom", Assert.Single(modern.Updates).StringValue);
+        Assert.Equal("head.gif", Assert.Single(old.Updates).StringValue);
+    }
+
+    [Fact]
+    public void ParsesConfirmedHeadImageNoChangeLengthWithoutInventingValue()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.HeadGif);
+        body.WriteGChar(100);
+        body.WriteGChar((byte)PlayerPropertyId.X);
+        body.WriteGChar(70);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client21);
+
+        Assert.True(result.Success);
+        Assert.Equal([PlayerPropertyId.HeadGif, PlayerPropertyId.X], result.Updates.Select(update => update.PropertyId));
+        Assert.Null(result.Updates[0].StringValue);
+        Assert.Equal((byte)70, result.Updates[1].GCharValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedColorPropAsFiveGChars()
     {
         var body = new GraalBinaryWriter();
@@ -493,5 +548,20 @@ public sealed class IncomingPlayerPropsParserTests
             appendNewline: true);
 
         Assert.Equal([40, 32, 39, 67, 40, 98, 111, 100, 121, 46, 112, 110, 103, 10], packet);
+    }
+
+    [Fact]
+    public void ForwardsConfirmedHeadImageWithCppLengthPlusHundredPayload()
+    {
+        var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
+            playerId: 7,
+            pixelX: 0,
+            pixelY: 0,
+            pixelZ: 0,
+            [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, "head.png")],
+            senderSupportsPreciseMovement: true,
+            appendNewline: true);
+
+        Assert.Equal([40, 32, 39, 43, 140, 104, 101, 97, 100, 46, 112, 110, 103, 10], packet);
     }
 }

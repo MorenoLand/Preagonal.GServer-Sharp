@@ -45,7 +45,9 @@ public sealed record IncomingPlayerPropertyUpdate(
 
 public static class IncomingPlayerPropsParser
 {
-    public static IncomingPlayerPropsParseResult Parse(ReadOnlySpan<byte> body)
+    public static IncomingPlayerPropsParseResult Parse(
+        ReadOnlySpan<byte> body,
+        ClientVersionId clientVersion = ClientVersionId.Client21)
     {
         var reader = new GraalBinaryReader(body);
         var updates = new List<IncomingPlayerPropertyUpdate>();
@@ -80,10 +82,17 @@ public static class IncomingPlayerPropsParser
 
                 case PlayerPropertyId.CurrentLevel:
                 case PlayerPropertyId.Gani:
-                case PlayerPropertyId.HorseGif:
                 case PlayerPropertyId.BodyImage:
                 case PlayerPropertyId.PlayerLanguage:
                 case PlayerPropertyId.OsType:
+                    updates.Add(IncomingPlayerPropertyUpdate.String(propertyId, ReadGCharString(reader)));
+                    break;
+
+                case PlayerPropertyId.HeadGif:
+                    updates.Add(ReadHeadImage(reader, clientVersion));
+                    break;
+
+                case PlayerPropertyId.HorseGif:
                     updates.Add(IncomingPlayerPropertyUpdate.String(propertyId, ReadGCharString(reader)));
                     break;
 
@@ -166,6 +175,38 @@ public static class IncomingPlayerPropsParser
         return Encoding.ASCII.GetString(reader.ReadBytes(length));
     }
 
+    private static IncomingPlayerPropertyUpdate ReadHeadImage(
+        GraalBinaryReader reader,
+        ClientVersionId clientVersion)
+    {
+        var length = reader.ReadGChar();
+        if (length < 100)
+        {
+            var extension = clientVersion < ClientVersionId.Client21 ? ".gif" : ".png";
+            return IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, "head" + length + extension);
+        }
+
+        if (length == 100)
+            return IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.HeadGif);
+
+        var image = Encoding.ASCII.GetString(reader.ReadBytes(length - 100));
+        var newline = image.IndexOf('\n', StringComparison.Ordinal);
+        if (newline > 0)
+            image = image[..newline];
+
+        if (image.Length != 0 && clientVersion < ClientVersionId.Client21 && HasNoExtension(image))
+            image += ".gif";
+
+        return IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, image);
+    }
+
+    private static bool HasNoExtension(string value)
+    {
+        var slash = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
+        var dot = value.LastIndexOf('.');
+        return dot <= slash;
+    }
+
     private static bool IsGaniAttributeProperty(PlayerPropertyId propertyId) =>
         propertyId is >= PlayerPropertyId.GAttrib1 and <= PlayerPropertyId.GAttrib5
             or >= PlayerPropertyId.GAttrib6 and <= PlayerPropertyId.GAttrib9
@@ -236,6 +277,10 @@ public static class IncomingPlayerPropsForwarding
                     WriteProperty(levelBuff, PlayerPropertyId.BodyImage, writer => WriteGCharString(writer, update.StringValue ?? string.Empty));
                     break;
 
+                case PlayerPropertyId.HeadGif:
+                    WriteProperty(levelBuff, PlayerPropertyId.HeadGif, writer => WriteHeadImage(writer, update.StringValue ?? string.Empty));
+                    break;
+
                 case PlayerPropertyId.ApCounter:
                     WriteProperty(levelBuff, PlayerPropertyId.ApCounter, writer => writer.WriteGShort((ushort)(update.GShortValue.GetValueOrDefault() + 1)));
                     break;
@@ -280,6 +325,12 @@ public static class IncomingPlayerPropsForwarding
     private static void WriteGCharString(GraalBinaryWriter writer, string value)
     {
         writer.WriteGChar((byte)value.Length);
+        writer.WriteBytes(Encoding.ASCII.GetBytes(value));
+    }
+
+    private static void WriteHeadImage(GraalBinaryWriter writer, string value)
+    {
+        writer.WriteGChar((byte)(value.Length + 100));
         writer.WriteBytes(Encoding.ASCII.GetBytes(value));
     }
 
