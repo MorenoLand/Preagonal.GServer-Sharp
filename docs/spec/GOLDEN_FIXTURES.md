@@ -1345,3 +1345,94 @@ SVO_PING
 SVO_REQUESTLIST GSHORT(7) "accounts"
 => [58, 32, 39, 97, 99, 99, 111, 117, 110, 116, 115]
 ```
+
+## Entity Runtime Boundary
+
+### Items
+
+`PLO_ITEMADD`, encoded x `21`, encoded y `23`, item type `redrupee = 2`:
+
+```txt
+[54, 53, 55, 34, 10]
+```
+
+`PLO_ITEMDEL`, encoded x `21`, encoded y `23`:
+
+```txt
+[55, 53, 55, 10]
+```
+
+Level cleanup item delete for level coordinates `10.5, 11.5` multiplies both
+coordinates by 2 and produces the same delete fixture:
+
+```txt
+[55, 53, 55, 10]
+```
+
+### Horses
+
+`PLO_HORSEADD`, x `30.5`, y `31.0`, direction `2`, bushes `1`,
+image `horse.png`:
+
+```txt
+[49, 61, 94, 38, 104, 111, 114, 115, 101, 46, 112, 110, 103, 10]
+```
+
+The x byte `61` is raw `(char)(x * 2)`, while y and dir/bush are GCHAR.
+
+`PLO_HORSEDEL`, x `30.5`, y `31.0`:
+
+```txt
+[50, 93, 94, 10]
+```
+
+### Baddy Defaults
+
+Default baddy type `2`, id `1`, x `10`, y `11`:
+
+```txt
+[34, 33,
+ 33, 52,
+ 34, 54,
+ 35, 34,
+ 36, 36, 44, 98, 97, 100, 100, 121, 114, 101, 100, 46, 112, 110, 103,
+ 37, 32,
+ 38, 32,
+ 39, 42,
+ 40, 32,
+ 41, 32,
+ 42, 32,
+ 10]
+```
+
+### NPC And Weapon Packets
+
+`PLO_DEFAULTWEAPON`, default item id `bow = 7`:
+
+```txt
+[75, 39, 10]
+```
+
+`PLO_NPCWEAPONADD`, name `Tool`, image `tool.png`, empty GS1 script:
+
+```txt
+[65, 36, 84, 111, 111, 108, 32, 40, 116, 111, 111, 108, 46, 112, 110, 103, 33, 32, 32, 10]
+```
+
+`PLO_NPCDEL`, npc id `7`:
+
+```txt
+[61, 32, 32, 39, 10]
+```
+
+`PLO_NPCPROPS`, npc id `7`, opaque props `[70,71]`:
+
+```txt
+[35, 32, 32, 39, 70, 71, 10]
+```
+
+`PLO_NPCDEL2`, level `start.nw`, npc id `7`:
+
+```txt
+[182, 115, 116, 97, 114, 116, 46, 110, 119, 32, 32, 39, 10]
+```

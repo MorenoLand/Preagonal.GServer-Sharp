@@ -98,3 +98,10 @@
   packet bodies. Production RC/NC sockets, account/admin-IP wiring,
   server-option mutations, file browser disk mutations, NPC/class/weapon
   mutation, script execution, and complex `gtokenize()` payloads remain blocked.
+- Entity runtime is implemented only as an inert boundary: source-confirmed
+  item/horse/NPC id/baddy containers, baddy reset/default prop serialization,
+  selected item/horse/NPC/weapon packet builders, rupee count constants, and the
+  C++ baddy add limit quirk are tested. Script VM events, NPC full props,
+  baddy AI/combat/drop/respawn/timers, item pickup inventory mutation, horse
+  timers, GS1 formatting, GS2/bytecode compilation, and live production
+  forwarding integration remain blocked.

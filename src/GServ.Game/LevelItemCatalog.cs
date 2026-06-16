@@ -88,4 +88,14 @@ public static class LevelItemCatalog
             ? string.Empty
             : ItemNames[id];
     }
+
+    public static ushort GetRupeeCount(LevelItemType itemType) =>
+        itemType switch
+        {
+            LevelItemType.GreenRupee => 1,
+            LevelItemType.BlueRupee => 5,
+            LevelItemType.RedRupee => 30,
+            LevelItemType.GoldRupee => 100,
+            _ => 0
+        };
 }

@@ -131,6 +131,11 @@ public static class RuntimePlayerPropsApplier
 public sealed class RuntimeLevel
 {
     private readonly List<ushort> _playerIds = [];
+    private readonly List<RuntimeLevelItem> _items = [];
+    private readonly List<RuntimeHorse> _horses = [];
+    private readonly SortedSet<uint> _npcIds = [];
+    private readonly Dictionary<byte, RuntimeBaddy> _baddies = [];
+    private readonly RuntimeByteIdGenerator _baddyIds = new(1);
 
     public RuntimeLevel(string levelName)
     {
@@ -141,6 +146,10 @@ public sealed class RuntimeLevel
     public bool IsSingleplayer { get; set; }
     public RuntimeMap? Map { get; init; }
     public IReadOnlyList<ushort> PlayerIds => _playerIds;
+    public IReadOnlyList<RuntimeLevelItem> Items => _items;
+    public IReadOnlyList<RuntimeHorse> Horses => _horses;
+    public IReadOnlyList<uint> NpcIds => _npcIds.ToArray();
+    public IReadOnlyCollection<RuntimeBaddy> Baddies => _baddies.Values;
     public bool HasPlayers => _playerIds.Count != 0;
 
     public int AddPlayer(ushort id)
@@ -156,6 +165,70 @@ public sealed class RuntimeLevel
 
     public bool IsPlayerLeader(ushort id) =>
         _playerIds.Count != 0 && _playerIds[0] == id;
+
+    public bool AddItem(float x, float y, LevelItemType itemType)
+    {
+        _items.Add(new RuntimeLevelItem(x, y, itemType));
+        return true;
+    }
+
+    public LevelItemType RemoveItem(float x, float y)
+    {
+        for (var i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            if (item.X == x && item.Y == y)
+            {
+                _items.RemoveAt(i);
+                return item.ItemType;
+            }
+        }
+
+        return LevelItemType.Invalid;
+    }
+
+    public bool AddHorse(string image, float x, float y, byte direction, byte bushes)
+    {
+        _horses.Add(new RuntimeHorse(image, x, y, direction, bushes));
+        return true;
+    }
+
+    public void RemoveHorse(float x, float y)
+    {
+        for (var i = 0; i < _horses.Count; i++)
+        {
+            var horse = _horses[i];
+            if (horse.X == x && horse.Y == y)
+            {
+                _horses.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    public bool AddNpc(uint npcId) => _npcIds.Add(npcId);
+
+    public void RemoveNpc(uint npcId) => _npcIds.Remove(npcId);
+
+    public RuntimeBaddy? AddBaddy(float x, float y, byte type)
+    {
+        if (_baddies.Count > 50)
+            return null;
+
+        var id = _baddyIds.GetAvailableId();
+        var baddy = RuntimeBaddy.Create(id, x, y, type);
+        _baddies[id] = baddy;
+        return baddy;
+    }
+
+    public void RemoveBaddy(byte id)
+    {
+        if (id is < 1 or > 50)
+            return;
+
+        if (_baddies.Remove(id))
+            _baddyIds.FreeId(id);
+    }
 }
 
 public enum RuntimeMapType
@@ -236,6 +309,33 @@ public sealed class RuntimeUShortIdGenerator
 
     public void FreeId(ushort id) =>
         _freeIds.Add(id);
+}
+
+public sealed class RuntimeByteIdGenerator
+{
+    private readonly SortedSet<byte> _freeIds = [];
+    private byte _nextId;
+
+    public RuntimeByteIdGenerator(byte startId)
+    {
+        _nextId = startId;
+    }
+
+    public byte GetAvailableId()
+    {
+        if (_freeIds.Count != 0)
+        {
+            var id = _freeIds.Min;
+            _freeIds.Remove(id);
+            return id;
+        }
+
+        var next = _nextId;
+        _nextId++;
+        return next;
+    }
+
+    public void FreeId(byte id) => _freeIds.Add(id);
 }
 
 public sealed record LevelEntryVisibilitySelection(
