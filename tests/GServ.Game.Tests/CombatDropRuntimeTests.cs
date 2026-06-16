@@ -138,8 +138,90 @@ public sealed class CombatDropRuntimeTests
                 (byte)(1.25f * 2 + 32),
                 (byte)(4.75f * 2 + 32),
                 (byte)(LevelItemType.RedRupee + 32),
-                (byte)'\n'
+            (byte)'\n'
             ],
             packet);
+    }
+
+    [Fact]
+    public void BuildBaddyDropPacketUsesCppMappedItemAndCoordinates()
+    {
+        var packet = CombatDropRuntime.BuildBaddyDropPacket(12.5f, 25.0f, LevelItemType.GreenRupee);
+
+        Assert.Equal([54, 57, 82, 32, 10], packet);
+    }
+
+    [Fact]
+    public void ApplyPlayerDeathDropsBlocksNoDropWhenDisabled()
+    {
+        var player = new DurablePlayerInventoryState
+        {
+            Rupees = 40,
+            Arrows = 25,
+            Bombs = 11
+        };
+
+        var result = CombatDropRuntime.ApplyPlayerDeathDrops(
+            player,
+            dropItemsDead: false,
+            minDeathGralats: 1,
+            maxDeathGralats: 50,
+            playerX: 10.0f,
+            playerY: 20.0f,
+            rng: new SequenceCombatRandom(6, 3, 4, 2, 3, 7));
+
+        Assert.Equal(40, result.RemainingRupees);
+        Assert.Equal(25, result.RemainingArrows);
+        Assert.Equal(11, result.RemainingBombs);
+        Assert.Empty(result.DropPackets);
+    }
+
+    [Fact]
+    public void ApplyPlayerDeathDropsProducesCppConfirmedGoldItemOrderAndGoldenBytes()
+    {
+        var player = new DurablePlayerInventoryState
+        {
+            Rupees = 30,
+            Arrows = 25,
+            Bombs = 15
+        };
+
+        // drop_gralats uses 6 -> blue rupee + green rupee
+        // drop_arrows/drop_bombs consume randoms 0,0 before coordinates
+        // then x/y coordinates consume (rand%8)=3,3 for both drops.
+        var result = CombatDropRuntime.ApplyPlayerDeathDrops(
+            player,
+            dropItemsDead: true,
+            minDeathGralats: 1,
+            maxDeathGralats: 50,
+            playerX: 10.0f,
+            playerY: 20.0f,
+            rng: new SequenceCombatRandom(6, 0, 0, 3, 3, 3, 3));
+
+        Assert.Equal(24, result.RemainingRupees);
+        Assert.Equal(25, result.RemainingArrows);
+        Assert.Equal(15, result.RemainingBombs);
+        Assert.Equal(
+                [
+                    54,
+                    (byte)(12.5f * 2 + 32),
+                    (byte)(23.0f * 2 + 32),
+                    (byte)(LevelItemType.BlueRupee + 32),
+                    10,
+                    54,
+                    (byte)(12.5f * 2 + 32),
+                    (byte)(23.0f * 2 + 32),
+                    (byte)(LevelItemType.GreenRupee + 32),
+                    10
+            ],
+            result.DropPackets.SelectMany(x => x).ToArray());
+    }
+
+    [Fact]
+    public void BuildBaddyDropBytesForNoDropRollsAreBlocked()
+    {
+        var rng = new SequenceCombatRandom(10, 11);
+        Assert.False(CombatDropRuntime.TryRollBaddyDrop(rng, out _));
+        Assert.False(CombatDropRuntime.TryRollBaddyDrop(rng, out _));
     }
 }

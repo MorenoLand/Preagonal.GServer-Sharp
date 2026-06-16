@@ -2461,6 +2461,47 @@ Default baddy type `2`, id `1`, x `10`, y `11`:
  10]
 ```
 
+### Baddy Drop Mapping (source-confirmed `rand() % 12`)
+
+`baddy_drop = rand() % 12` mapping:
+
+- `0` => greenrupee (`0`)
+- `1` => bluerupee (`1`)
+- `2` => redrupee (`2`)
+- `3` => bombs (`3`)
+- `4` => darts (`4`)
+- `5` => heart (`5`)
+- `6..9` => greenrupee (`0`)
+- `10..11` => no drop
+
+For `rand()` values `6` (drop), then `3`,`3` coordinates:
+
+`PLO_ITEMADD` for a greenrupee at computed encoded `(x*2=25, y*2=50)` (from `12.5,25.0` and GChar offset):
+
+```txt
+[86, 57, 82, 32, 10]
+```
+
+The same drop coordinates repeated once (`3`,`3`) for the next item in the
+`drop_gralats == 6` decomposition:
+
+```txt
+[86, 57, 82, 33, 10]
+```
+
+### Player Death Drops
+
+With C++-style inputs (`max=50`, `min=1`, `m_character.gralats=30`,
+`m_character.arrows=25`, `m_character.bombs=15`) and deterministic `rand()`
+sequence `6,0,0,3,3,3,3`:
+
+`drop_gralats = 6`, `drop_arrows = 0`, `drop_bombs = 0`, then two coordinates at
+`(57,78)` GChar-encoded bytes (raw `(12.5,23.0)`).
+
+```txt
+[86, 57, 78, 33, 10, 86, 57, 78, 32, 10]
+```
+
 ### NPC And Weapon Packets
 
 `PLO_DEFAULTWEAPON`, default item id `bow = 7`:
