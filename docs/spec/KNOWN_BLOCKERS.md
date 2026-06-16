@@ -80,6 +80,9 @@
   type now follows the C++ log-and-continue decrypted-payload behavior, and the
   dev-only TCP shell preserves source-confirmed `PLI_RAWDATA` state for decoded
   gen1/gen2/gen5/gen6 post-login payloads. Inbound bzip2 branches, inbound
-  bundle dispatch, full `setProps`, touch/link traversal,
-  NPC/chest/combat side effects, and invalid-update behavior remain blocked.
+  bundle dispatch, full `setProps`, NPC/combat side effects, and invalid-update
+  behavior remain blocked. Pure inclusive link hit-testing, static sign
+  encoding, chest key formatting, and the unopened chest acknowledgement packet
+  are implemented; automatic player link warp, runtime `PLO_SAY2` sign touch,
+  and chest item reward mutation remain blocked.
 - Server-list connection lifecycle, reconnect backoff, registration, and text/listserver side channels need a dedicated milestone.

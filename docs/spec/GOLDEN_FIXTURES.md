@@ -1122,6 +1122,47 @@ PLPROP_Y2 GSHORT(1120)
     10]
 ```
 
+Confirmed precise movement runtime decode:
+
+```txt
+PLPROP_X2 GSHORT(1120) => pixelX=560
+PLPROP_Y2 GSHORT(1121) => pixelY=-560
+PLPROP_Z2 GSHORT(79) => pixelZ=-39
+```
+
+## Movement Links Chests Boundary
+
+`Level::getLink` inclusive tile bounds:
+
+```txt
+link: x=1, y=2, width=3, height=4
+inside: (1,2), (4,6)
+outside: (5,6), (4,7)
+```
+
+When multiple links match, C++ returns the first stored link.
+
+Chest key formatting from `Level::getChestStr`:
+
+```txt
+chest x=10, y=11, level="start.nw"
+=> "10:11:start.nw"
+```
+
+`Player::msgPLI_OPENCHEST` unopened chest acknowledgement:
+
+```txt
+PLO_LEVELCHEST, hasChest=1, x=10, y=11, "\n"
+=> [36, 33, 42, 43, 10]
+```
+
+Static sign encoding for an unknown ASCII character `@`:
+
+```txt
+PLO_LEVELSIGN, x=4, y=5, "#K(64)", encoded newline, "\n"
+=> [37, 36, 37, 118, 42, 101, 90, 88, 102, 128, 10]
+```
+
 ## Server-List Auth
 
 ### SVO_VERIACC2

@@ -79,6 +79,21 @@ public sealed class NwLevelPacketBuilderTests
     }
 
     [Fact]
+    public void BuildSignsPacketEncodesUnknownCharactersAsCppHashKDecimalCode()
+    {
+        var parsed = NwLevelParser.Parse("""
+            GLEVNW01
+            SIGN 4 5
+            @
+            SIGNEND
+            """);
+
+        var packet = NwLevelPacketBuilder.BuildSignsPacket(parsed.Level);
+
+        Assert.Equal(new byte[] { 37, 36, 37, 118, 42, 101, 90, 88, 102, 128, 10 }, packet);
+    }
+
+    [Fact]
     public void BuildLinksAndSignsPacketsAreEmptyForEmptyLists()
     {
         var parsed = NwLevelParser.Parse("GLEVNW01");

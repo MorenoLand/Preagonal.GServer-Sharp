@@ -36,6 +36,7 @@ public sealed class RuntimePlayerPropsMutationTests
         {
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120),
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1121),
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79),
             IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentLevel, "start.nw"),
             IncomingPlayerPropertyUpdate.String(PlayerPropertyId.Gani, "walk")
         };
@@ -44,6 +45,7 @@ public sealed class RuntimePlayerPropsMutationTests
 
         Assert.Equal(560, player.PixelX);
         Assert.Equal(-560, player.PixelY);
+        Assert.Equal(-39, player.PixelZ);
         Assert.Equal("start.nw", player.CurrentLevelName);
         Assert.Equal("walk", player.Gani);
         Assert.True(player.MovementUpdated);
