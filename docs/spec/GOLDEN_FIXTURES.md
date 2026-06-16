@@ -1838,6 +1838,27 @@ PLPROP_Y GCHAR(71)
     10]
 ```
 
+For sender versions older than `CLVER_2_3`, the same legacy X/Y input writes
+`levelBuff` before `levelBuff2`, so the legacy props precede the precise
+mirrors:
+
+```txt
+PLO_OTHERPLPROPS
+GSHORT 7
+PLPROP_X GCHAR(70)
+PLPROP_Y GCHAR(71)
+PLPROP_X2 GSHORT(1120)
+PLPROP_Y2 GSHORT(1136)
+"\n"
+
+=> [40, 32, 39,
+    47, 102,
+    48, 103,
+    110, 40, 128,
+    111, 40, 144,
+    10]
+```
+
 Confirmed precise Z forwarding packet for `playerId=7`, `pixelZ=-39`, sender
 version `>= CLVER_2_3`. C++ writes the legacy mirror to `levelBuff2` first, so
 modern sender order emits `PLPROP_Z` before `PLPROP_Z2`:
