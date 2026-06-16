@@ -562,7 +562,12 @@ Completion criteria:
     `LevelInteraction.TryOpenChestAndApplyReward` to mirror the C++
     `msgPLI_OPENCHEST -> getItemPlayerProp -> setProps` boundary for confirmed
     durable item state.
-- [ ] Implement item pickup/removal mutation and packets.
+- [x] Implement item pickup/removal mutation and packets.
+  - 2026-06-16: Added `LevelItemRuntime` for decoded `PLI_ITEMADD`,
+    `PLI_ITEMDEL`, and `PLI_ITEMTAKE` boundaries. It preserves source-confirmed
+    encoded packet payload reuse, level item add/remove semantics, player-drop
+    resource removal, and `PLI_ITEMTAKE` reward application while leaving
+    production recipient/socket dispatch separate.
 - [x] Add tests for rupees, bombs, arrows, hearts, weapons, spinattack, and
   invalid item ids where confirmed.
   - 2026-06-16: Existing and added `GServ.Game.Tests` cover rupee/bomb/arrow/

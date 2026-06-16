@@ -7,6 +7,61 @@ public sealed record RuntimeLevelItem(float X, float Y, LevelItemType ItemType);
 
 public sealed record RuntimeHorse(string Image, float X, float Y, byte Direction, byte Bushes);
 
+public sealed record LevelItemRuntimeResult(
+    bool ChangedLevel,
+    byte[] ForwardPacket,
+    byte[] SelfPacket);
+
+public static class LevelItemRuntime
+{
+    public static LevelItemRuntimeResult SpawnLevelItem(
+        RuntimeLevel level,
+        byte encodedX,
+        byte encodedY,
+        byte itemId,
+        bool playerDrop,
+        DurablePlayerInventoryState player)
+    {
+        var itemType = LevelItemCatalog.GetItemId(itemId);
+        if (itemType == LevelItemType.Invalid)
+            return NoChange();
+
+        if (playerDrop && !InventoryItemRules.TryRemoveForPlayerDrop(itemType, player))
+            return NoChange();
+
+        var x = encodedX / 2.0f;
+        var y = encodedY / 2.0f;
+        if (level.AddItem(x, y, itemType))
+            return new LevelItemRuntimeResult(true, EntityPackets.ItemAdd(encodedX, encodedY, itemId), []);
+
+        return new LevelItemRuntimeResult(false, [], EntityPackets.ItemDelete(encodedX, encodedY));
+    }
+
+    public static LevelItemRuntimeResult DeleteOrTakeLevelItem(
+        RuntimeLevel level,
+        byte encodedX,
+        byte encodedY,
+        bool takeItem,
+        DurablePlayerInventoryState player)
+    {
+        var forwardPacket = EntityPackets.ItemDelete(encodedX, encodedY);
+        var itemType = level.RemoveItem(encodedX / 2.0f, encodedY / 2.0f);
+        if (itemType == LevelItemType.Invalid)
+            return new LevelItemRuntimeResult(false, forwardPacket, []);
+
+        if (takeItem)
+        {
+            var payload = InventoryItemRules.BuildPickupPlayerProps(itemType, player);
+            InventoryItemRules.ApplyPickupPlayerProps(payload, player);
+        }
+
+        return new LevelItemRuntimeResult(true, forwardPacket, []);
+    }
+
+    private static LevelItemRuntimeResult NoChange() =>
+        new(false, [], []);
+}
+
 public enum BaddyMode : byte
 {
     Walk = 0,

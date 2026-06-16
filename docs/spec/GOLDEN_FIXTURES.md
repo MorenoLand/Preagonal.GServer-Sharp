@@ -1808,6 +1808,37 @@ SVO_REQUESTLIST GSHORT(7) "accounts"
 [55, 53, 55, 10]
 ```
 
+Runtime item drop/take boundary fixtures:
+
+```txt
+PLI_ITEMADD payload: encodedX=21, encodedY=23, item=redrupee
+decoded position: 10.5, 11.5
+playerDrop=true
+state.rupees=30
+```
+
+Expected:
+
+```txt
+state.rupees=0
+level item redrupee at 10.5,11.5
+forward PLO_ITEMADD [54, 53, 55, 34, 10]
+```
+
+```txt
+PLI_ITEMTAKE payload: encodedX=21, encodedY=23
+level item redrupee at 10.5,11.5
+state.rupees=5
+```
+
+Expected:
+
+```txt
+level item removed
+state.rupees=35
+forward PLO_ITEMDEL [55, 53, 55, 10]
+```
+
 Level cleanup item delete for level coordinates `10.5, 11.5` multiplies both
 coordinates by 2 and produces the same delete fixture:
 

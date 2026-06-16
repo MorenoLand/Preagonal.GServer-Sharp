@@ -69,8 +69,21 @@ Packet behavior:
 - level cleanup/timed delete sends `PLO_ITEMDEL` with `item.x * 2` and
   `item.y * 2`
 
-Item pickup rewards and inventory mutation remain blocked except for the
-already documented static formulas.
+The C# port implements the confirmed inert item runtime boundary as
+`LevelItemRuntime`:
+
+- `SpawnLevelItem` mirrors `Player::spawnLevelItem` for decoded
+  `PLI_ITEMADD` payloads: invalid ids do nothing; player drops first call the
+  source-confirmed `removeItem` resource rules; successful adds append to the
+  runtime level and produce `PLO_ITEMADD` with the already encoded x/y/item
+  payload.
+- `DeleteOrTakeLevelItem` mirrors `Player::msgPLI_ITEMDEL`: it always produces
+  the source-confirmed forwarded `PLO_ITEMDEL` bytes, removes the first matching
+  item by decoded float coordinates, and only applies the item reward when the
+  caller marks the packet as `PLI_ITEMTAKE`.
+
+Production recipient selection and socket emission remain part of live session
+dispatch; this boundary only returns the bytes that the C++ handler forwards.
 
 ## Horses
 
@@ -192,6 +205,7 @@ weapon script execution remain blocked.
 Implemented:
 
 - `GServ.Game.RuntimeLevelItem`
+- `GServ.Game.LevelItemRuntime`
 - `GServ.Game.RuntimeHorse`
 - `GServ.Game.RuntimeBaddy`
 - inert `RuntimeLevel` item/horse/NPC/baddy containers
@@ -209,7 +223,8 @@ Tests:
 - script VM execution and events
 - NPC property serialization beyond packet wrapper fixtures
 - baddy AI/combat/drop/respawn/timers
-- item pickup inventory mutation and weapon grant side effects
+- production item packet dispatch to live recipients
+- weapon grant side effects beyond the source-confirmed state addition
 - horse lifetime timers
 - GS1 formatting and GS2/bytecode compilation
 - production integration with live level-area forwarding beyond existing packet

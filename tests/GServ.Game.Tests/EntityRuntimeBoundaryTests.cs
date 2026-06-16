@@ -20,6 +20,66 @@ public sealed class EntityRuntimeBoundaryTests
     }
 
     [Fact]
+    public void SpawnLevelItemForPlayerDropRemovesPlayerResourceAddsItemAndBuildsForwardPacket()
+    {
+        var level = new RuntimeLevel("start.nw");
+        var state = new DurablePlayerInventoryState { Rupees = 30 };
+
+        var result = LevelItemRuntime.SpawnLevelItem(level, encodedX: 21, encodedY: 23, itemId: 2, playerDrop: true, state);
+
+        Assert.True(result.ChangedLevel);
+        Assert.Equal(0, state.Rupees);
+        Assert.Equal([LevelItemType.RedRupee], level.Items.Select(item => item.ItemType));
+        Assert.Equal([54, 53, 55, 34, 10], result.ForwardPacket);
+        Assert.Empty(result.SelfPacket);
+    }
+
+    [Fact]
+    public void SpawnLevelItemForPlayerDropWithoutResourceDoesNothing()
+    {
+        var level = new RuntimeLevel("start.nw");
+        var state = new DurablePlayerInventoryState { Rupees = 0 };
+
+        var result = LevelItemRuntime.SpawnLevelItem(level, encodedX: 21, encodedY: 23, itemId: 2, playerDrop: true, state);
+
+        Assert.False(result.ChangedLevel);
+        Assert.Empty(level.Items);
+        Assert.Empty(result.ForwardPacket);
+        Assert.Empty(result.SelfPacket);
+    }
+
+    [Fact]
+    public void TakeLevelItemForwardsDeleteRemovesItemAndAppliesReward()
+    {
+        var level = new RuntimeLevel("start.nw");
+        var state = new DurablePlayerInventoryState { Rupees = 5 };
+        level.AddItem(10.5f, 11.5f, LevelItemType.RedRupee);
+
+        var result = LevelItemRuntime.DeleteOrTakeLevelItem(level, encodedX: 21, encodedY: 23, takeItem: true, state);
+
+        Assert.True(result.ChangedLevel);
+        Assert.Empty(level.Items);
+        Assert.Equal(35, state.Rupees);
+        Assert.Equal([55, 53, 55, 10], result.ForwardPacket);
+        Assert.Empty(result.SelfPacket);
+    }
+
+    [Fact]
+    public void DeleteLevelItemDoesNotApplyReward()
+    {
+        var level = new RuntimeLevel("start.nw");
+        var state = new DurablePlayerInventoryState { Rupees = 5 };
+        level.AddItem(10.5f, 11.5f, LevelItemType.RedRupee);
+
+        var result = LevelItemRuntime.DeleteOrTakeLevelItem(level, encodedX: 21, encodedY: 23, takeItem: false, state);
+
+        Assert.True(result.ChangedLevel);
+        Assert.Empty(level.Items);
+        Assert.Equal(5, state.Rupees);
+        Assert.Equal([55, 53, 55, 10], result.ForwardPacket);
+    }
+
+    [Fact]
     public void RuntimeLevelHorsesAppendAndRemoveFirstMatchingCoordinates()
     {
         var level = new RuntimeLevel("start.nw");

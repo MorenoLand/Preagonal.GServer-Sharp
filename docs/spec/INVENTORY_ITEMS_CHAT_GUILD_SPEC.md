@@ -202,6 +202,9 @@ player-dropped items. Confirmed rules:
   - `InventoryItemRules.TryRemoveForPlayerDrop`
 - `src/GServ.Game/LevelInteraction.cs`
   - `LevelInteraction.TryOpenChestAndApplyReward`
+- `src/GServ.Game/EntityRuntime.cs`
+  - `LevelItemRuntime.SpawnLevelItem`
+  - `LevelItemRuntime.DeleteOrTakeLevelItem`
 - `tests/GServ.Game.Tests/InventoryItemRulesTests.cs`
   - golden byte payload tests for confirmed item rules.
 
@@ -229,8 +232,8 @@ glove power, shield power, sword power, and spinattack status.
 
 ## Remaining Source-Confirmed Work
 
-- Full live inventory runtime wiring through production `setProps`, level item
-  removal, session forwarding, and persistence save timing.
+- Full live inventory runtime wiring through production `setProps`, session
+  forwarding, and persistence save timing.
 - Real weapon packets for default and NPC weapons beyond already-existing packet
   builders.
 - Chat/PM word-filter, jail, external-player, NPC-server PM, server-list IRC,
