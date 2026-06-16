@@ -46,10 +46,19 @@ public sealed class RuntimePlayer
     public byte HorseBombCount { get; internal set; }
     public string CurrentLevelName { get; internal set; } = string.Empty;
     public string Gani { get; internal set; } = string.Empty;
+    public string Language { get; internal set; } = string.Empty;
+    public string Os { get; internal set; } = string.Empty;
+    public uint TextCodePage { get; internal set; }
+    public IReadOnlyList<string> GaniAttributes => _ganiAttributes;
     public bool MovementUpdated { get; internal set; }
     public bool TouchTestRequested { get; internal set; }
 
+    private readonly string[] _ganiAttributes = Enumerable.Repeat(string.Empty, 30).ToArray();
+
     public bool IsClient => Kind == RuntimePlayerKind.Client;
+
+    internal void SetGaniAttribute(int index, string value) =>
+        _ganiAttributes[index] = value;
 
     public void JoinLevel(RuntimeLevel level)
     {
@@ -167,6 +176,18 @@ public static class RuntimePlayerPropsApplier
                     player.Gani = update.StringValue ?? string.Empty;
                     break;
 
+                case GServ.Protocol.PlayerPropertyId.PlayerLanguage:
+                    player.Language = update.StringValue ?? string.Empty;
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.OsType:
+                    player.Os = update.StringValue ?? string.Empty;
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.TextCodePage:
+                    player.TextCodePage = unchecked((uint)update.GIntValue.GetValueOrDefault());
+                    break;
+
                 case GServ.Protocol.PlayerPropertyId.X2:
                     player.PixelX = DecodePreciseCoordinate(update.GShortValue.GetValueOrDefault());
                     MarkMovement(player);
@@ -192,6 +213,12 @@ public static class RuntimePlayerPropsApplier
                     break;
 
                 default:
+                    if (TryGetGaniAttributeIndex(update.PropertyId, out var index))
+                    {
+                        player.SetGaniAttribute(index, update.StringValue ?? string.Empty);
+                        break;
+                    }
+
                     throw new NotSupportedException($"Runtime mutation for player prop {(byte)update.PropertyId} is not source-confirmed.");
             }
         }
@@ -207,6 +234,20 @@ public static class RuntimePlayerPropsApplier
     {
         var value = encoded >> 1;
         return (encoded & 0x0001) != 0 ? -value : value;
+    }
+
+    private static bool TryGetGaniAttributeIndex(GServ.Protocol.PlayerPropertyId propertyId, out int index)
+    {
+        var raw = (byte)propertyId;
+        index = raw switch
+        {
+            >= 37 and <= 41 => raw - 37,
+            >= 46 and <= 49 => raw - 41,
+            >= 54 and <= 74 => raw - 45,
+            _ => -1
+        };
+
+        return index >= 0;
     }
 }
 

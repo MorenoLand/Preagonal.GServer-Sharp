@@ -138,4 +138,28 @@ public sealed class RuntimePlayerPropsMutationTests
 
         Assert.Equal(2, player.Hitpoints);
     }
+
+    [Fact]
+    public void AppliesConfirmedEnvironmentAndGaniAttributeProps()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+        var updates = new[]
+        {
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.PlayerLanguage, "pt"),
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.OsType, "wind"),
+            IncomingPlayerPropertyUpdate.GInt(PlayerPropertyId.TextCodePage, 1252),
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib1, "sword"),
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib30, "tail")
+        };
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
+
+        Assert.Equal("pt", player.Language);
+        Assert.Equal("wind", player.Os);
+        Assert.Equal(1252u, player.TextCodePage);
+        Assert.Equal("sword", player.GaniAttributes[0]);
+        Assert.Equal("tail", player.GaniAttributes[29]);
+        Assert.False(player.MovementUpdated);
+        Assert.False(player.TouchTestRequested);
+    }
 }

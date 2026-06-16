@@ -162,6 +162,35 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedEnvironmentAndGaniAttributeProps()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.PlayerLanguage);
+        body.WriteGChar(2);
+        body.WriteBytes("pt"u8);
+        body.WriteGChar((byte)PlayerPropertyId.OsType);
+        body.WriteGChar(4);
+        body.WriteBytes("wind"u8);
+        body.WriteGChar((byte)PlayerPropertyId.TextCodePage);
+        body.WriteGInt(1252);
+        body.WriteGChar((byte)PlayerPropertyId.GAttrib1);
+        body.WriteGChar(5);
+        body.WriteBytes("sword"u8);
+        body.WriteGChar((byte)PlayerPropertyId.GAttrib30);
+        body.WriteGChar(4);
+        body.WriteBytes("tail"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray());
+
+        Assert.True(result.Success);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.PlayerLanguage && update.StringValue == "pt");
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.OsType && update.StringValue == "wind");
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.TextCodePage && update.GIntValue == 1252);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.GAttrib1 && update.StringValue == "sword");
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.GAttrib30 && update.StringValue == "tail");
+    }
+
+    [Fact]
     public void BuildsConfirmedForwardedMovementPropsForPreciseSender()
     {
         var updates = new[]
@@ -228,5 +257,20 @@ public sealed class IncomingPlayerPropsParserTests
             appendNewline: true);
 
         Assert.Equal([40, 32, 39, 57, 32, 156, 10], packet);
+    }
+
+    [Fact]
+    public void ForwardsConfirmedGaniAttributesWithOriginalStringPayload()
+    {
+        var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
+            playerId: 7,
+            pixelX: 0,
+            pixelY: 0,
+            pixelZ: 0,
+            [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib1, "sword")],
+            senderSupportsPreciseMovement: true,
+            appendNewline: true);
+
+        Assert.Equal([40, 32, 39, 69, 37, 115, 119, 111, 114, 100, 10], packet);
     }
 }

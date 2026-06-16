@@ -75,7 +75,13 @@ public static class IncomingPlayerPropsParser
 
                 case PlayerPropertyId.CurrentLevel:
                 case PlayerPropertyId.Gani:
+                case PlayerPropertyId.PlayerLanguage:
+                case PlayerPropertyId.OsType:
                     updates.Add(IncomingPlayerPropertyUpdate.String(propertyId, ReadGCharString(reader)));
+                    break;
+
+                case PlayerPropertyId.TextCodePage:
+                    updates.Add(IncomingPlayerPropertyUpdate.GInt(propertyId, reader.ReadGInt()));
                     break;
 
                 case PlayerPropertyId.X2:
@@ -108,6 +114,12 @@ public static class IncomingPlayerPropsParser
                     break;
 
                 default:
+                    if (IsGaniAttributeProperty(propertyId))
+                    {
+                        updates.Add(IncomingPlayerPropertyUpdate.String(propertyId, ReadGCharString(reader)));
+                        break;
+                    }
+
                     return IncomingPlayerPropsParseResult.Unsupported(updates, propertyId);
             }
         }
@@ -120,6 +132,11 @@ public static class IncomingPlayerPropsParser
         var length = reader.ReadGChar();
         return Encoding.ASCII.GetString(reader.ReadBytes(length));
     }
+
+    private static bool IsGaniAttributeProperty(PlayerPropertyId propertyId) =>
+        propertyId is >= PlayerPropertyId.GAttrib1 and <= PlayerPropertyId.GAttrib5
+            or >= PlayerPropertyId.GAttrib6 and <= PlayerPropertyId.GAttrib9
+            or >= PlayerPropertyId.GAttrib10 and <= PlayerPropertyId.GAttrib30;
 }
 
 public static class IncomingPlayerPropsForwarding
@@ -185,6 +202,11 @@ public static class IncomingPlayerPropsForwarding
                 case PlayerPropertyId.ApCounter:
                     WriteProperty(levelBuff, PlayerPropertyId.ApCounter, writer => writer.WriteGShort((ushort)(update.GShortValue.GetValueOrDefault() + 1)));
                     break;
+
+                default:
+                    if (IsGaniAttributeProperty(update.PropertyId))
+                        WriteProperty(levelBuff, update.PropertyId, writer => WriteGCharString(writer, update.StringValue ?? string.Empty));
+                    break;
             }
         }
 
@@ -215,4 +237,9 @@ public static class IncomingPlayerPropsForwarding
         writer.WriteGChar((byte)value.Length);
         writer.WriteBytes(Encoding.ASCII.GetBytes(value));
     }
+
+    private static bool IsGaniAttributeProperty(PlayerPropertyId propertyId) =>
+        propertyId is >= PlayerPropertyId.GAttrib1 and <= PlayerPropertyId.GAttrib5
+            or >= PlayerPropertyId.GAttrib6 and <= PlayerPropertyId.GAttrib9
+            or >= PlayerPropertyId.GAttrib10 and <= PlayerPropertyId.GAttrib30;
 }

@@ -524,6 +524,13 @@ behavior, and movement-loop invocation.
     power gate, current-power AP healing refusal, rupee/AP clamps, and direct
     state mutations. `PLPROP_STATUS` remains blocked because the C++ branch
     includes death/revive/drop/level-leader side effects.
+  - 2026-06-16: Implemented a source-confirmed environment/GANI-attribute
+    subset: `PLPROP_PLANGUAGE`, `PLPROP_OSTYPE`, `PLPROP_TEXTCODEPAGE`, and
+    `PLPROP_GATTRIB1..30`. The parser consumes the exact C++ string/GInt
+    shapes, the runtime applier stores the confirmed local fields, and
+    `GATTRIB` forwarding uses the C++ generic local prop payload. Language,
+    OS, and text codepage remain local-only because `__sendLocal` disables
+    forwarding for their ids.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to

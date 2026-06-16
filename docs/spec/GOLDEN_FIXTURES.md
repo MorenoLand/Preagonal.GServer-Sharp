@@ -2093,3 +2093,14 @@ Exact bytes:
 ```txt
 [182, 115, 116, 97, 114, 116, 46, 110, 119, 32, 32, 39, 10]
 ```
+
+## Runtime Player Props
+
+Source-confirmed `PLPROP_GATTRIB1` generic forwarding from
+`Player::setProps`, player id `7`, value `sword`, newline appended by
+`sendPacket`:
+
+```txt
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_GATTRIB1 + GCHAR(5) + "sword" + "\n"
+[40, 32, 39, 69, 37, 115, 119, 111, 114, 100, 10]
+```
