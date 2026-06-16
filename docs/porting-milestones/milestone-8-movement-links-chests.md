@@ -1,0 +1,41 @@
+# Movement Links Chests Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Port source-confirmed movement property updates, touch/link traversal, signs, and chest-opening boundary behavior.
+**Architecture:** Movement and level interaction rules live in `GServ.Game`; packets remain in `GServ.Protocol`; persistence writes stay behind interfaces.
+**Tech Stack:** C#/.NET, xUnit, C++ `PlayerProps`, `Player`, and `Level` sources.
+
+---
+
+## Source Of Truth
+
+- `ai_resources/GServer-CPP-ORIGINAL/server/src/PlayerProps.cpp`
+- `ai_resources/GServer-CPP-ORIGINAL/server/src/Player.cpp`
+- `ai_resources/GServer-CPP-ORIGINAL/server/src/Level.cpp`
+- C++ link/sign/chest parsing and serialization code.
+- Existing docs: `docs/spec/MOVEMENT_PLAYER_PROPS_SPEC.md`, `docs/spec/LEVEL_LINKS_SIGNS_SPEC.md`, `docs/spec/LEVEL_ITEM_CHEST_SPEC.md`.
+
+## Required Work
+
+- [ ] Re-trace `Player::setProps` side effects for movement-related properties.
+- [ ] Update `docs/spec/MOVEMENT_LINKS_CHESTS_SPEC.md`.
+- [ ] Add tests for X/Y/Z/X2/Y2/Z2, level-name changes, link touch bounds, sign text translation, chest item names, and blocked side effects.
+- [ ] Implement source-confirmed property mutation and forwarding behavior.
+- [ ] Implement link-triggered warp only after exact branch conditions are proven.
+- [ ] Implement chest/sign packet responses only where bytes and state changes are confirmed.
+- [ ] Keep combat/NPC/script triggers blocked unless explicitly confirmed in this milestone.
+- [ ] Run `dotnet build GServharp.sln`.
+- [ ] Run `dotnet test GServharp.sln`.
+- [ ] Confirm `git status --short ai_resources` is empty.
+- [ ] Commit with message `Implement movement links chests boundary`.
+
+## Compatibility Constraints
+
+- Preserve weird or permissive C++ movement behavior.
+- Do not add validation the C++ server does not perform.
+- Do not invent chest persistence or item reward semantics.
+
+## Definition Of Done
+
+- Confirmed movement and simple level interaction behavior is source-compatible and tested.
