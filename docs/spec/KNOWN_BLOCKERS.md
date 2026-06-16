@@ -105,3 +105,9 @@
   baddy AI/combat/drop/respawn/timers, item pickup inventory mutation, horse
   timers, GS1 formatting, GS2/bytecode compilation, and live production
   forwarding integration remain blocked.
+- Scripting runtime is still blocked. The C# port now documents the recovered
+  `gs2compiler` URL/commit, implements only source-confirmed `SourceCode`
+  classification, and has explicit guards that reject compile/execute calls.
+  Exact original gs2compiler gitlink commit, native compiler invocation,
+  bytecode header golden fixtures, V8 bindings, lifecycle scheduling,
+  exception behavior, and all script-visible gameplay APIs remain blocked.

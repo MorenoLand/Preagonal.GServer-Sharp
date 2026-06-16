@@ -26,5 +26,8 @@ Confirmed dependency declarations:
 Recovery status:
 
 - `gs2lib` was recovered exactly at commit `63b1ae96491c188905b50c6b61c8532c601a2122` and contains all protocol-critical headers.
-- `gs2compiler` was cloned from the declared URL, but the original submodule commit was not present in this fresh snapshot. Treat its recovered current commit as supporting reference until the exact submodule pointer is recovered.
+- `gs2compiler` was cloned from the declared URL at recovered commit
+  `4fa0a26ca75ac5238fe34a1d90ef9a459b02c2f9`, but the original submodule
+  commit was not present in this fresh snapshot. Treat this commit as a
+  supporting reference until the exact submodule pointer is recovered.
 - Optional V8/miniupnp/depot/vcpkg sources were not cloned for this phase because their exact commits were not required for confirmed protocol primitives.
