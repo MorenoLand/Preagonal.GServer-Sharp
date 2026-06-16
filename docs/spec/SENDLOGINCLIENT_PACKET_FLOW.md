@@ -75,6 +75,15 @@ ReadyForWorldEntry -> ReadyForLevelWarp
 
 `ReadyForLevelWarp` means the port has reached the exact point before the C++ `warp(...)` call.
 
+Dedicated golden packet-order fixtures now cover:
+
+- a modern `CLVER_4_0211` path through login props, clear-weapons, flags,
+  Bomb/Bow deletion, supplied player/protected weapon packets, supplied class
+  packet, and `PLO_SERVERLISTCONNECTED`
+- an old `CLVER_1_411` path through old `PLPROP_GANI`/bow-power encoding, the
+  `pCount = 37` property cutoff, BIGMAP file transfer before clear-weapons, and
+  the fixed pre-warp tail
+
 ## Confirmed Packet IDs
 
 - `PLO_PLAYERPROPS = 9`

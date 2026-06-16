@@ -170,6 +170,89 @@ public sealed class PostLoginWorldEntryBoundaryTests
             session.TakeOutboundBytes());
     }
 
+    [Fact]
+    public void ModernClientGoldenPacketOrderFixtureCoversConfirmedPreWarpBranches()
+    {
+        var session = ReadyForWorldEntrySession("G3D28095");
+        var playerWeapon = EntityPackets.NpcWeaponAdd("Tool", "tool.png", "");
+        var protectedWeapon = EntityPackets.DefaultWeapon(7);
+        var classPacket = new byte[] { 229, (byte)'c', (byte)'l', (byte)'a', (byte)'s', (byte)'s', 10 };
+        var snapshot = BaseSnapshot() with
+        {
+            LoginPropertyIds = [PlayerPropertyId.MaxPower, PlayerPropertyId.CurrentPower],
+            PlayerFlags = [new LoginFlag("client.flag", "yes")],
+            ServerFlags = [new LoginFlag("server.flag", "1")]
+        };
+
+        _ = PostLoginWorldEntryBoundary.BeginClient(
+            session,
+            snapshot,
+            new PostLoginClientOptions(
+                ResourceFileSystem: null,
+                Maps: [],
+                PlayerWeapons: [new LoginWeaponPacket("Tool", playerWeapon)],
+                ProtectedWeaponNames: ["Tool", "bow"],
+                ProtectedWeaponPackets: new Dictionary<string, byte[]>
+                {
+                    ["bow"] = protectedWeapon
+                },
+                OrderedClassPackets: [classPacket]));
+
+        Assert.Equal(
+            new byte[]
+            {
+                41, 33, 35, 34, 40, 10,
+                226, 10,
+                60, (byte)'c', (byte)'l', (byte)'i', (byte)'e', (byte)'n', (byte)'t', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'y', (byte)'e', (byte)'s', 10,
+                60, (byte)'s', (byte)'e', (byte)'r', (byte)'v', (byte)'e', (byte)'r', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'1', 10,
+                66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
+                66, (byte)'B', (byte)'o', (byte)'w', 10
+            }
+                .Concat(playerWeapon)
+                .Concat(protectedWeapon)
+                .Concat(classPacket)
+                .Concat(new byte[] { 222, 10 })
+                .ToArray(),
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void OldClientGoldenPacketOrderFixtureCoversBowGaniAndBigMapBeforeClearWeapons()
+    {
+        var session = ReadyForWorldEntrySession("GNW13110");
+        var files = new MemoryResourceFileSystem();
+        files.Add("worldmap.txt", "mapdata"u8.ToArray(), modTime: 1);
+        var snapshot = BaseSnapshot() with
+        {
+            LoginPropertyIds = [PlayerPropertyId.Gani, PlayerPropertyId.CommunityName],
+            LoginPropertySource = BasePropertySource() with { BowPower = 3, BowImage = "" }
+        };
+
+        _ = PostLoginWorldEntryBoundary.BeginClient(
+            session,
+            snapshot,
+            new PostLoginClientOptions(
+                ResourceFileSystem: files,
+                Maps: [new LoginMapFile("worldmap.txt", LoginMapType.BigMap)]));
+
+        Assert.Equal(
+            new byte[] { 41, 42, 35, 10 }
+                .Concat(FileTransferPackets.BuildFileChunk(
+                    "worldmap.txt",
+                    "mapdata"u8,
+                    modTime: 1,
+                    includeModTime: false))
+                .Concat(new byte[]
+                {
+                    226, 10,
+                    66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
+                    66, (byte)'B', (byte)'o', (byte)'w', 10,
+                    222, 10
+                })
+                .ToArray(),
+            session.TakeOutboundBytes());
+    }
+
     private static PostLoginPlayerSnapshot BaseSnapshot()
     {
         var account = new GraalBinaryWriter();

@@ -33,7 +33,8 @@
   traced, but full duplicate flag emission is blocked on
   `std::unordered_map` ordering. `sendLoginClient` can now queue supplied
   source-confirmed player weapon, missing protected weapon, and modern class
-  packets in the traced C++ order. Production live weapon lookup, default weapon
+  packets in the traced C++ order. Modern and old-client pre-warp packet-order
+  fixtures cover the currently confirmed safe branches. Production live weapon lookup, default weapon
   conversion through `msgPLI_WEAPONADD`, script/bytecode compilation, class
   `time(0)` packet construction, concrete class-list ordering, and zlib-fix NPC
   weapon remain blocked.

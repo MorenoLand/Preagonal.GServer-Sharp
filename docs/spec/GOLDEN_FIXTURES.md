@@ -297,6 +297,60 @@ PLO_SERVERLISTCONNECTED/PLO_UNKNOWN190 + "\n"
 
 The C# boundary stops here before `warp(m_levelName, getX(), getY())`.
 
+### Modern Client Pre-Warp Packet-Order Fixture
+
+Modern client `CLVER_4_0211`, login props `PLPROP_MAXPOWER` and
+`PLPROP_CURPOWER`, one player flag, one server flag, one supplied player weapon,
+one missing protected default weapon, and one supplied class packet:
+
+```txt
+[41, 33, 35, 34, 40, 10,
+ 226, 10,
+ 60, 99, 108, 105, 101, 110, 116, 46, 102, 108, 97, 103, 61, 121, 101, 115, 10,
+ 60, 115, 101, 114, 118, 101, 114, 46, 102, 108, 97, 103, 61, 49, 10,
+ 66, 66, 111, 109, 98, 10,
+ 66, 66, 111, 119, 10,
+ 65, 36, 84, 111, 111, 108, 32, 40, 116, 111, 111, 108, 46, 112, 110, 103, 33, 32, 32, 10,
+ 75, 39, 10,
+ 229, 99, 108, 97, 115, 115, 10,
+ 222, 10]
+```
+
+This locks the confirmed order:
+
+```txt
+PLO_PLAYERPROPS
+PLO_CLEARWEAPONS
+PLO_FLAGSET player flag
+PLO_FLAGSET server flag
+PLO_NPCWEAPONDEL Bomb
+PLO_NPCWEAPONDEL Bow
+player weapon packet
+missing protected weapon packet
+modern class packet
+PLO_SERVERLISTCONNECTED/PLO_UNKNOWN190
+```
+
+### Old Client Pre-Warp Packet-Order Fixture
+
+Old client `CLVER_1_411`, login prop `PLPROP_GANI` as bow power, supplied
+modern-only `PLPROP_COMMUNITYNAME` filtered out by the C++ `pCount = 37`
+cutoff, and one BIGMAP file:
+
+```txt
+[41, 42, 35, 10,
+ 132, 32, 32, 53, 10,
+ 134, 44, 119, 111, 114, 108, 100, 109, 97, 112, 46, 116, 120, 116, 109, 97, 112, 100, 97, 116, 97,
+ 226, 10,
+ 66, 66, 111, 109, 98, 10,
+ 66, 66, 111, 119, 10,
+ 222, 10]
+```
+
+The old file chunk has no mod-time field and no file-packet newline because
+clients older than `CLVER_2_1` use the legacy `sendFile` shape. `PLO_CLEARWEAPONS`
+follows immediately after the raw file payload.
+
 ## Framing
 
 Outer socket frame:

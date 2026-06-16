@@ -350,9 +350,18 @@ safe world-entry boundaries.
     `GCHAR(10 + bowImage.length)` plus raw bow image bytes. The C# property
     serializer and pre-warp boundary now apply this behavior and the C++
     `pCount = 37` old-client cutoff.
-- [ ] Add golden packet-order fixtures for modern and old clients.
-- [ ] Update `docs/spec/SENDLOGINCLIENT_PACKET_FLOW.md`,
+- [x] Add golden packet-order fixtures for modern and old clients.
+  - 2026-06-16: Added explicit modern `CLVER_4_0211` and old `CLVER_1_411`
+    pre-warp packet-order tests. The modern fixture covers props, clear-weapons,
+    flags, Bomb/Bow deletion, supplied player/protected weapon packets, supplied
+    class packet, and `PLO_SERVERLISTCONNECTED`. The old fixture covers
+    old `PLPROP_GANI`/bow-power encoding, `pCount = 37`, BIGMAP transfer before
+    clear-weapons, and the fixed pre-warp tail.
+- [x] Update `docs/spec/SENDLOGINCLIENT_PACKET_FLOW.md`,
   `docs/spec/GOLDEN_FIXTURES.md`, and blockers.
+  - 2026-06-16: Updated send-login packet-flow docs, golden fixtures, root
+    blockers, and spec blockers to reflect the modern/old packet-order fixture
+    coverage and remaining zlib-fix/production lookup blockers.
 
 Completion criteria:
 
