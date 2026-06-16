@@ -102,8 +102,14 @@
   metadata, and preload selection are implemented for confirmed metadata
   behavior, but production `Server::loadMaps`/`loadMapLevels` wiring remains
   blocked.
-  Horse/baddy/NPC runtime construction, write/delete filesystem mutation, and
-  file-transfer behavior remain blocked.
+  Horse/baddy/NPC runtime construction and file-transfer behavior remain
+  blocked. Write/delete filesystem mutation is explicitly blocked in
+  `docs/spec/LEVEL_MUTATION_BLOCKERS.md`; the recovered C++ confirms
+  `PLI_BOARDMODIFY`, `Level::alterBoard`, `LevelBoardChange`,
+  `Level::saveLevel`, and script `level.savelevel` entry points, but the C#
+  port must not implement them before a dedicated fixture pass covers board
+  modify validation, respawn timing, item drops, save text, filesystem index
+  side effects, and rights/path behavior.
 - Pure `.nw` parsing is implemented for confirmed `BOARD`, `LINK`, `SIGN`,
   `CHEST`, `NPC`, and `BADDY` source-line behavior, plus board/layer/link/sign
   and chest packet builders. Player sign translation, NPC runtime creation,

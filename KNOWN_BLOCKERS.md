@@ -95,8 +95,14 @@
   payloads, but production legacy-format filesystem/runtime wiring remains
   blocked. Pure BIGMAP/GMAP parsing, map lookup, group-map metadata, and preload
   selection are implemented for confirmed metadata behavior, but production
-  `Server::loadMaps`/`loadMapLevels` wiring remains blocked. Write/delete
-  filesystem mutation and file/resource transfer remain blocked.
+  `Server::loadMaps`/`loadMapLevels` wiring remains blocked. File/resource
+  transfer remains blocked. Write/delete filesystem mutation is explicitly
+  blocked in `docs/spec/LEVEL_MUTATION_BLOCKERS.md`; the recovered C++ confirms
+  `PLI_BOARDMODIFY`, `Level::alterBoard`, `LevelBoardChange`,
+  `Level::saveLevel`, and script `level.savelevel` entry points, but the C#
+  port must not implement them before a dedicated fixture pass covers board
+  modify validation, respawn timing, item drops, save text, filesystem index
+  side effects, and rights/path behavior.
 - Pure `.nw` parsing is implemented for confirmed board tiles, links with an
   explicit target resolver, signs, chests with source-confirmed item names, NPC
   payload preservation, and baddy verse payload preservation. Board/layer/link/

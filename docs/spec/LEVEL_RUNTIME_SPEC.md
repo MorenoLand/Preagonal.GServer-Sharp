@@ -274,7 +274,11 @@ Recommended structure for future production wiring:
   The safe in-memory cache/lookup/map-remap boundary exists in
   `RuntimeLevelCache`.
 - Write/delete filesystem mutation remains blocked beyond documented
-  `loadAbsolute` index mutation callback sequencing.
+  `loadAbsolute` index mutation callback sequencing. See
+  `docs/spec/LEVEL_MUTATION_BLOCKERS.md` for the source-confirmed
+  `PLI_BOARDMODIFY`, `Level::alterBoard`, `LevelBoardChange`,
+  `Level::saveLevel`, and script `level.savelevel` entry points that need a
+  dedicated fixture pass before C# mutation code is allowed.
 - `.graal`, `.zelda`, BIGMAP, and GMAP pure parsers exist, but production
   settings/filesystem-driven load integration remains blocked.
 - Horse, baddy, NPC runtime construction, scripting hooks, and map runtime

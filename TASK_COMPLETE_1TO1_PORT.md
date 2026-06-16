@@ -421,7 +421,13 @@ and all level formats.
     `LevelGoldenFixtureCatalogTests`, locking confirmed extension/header format
     detection plus representative `.nw` board/layer/link/sign/chest packet
     bytes against the source-confirmed parsers/builders.
-- [ ] Keep write/delete mutation blocked until source-confirmed.
+- [x] Keep write/delete mutation blocked until source-confirmed.
+  - 2026-06-16: Added `docs/spec/LEVEL_MUTATION_BLOCKERS.md`, documenting the
+    confirmed C++ mutation entry points (`PLI_BOARDMODIFY`,
+    `Level::alterBoard`, `LevelBoardChange`, `Level::saveLevel`, and script
+    `level.savelevel`) and explicitly blocking C# write/delete mutation until a
+    dedicated fixture pass covers board modify validation, respawn timing, item
+    drops, save text, filesystem index side effects, and rights/path behavior.
 
 Completion criteria:
 
