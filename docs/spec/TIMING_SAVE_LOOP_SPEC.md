@@ -210,7 +210,10 @@ When `WOLFSSL_ENABLED` is compiled and incoming player data contains an HTTP `GE
   - sends `HTTP/1.1 101 Switching Protocols` with `Sec-WebSocket-Protocol: binary`
   - clears the receive buffer and returns true
 
-Full websocket frame conversion is handled by helpers such as `webSocketFixIncomingPacket`, but that byte behavior is not fully ported in this milestone. It remains blocked until a dedicated websocket compatibility pass.
+Websocket frame conversion is handled by helpers such as
+`webSocketFixIncomingPacket`; that byte behavior is covered by the dedicated
+WebSocket frame fixture pass. Production HTTP handshake/session integration
+remains blocked until a dedicated websocket compatibility pass.
 
 ## C# Mapping
 
@@ -230,5 +233,6 @@ Full websocket frame conversion is handled by helpers such as `webSocketFixIncom
 - Real production host loop wiring should wait until the runtime service boundaries for players, levels, server-list sockets, and file systems are concrete.
 - `Server::cleanupDeletedPlayers()` V8 script-object retention behavior is documented but not implemented.
 - AP system internals are scheduled by player timed events but belong to gameplay/runtime milestones.
-- Full websocket frame behavior is blocked pending a dedicated byte-level trace.
+- Websocket frame wrap/unwrap bytes are fixture-covered; production
+  handshake/session integration is blocked pending a dedicated byte-level trace.
 - TLS/WolfSSL build integration is not implemented in C#; only source-confirmed handshake facts are documented.

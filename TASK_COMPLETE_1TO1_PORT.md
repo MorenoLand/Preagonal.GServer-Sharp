@@ -140,7 +140,8 @@ Major source-confirmed areas still missing or partial:
   explicit handlers, packet paths, persistence paths, or runtime rules.
 - RC/NC/admin production sockets and mutation commands.
 - Upload/write paths and update-package lifecycle.
-- Websocket/TLS blocked branches and full-session compression certification.
+- Websocket handshake/TLS blocked branches and full-session compression
+  certification.
 - Closed-source client certification against original C++ byte captures.
 
 ---
@@ -1236,14 +1237,19 @@ Completion criteria:
     captured from `gs2lib`.
   - 2026-06-16: Added and implemented the fixture-confirmed inbound gen4 bzip2
     decode branch using `inbound-gen4-short-abc-newline`.
-- [ ] Implement websocket frame wrap/unwrap behavior.
+- [x] Implement websocket frame wrap/unwrap behavior.
+  - 2026-06-16: Added `websocket-out-*` and `websocket-in-*` fixtures to the
+    `gs2lib` harness, implemented `GraalWebSocketFrame` wrap/unwrap helpers,
+    and wired optional `GraalFileQueue.FlushSocket(wrapWebSocket: true)` so
+    WebSocket wrapping occurs after Graal compression/encryption framing like
+    `CFileQueue::sendCompress`.
 - [x] Implement TLS/WolfSSL-equivalent behavior or document deployment
   compatibility strategy.
   - 2026-06-16: Added `docs/spec/TRANSPORT_TLS_DEPLOYMENT_STRATEGY.md`.
     The C# compatibility strategy is raw TCP for certified native-client flows,
     optional external TLS termination only as deployment infrastructure, and
-    WebSocket/WolfSSL byte behavior remains blocked until C++ handshake/frame
-    captures are available.
+    WebSocket/WolfSSL handshake/session integration remains blocked until C++
+    handshake captures are available.
 - [ ] Add C++ fixture harness outputs for every branch before C# code.
 
 Completion criteria:
@@ -1338,7 +1344,7 @@ feature instead of a concrete recovered C++ behavior path.
 | File upload/update packages | Partial | Phase 12 |
 | RC/NC/admin production | Partial | Phase 13 |
 | Source-confirmed inventory/chat/guild/profile paths | Mostly missing, source-confirmed paths only | Phase 14 |
-| bzip2/websocket/TLS | Missing/partial | Phase 15 |
+| bzip2/websocket/TLS | Partial: frame helpers implemented, handshake/TLS blocked | Phase 15 |
 | Production main loop | Partial | Phase 16 |
 | Client certification | Not certified | Phase 17 |
 

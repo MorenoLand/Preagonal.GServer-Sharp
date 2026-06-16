@@ -117,7 +117,8 @@ client may not receive a full board payload yet.
 - Outbound gen4 and gen5 bzip2 socket framing is implemented at the protocol
   queue boundary but is not yet certified through full production level/file
   transfer flows.
-- Websocket wrapping is not implemented.
+- WebSocket frame wrapping/unwrapping helpers are implemented and fixture
+  covered, but production HTTP handshake/session integration is not implemented.
 - Touch/link traversal, reconnect cleanup, and live multi-session forwarding
   are not implemented.
 

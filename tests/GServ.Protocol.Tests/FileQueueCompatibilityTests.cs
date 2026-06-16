@@ -68,6 +68,18 @@ public sealed class FileQueueCompatibilityTests
     }
 
     [Fact]
+    public void WebSocketSocketFlushWrapsFramedPayloadAfterCompression()
+    {
+        var queue = new GraalFileQueue();
+        queue.SetCodec(EncryptionGeneration.Gen5, key: 0);
+        queue.AddPacket(Encoding.ASCII.GetBytes("abc\n"));
+
+        Assert.Equal(
+            new byte[] { 0x82, 0x07, 0x00, 0x05, 0x02, 0x79, 0x7A, 0xB2, 0xDC },
+            queue.FlushSocket(wrapWebSocket: true));
+    }
+
+    [Fact]
     public void Gen1SocketFlushSendsQueuedBytesWithoutOuterLengthPrefix()
     {
         var queue = new GraalFileQueue();

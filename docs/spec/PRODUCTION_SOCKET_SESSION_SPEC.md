@@ -312,8 +312,10 @@ When `WOLFSSL_ENABLED` is compiled:
 - `Player::onRecv` calls `webSocketFixIncomingPacket`.
 - `CFileQueue::sendCompress` calls `webSocketFixOutgoingPacket` before sending.
 
-The C# production socket skeleton must leave websocket/TLS branches blocked
-until a dedicated byte-level pass implements frame wrapping/unwrapping.
+The C# production socket skeleton must leave websocket HTTP handshake and TLS
+branches blocked until a dedicated byte-level pass wires them into production
+sessions. WebSocket binary frame wrap/unwrap bytes are covered separately by the
+protocol fixture helpers.
 
 ## C# Production Mapping Guidance
 
@@ -411,4 +413,4 @@ five invalid packets.
   counting/disconnect, but it is not wired into a production auth/session loop
   yet.
 - Production deferred deletion and cleanup are not wired.
-- Websocket/TLS remain blocked.
+- Websocket HTTP handshake/session integration and TLS remain blocked.

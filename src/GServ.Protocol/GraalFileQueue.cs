@@ -96,9 +96,9 @@ public sealed class GraalFileQueue
         return sent;
     }
 
-    public byte[] FlushSocket(bool forceSendFiles = false, int? maxBytes = null)
+    public byte[] FlushSocket(bool forceSendFiles = false, int? maxBytes = null, bool wrapWebSocket = false)
     {
-        FillSocketOutputBuffer(forceSendFiles);
+        FillSocketOutputBuffer(forceSendFiles, wrapWebSocket);
         if (_socketOutputBuffer.Count == 0)
             return [];
 
@@ -156,7 +156,7 @@ public sealed class GraalFileQueue
         _outputBuffer.AddRange(pending);
     }
 
-    private void FillSocketOutputBuffer(bool forceSendFiles)
+    private void FillSocketOutputBuffer(bool forceSendFiles, bool wrapWebSocket)
     {
         if (_socketOutputBuffer.Count != 0)
             return;
@@ -171,6 +171,7 @@ public sealed class GraalFileQueue
             case EncryptionGeneration.Gen6:
                 _socketOutputBuffer.AddRange(_outputBuffer);
                 _outputBuffer.Clear();
+                WrapSocketBufferIfNeeded(wrapWebSocket);
                 return;
 
             case EncryptionGeneration.Gen5:
@@ -183,17 +184,20 @@ public sealed class GraalFileQueue
                     AddGen5UncompressedSocketPayload(payload);
 
                 _outputBuffer.Clear();
+                WrapSocketBufferIfNeeded(wrapWebSocket);
                 return;
 
             case EncryptionGeneration.Gen2:
             case EncryptionGeneration.Gen3:
                 AddGen2Or3SocketPayload(_outputBuffer.ToArray());
                 _outputBuffer.Clear();
+                WrapSocketBufferIfNeeded(wrapWebSocket);
                 return;
 
             case EncryptionGeneration.Gen4:
                 AddGen4SocketPayload(_outputBuffer.ToArray());
                 _outputBuffer.Clear();
+                WrapSocketBufferIfNeeded(wrapWebSocket);
                 return;
 
             default:
@@ -209,6 +213,16 @@ public sealed class GraalFileQueue
 
         AddBigEndianLength(compressed.Length);
         _socketOutputBuffer.AddRange(compressed);
+    }
+
+    private void WrapSocketBufferIfNeeded(bool wrapWebSocket)
+    {
+        if (!wrapWebSocket || _socketOutputBuffer.Count == 0)
+            return;
+
+        var wrapped = GraalWebSocketFrame.WrapOutgoingBinary(_socketOutputBuffer.ToArray());
+        _socketOutputBuffer.Clear();
+        _socketOutputBuffer.AddRange(wrapped);
     }
 
     private void AddGen4SocketPayload(byte[] payload)

@@ -17,7 +17,7 @@ No row is currently `Certified`.
 | --- | --- | --- | --- |
 | Packet capture comparison harness | Harness Ready | Exact step/flow byte comparison with mismatch offsets | Needs real C++ and C# capture inputs |
 | Login prelude | Partially Implemented | Source-confirmed parser/tests | Needs live closed-client capture against C++ and C# |
-| Encryption negotiation | Partially Implemented | Confirmed primitive coverage through existing protocol tests, including gen4/gen5 bzip2 | Needs full session capture and websocket branch implementation |
+| Encryption negotiation | Partially Implemented | Confirmed primitive coverage through existing protocol tests, including gen4/gen5 bzip2 and WebSocket frame helpers | Needs full session capture and production websocket handshake integration |
 | Rejected login | Partially Implemented | Golden packet tests for known rejection messages | Needs C++ baseline capture with selected client version |
 | Valid login through pre-world auth | Partially Implemented | Boundaries through server-list/auth and `ReadyForWorldEntry` | Real server-list auth and production account validation not wired |
 | `Player::sendLogin` pre-world continuation | Partially Implemented | Signature/unknown168/rejection boundaries | Full account/default loading and all branch captures pending |
@@ -37,7 +37,7 @@ No row is currently `Certified`.
 | NC login and packets | Partially Implemented | Selected packet IDs/builders | Production NC sockets, NPC/class/weapon mutation, script execution pending |
 | Timing/save loop | Harness Ready | Fake-clock tests for source-confirmed periodic gates | Concrete runtime service wiring and live long-run captures pending |
 | Shutdown/disconnect/timeout | Partially Implemented | Timed disconnect boundaries and cleanup order docs | Real production host loop and socket lifecycle captures pending |
-| Websocket/WolfSSL | Blocked | Handshake behavior documented | Frame wrapping/unwrapping and TLS integration pending |
+| Websocket/WolfSSL | Blocked | Handshake behavior documented; frame wrapping/unwrapping covered by gs2lib fixtures | Production handshake/session integration and TLS behavior pending |
 
 ## Next Certification Inputs Needed
 

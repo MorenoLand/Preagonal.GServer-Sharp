@@ -64,8 +64,9 @@
   framing, gen5 uncompressed socket framing for payloads up to 55 bytes, gen5
   zlib framing for payloads through `0x2000` bytes, gen5 bzip2 outbound
   framing for payloads over `0x2000` bytes, gen4 bzip2/encryption framing, and
-  inbound gen4/gen5 bzip2 decode are implemented. Websocket wrapping remains
-  blocked.
+  inbound gen4/gen5 bzip2 decode are implemented. WebSocket frame
+  wrapping/unwrapping is implemented at the protocol helper boundary, but HTTP
+  handshake and production session integration remain blocked.
 - A dev-only TCP/session shell exists for length-prefixed TCP input and a
   filesystem-backed `.nw` `sendLevel` boundary. It is not production-compatible:
   it uses explicit fake auth, stops on unsupported post-login frames before
@@ -160,9 +161,10 @@
   player/level/server-list repository wiring, `cleanupDeletedPlayers` V8
   retention, AP/singleplayer runtime execution, and production shutdown
   side effects remain blocked until the surrounding runtime services exist.
-- WolfSSL/websocket HTTP upgrade behavior is traced and documented, but frame
-  wrapping/unwrapping and TLS integration remain blocked pending a dedicated
-  byte-level compatibility pass.
+- WolfSSL/websocket HTTP upgrade behavior is traced and documented. Frame
+  wrapping/unwrapping is covered by `gs2lib` fixture tests, but production
+  handshake/session integration and TLS behavior remain blocked pending a
+  dedicated byte-level compatibility pass.
 - Client certification is not complete. A passive byte-exact comparison harness
   exists for future C++ vs C# packet captures, and the compatibility matrix is
   documented, but no closed-source client run was performed. Certification

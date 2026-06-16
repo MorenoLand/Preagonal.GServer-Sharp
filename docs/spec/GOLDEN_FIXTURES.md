@@ -726,6 +726,51 @@ output:
  52, 205, 199, 160]
 ```
 
+## WebSocket Frame Fixtures
+
+Fixtures captured with `tools/gs2lib-fixtures` against recovered `gs2lib`
+`webSocketFixOutgoingPacket` / `webSocketFixIncomingPacket`.
+
+Outgoing small binary frame:
+
+```txt
+input: [97, 98, 99]
+output: [130, 3, 97, 98, 99]
+```
+
+Outgoing extended-126 binary frame:
+
+```txt
+input: ASCII("a" repeated 126)
+output prefix: [130, 126, 0, 126]
+output payload: ASCII("a" repeated 126)
+```
+
+Incoming masked small binary frame:
+
+```txt
+input: [130, 131, 1, 2, 3, 4, 96, 96, 96]
+result: 3
+output: [97, 98, 99]
+```
+
+Incoming extended-126 frame with declared length 3 and four available payload
+bytes:
+
+```txt
+input: [130, 254, 0, 3, 1, 2, 3, 4, 96, 96, 96, 101]
+result: 4
+output: [97, 98, 99, 97]
+```
+
+Incoming close frame on the local MSVC fixture build:
+
+```txt
+input: [136, 128, 0, 0, 0, 0]
+result: -1
+output: [136, 128, 0, 0, 0, 0]
+```
+
 ## File Transfer Cache Boundary
 
 `PLO_FILESENDFAILED + "miss.png" + "\n"`:

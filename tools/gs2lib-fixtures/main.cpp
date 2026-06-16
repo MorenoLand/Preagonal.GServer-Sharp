@@ -13,6 +13,7 @@
 #include "CFileQueue.h"
 #include "CEncryption.h"
 #include "CSocket.h"
+#include "IUtil.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <winsock2.h>
@@ -226,6 +227,29 @@ namespace
             << "|decoded=" << toHex(decoded)
             << "\n";
     }
+
+    void emitWebSocketOutgoingFixture(const std::string& name, const std::vector<std::uint8_t>& payload)
+    {
+        auto packet = toCString(payload);
+        webSocketFixOutgoingPacket(packet);
+        std::cout
+            << name
+            << "|input=" << toHex(payload)
+            << "|output=" << toHex(toVector(packet))
+            << "\n";
+    }
+
+    void emitWebSocketIncomingFixture(const std::string& name, const std::vector<std::uint8_t>& frame)
+    {
+        auto packet = toCString(frame);
+        int result = webSocketFixIncomingPacket(packet);
+        std::cout
+            << name
+            << "|input=" << toHex(frame)
+            << "|result=" << result
+            << "|output=" << toHex(toVector(packet))
+            << "\n";
+    }
 }
 
 int main()
@@ -245,6 +269,11 @@ int main()
         emitInboundFixture("gen4-short-abc-newline", ENCRYPT_GEN_4, 0, "abc\n");
         emitInboundFixture("gen5-short-abc-newline", ENCRYPT_GEN_5, 0, "abc\n");
         emitInboundFixture("gen5-zlib-56a-newline", ENCRYPT_GEN_5, 0, std::string(55, 'a') + "\n");
+        emitWebSocketOutgoingFixture("websocket-out-small-abc", toBytes("abc"));
+        emitWebSocketOutgoingFixture("websocket-out-126-a", std::vector<std::uint8_t>(126, 'a'));
+        emitWebSocketIncomingFixture("websocket-in-small-masked-abc", { 0x82, 0x83, 0x01, 0x02, 0x03, 0x04, 0x60, 0x60, 0x60 });
+        emitWebSocketIncomingFixture("websocket-in-126-masked-abc-extra", { 0x82, 0xFE, 0x00, 0x03, 0x01, 0x02, 0x03, 0x04, 0x60, 0x60, 0x60, 0x65 });
+        emitWebSocketIncomingFixture("websocket-in-close", { 0x88, 0x80, 0x00, 0x00, 0x00, 0x00 });
     }
     catch (const std::exception& ex)
     {

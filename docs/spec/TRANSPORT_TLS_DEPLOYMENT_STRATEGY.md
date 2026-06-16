@@ -72,10 +72,10 @@ Blocked client-visible WebSocket behavior:
 - HTTP `200 OK` response body bytes for non-WebSocket `GET /` requests.
 - WebSocket `101 Switching Protocols` response bytes.
 - Exact `Sec-WebSocket-Accept` formatting and header order.
-- `webSocketFixIncomingPacket` frame unwrapping.
-- Outbound WebSocket frame wrapping.
-- Interactions between WebSocket framing and Graal encryption/compression
-  generations.
+- Production integration for `webSocketFixIncomingPacket` frame unwrapping.
+- Production integration for outbound WebSocket frame wrapping.
+- Full-session interactions between WebSocket framing and Graal
+  encryption/compression generations.
 
 ## Implementation Gate
 
@@ -86,11 +86,10 @@ Before implementing C# WebSocket/TLS support:
 2. Capture:
    - non-WebSocket HTTP `GET /` response bytes;
    - WebSocket handshake response bytes;
-   - one masked inbound WebSocket frame carrying a small Graal packet;
-   - one outbound C++ WebSocket frame carrying a small Graal packet;
    - at least one encrypted/compressed post-login WebSocket flow.
 3. Add golden fixtures from those captures.
-4. Implement C# support behind an explicit WebSocket transport boundary.
+4. Wire the already fixture-confirmed C# frame helpers behind an explicit
+   WebSocket transport boundary.
 5. Compare raw client-facing bytes against the original C++ captures.
 
 Until those steps are complete, the faithful behavior is to keep WebSocket/TLS
@@ -104,6 +103,6 @@ This document satisfies the deployment-strategy half of:
 Implement TLS/WolfSSL-equivalent behavior or document deployment compatibility strategy.
 ```
 
-It does not implement WebSocket frame wrap/unwrap behavior. Gen4 bzip2 transport
-framing is covered separately by the `tools/gs2lib-fixtures` harness and the
-protocol golden tests.
+It does not implement WebSocket HTTP handshake or production socket integration.
+WebSocket frame wrap/unwrap and gen4 bzip2 transport framing are covered
+separately by the `tools/gs2lib-fixtures` harness and protocol golden tests.

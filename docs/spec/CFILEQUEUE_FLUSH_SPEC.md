@@ -136,6 +136,9 @@ require unproven compression output:
 - gen4 payloads always use bzip2, bzip2 block size `1`, gen4 iterator-XOR
   encryption with bzip2 limit `0x04`, and a big-endian socket length prefix
   equal to the encrypted payload length with no compression-type byte.
+- when websocket wrapping is enabled, the complete Graal socket payload is
+  wrapped after compression/encryption using `webSocketFixOutgoingPacket`
+  semantics (`0x82` binary frame, unmasked server payload).
 - partial socket writes leave remaining framed bytes buffered for the next
   flush, matching the `oBuffer` / `sendData` retry model in `CFileQueue`.
 
@@ -149,6 +152,6 @@ sent through gen5 socket framing; web sessions use gen1 passthrough.
 
 Still blocked:
 
-- websocket wrapping
+- websocket HTTP handshake/TLS production integration
 - production file transfer through `PLO_FILE`
 - level resource transfer beyond pre-serialized board/layer and runtime payloads

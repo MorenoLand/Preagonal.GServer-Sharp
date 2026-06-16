@@ -191,6 +191,45 @@ framePayload:
 decoded: ASCII("a" repeated 8192 + "\n")
 ```
 
+## WebSocket Frame Fixtures
+
+The same harness captures `webSocketFixOutgoingPacket` and
+`webSocketFixIncomingPacket` behavior from `external/gs2lib/src/IUtil.cpp`.
+
+```txt
+name: websocket-out-small-abc
+input: 61 62 63
+output: 82 03 61 62 63
+```
+
+```txt
+name: websocket-out-126-a
+input: ASCII("a" repeated 126)
+output prefix: 82 7E 00 7E
+output payload: ASCII("a" repeated 126)
+```
+
+```txt
+name: websocket-in-small-masked-abc
+input: 82 83 01 02 03 04 60 60 60
+result: 3
+output: 61 62 63
+```
+
+```txt
+name: websocket-in-126-masked-abc-extra
+input: 82 FE 00 03 01 02 03 04 60 60 60 65
+result: 4
+output: 61 62 63 61
+```
+
+```txt
+name: websocket-in-close
+input: 88 80 00 00 00 00
+result: -1
+output: 88 80 00 00 00 00
+```
+
 ## C# Match Status
 
 Implemented and covered by tests:
@@ -206,10 +245,14 @@ Implemented and covered by tests:
 - inbound gen5 uncompressed frame decode
 - inbound gen5 zlib frame decode
 - inbound gen5 bzip2 frame decode
+- websocket outgoing binary frame wrapping for small and 126-byte payloads
+- websocket incoming masked binary unwrap for small and 126-length-code frames
+- websocket wrapping after Graal socket compression/encryption framing in
+  `GraalFileQueue`
 
 Still blocked:
 
-- websocket wrapping
 - full dev TCP shell integration for login/level payloads that cross into
   bzip2-sized sends; the current dev shell uses confirmed gen5 zlib framing
   only when the queued diagnostic response stays at or below `0x2000` bytes
+- websocket HTTP handshake/TLS production integration
