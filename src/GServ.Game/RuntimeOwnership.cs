@@ -30,6 +30,13 @@ public sealed class RuntimePlayer
     public int PixelY { get; internal set; }
     public int PixelZ { get; internal set; }
     public byte Sprite { get; internal set; }
+    public byte Arrows { get; internal set; }
+    public byte Bombs { get; internal set; }
+    public byte GlovePower { get; internal set; }
+    public byte BombPower { get; internal set; }
+    public ushort ApCounter { get; internal set; }
+    public byte MagicPoints { get; internal set; }
+    public byte AdditionalFlags { get; internal set; }
     public string CurrentLevelName { get; internal set; } = string.Empty;
     public string Gani { get; internal set; } = string.Empty;
     public bool MovementUpdated { get; internal set; }
@@ -85,6 +92,34 @@ public static class RuntimePlayerPropsApplier
                 case GServ.Protocol.PlayerPropertyId.Sprite:
                     player.Sprite = update.GCharValue.GetValueOrDefault();
                     player.TouchTestRequested = true;
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.ArrowsCount:
+                    player.Arrows = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)99);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.BombsCount:
+                    player.Bombs = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)99);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.GlovePower:
+                    player.GlovePower = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)3);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.BombPower:
+                    player.BombPower = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)3);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.ApCounter:
+                    player.ApCounter = update.GShortValue.GetValueOrDefault();
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.MagicPoints:
+                    player.MagicPoints = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)100);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.AdditionalFlags:
+                    player.AdditionalFlags = update.GCharValue.GetValueOrDefault();
                     break;
 
                 case GServ.Protocol.PlayerPropertyId.CurrentLevel:

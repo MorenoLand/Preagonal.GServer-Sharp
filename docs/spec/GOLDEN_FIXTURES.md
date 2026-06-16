@@ -1452,6 +1452,37 @@ only the `PLO_OTHERPLPROPS` wrapper for player id `7` plus newline:
 28 20 27 0a
 ```
 
+Scalar inventory/stat `PLI_PLAYERPROPS` body slice:
+
+```txt
+PLPROP_ARROWSCOUNT GCHAR(150)
+PLPROP_BOMBSCOUNT GCHAR(151)
+PLPROP_GLOVEPOWER GCHAR(9)
+PLPROP_BOMBPOWER GCHAR(8)
+PLPROP_APCOUNTER GSHORT(123)
+PLPROP_MAGICPOINTS GCHAR(200)
+PLPROP_ADDITFLAGS GCHAR(77)
+```
+
+Runtime clamps:
+
+```txt
+arrows=99
+bombs=99
+glovePower=3
+bombPower=3
+apCounter=123
+magicPoints=100
+additionalFlags=77
+```
+
+Forwarded `PLPROP_APCOUNTER` uses C++ `getProp` semantics, so stored `123`
+emits `GSHORT(124)`:
+
+```txt
+28 20 27 39 20 9c 0a
+```
+
 Gen5 socket-framed post-login `PLI_PLAYERPROPS` movement frame with key `42`:
 
 ```txt

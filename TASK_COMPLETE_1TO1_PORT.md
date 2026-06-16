@@ -510,6 +510,12 @@ behavior, and movement-loop invocation.
     `PLPROP_PCONNECTED`, and `PLPROP_UNKNOWN81`. The parser consumes the exact
     C++ byte shapes, the runtime applier ignores them, and forwarding emits no
     invented local props.
+  - 2026-06-16: Implemented a second scalar subset:
+    `PLPROP_ARROWSCOUNT`, `PLPROP_BOMBSCOUNT`, `PLPROP_GLOVEPOWER`,
+    `PLPROP_BOMBPOWER`, `PLPROP_APCOUNTER`, `PLPROP_MAGICPOINTS`, and
+    `PLPROP_ADDITFLAGS`. The C# applier preserves the source-confirmed clamps,
+    and `PLPROP_APCOUNTER` forwarding preserves C++ `getProp` plus-one
+    serialization.
 - [ ] Wire live `testSign` invocation through confirmed movement branches.
 - [ ] Keep NPC touch script events blocked until scripting runtime exists.
 - [ ] Confirm whether automatic player movement-to-link warp exists; implement

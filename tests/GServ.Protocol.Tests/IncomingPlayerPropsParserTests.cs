@@ -114,6 +114,37 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedScalarInventoryAndStatProps()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.ArrowsCount);
+        body.WriteGChar(150);
+        body.WriteGChar((byte)PlayerPropertyId.BombsCount);
+        body.WriteGChar(151);
+        body.WriteGChar((byte)PlayerPropertyId.GlovePower);
+        body.WriteGChar(9);
+        body.WriteGChar((byte)PlayerPropertyId.BombPower);
+        body.WriteGChar(8);
+        body.WriteGChar((byte)PlayerPropertyId.ApCounter);
+        body.WriteGShort(123);
+        body.WriteGChar((byte)PlayerPropertyId.MagicPoints);
+        body.WriteGChar(200);
+        body.WriteGChar((byte)PlayerPropertyId.AdditionalFlags);
+        body.WriteGChar(77);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray());
+
+        Assert.True(result.Success);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.ArrowsCount && update.GCharValue == 150);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.BombsCount && update.GCharValue == 151);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.GlovePower && update.GCharValue == 9);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.BombPower && update.GCharValue == 8);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.ApCounter && update.GShortValue == 123);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.MagicPoints && update.GCharValue == 200);
+        Assert.Contains(result.Updates, update => update.PropertyId == PlayerPropertyId.AdditionalFlags && update.GCharValue == 77);
+    }
+
+    [Fact]
     public void BuildsConfirmedForwardedMovementPropsForPreciseSender()
     {
         var updates = new[]
@@ -165,5 +196,20 @@ public sealed class IncomingPlayerPropsParserTests
             appendNewline: true);
 
         Assert.Equal([40, 32, 39, 10], packet);
+    }
+
+    [Fact]
+    public void ForwardsConfirmedApCounterUsingCppGetPropPlusOneBehavior()
+    {
+        var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
+            playerId: 7,
+            pixelX: 0,
+            pixelY: 0,
+            pixelZ: 0,
+            [IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.ApCounter, 123)],
+            senderSupportsPreciseMovement: false,
+            appendNewline: true);
+
+        Assert.Equal([40, 32, 39, 57, 32, 156, 10], packet);
     }
 }

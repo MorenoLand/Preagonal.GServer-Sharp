@@ -76,15 +76,22 @@ Implemented C# boundary:
   It also consumes the confirmed read-only/no-op branches `ID`, `KILLSCOUNT`,
   `DEATHSCOUNT`, `ONLINESECS`, `JOINLEAVELVL`, `PCONNECTED`, and `UNKNOWN81`
   without inventing mutation or forwarding behavior.
+  The parser/applier also supports the source-confirmed scalar branches
+  `ARROWSCOUNT`, `BOMBSCOUNT`, `GLOVEPOWER`, `BOMBPOWER`, `APCOUNTER`,
+  `MAGICPOINTS`, and `ADDITFLAGS`.
 - The parser stops at the first unconfirmed property, matching the C++
   `default: return` shape in `setProps`, and exposes the unsupported property
   id instead of guessing its size.
 - `RuntimePlayerPropsApplier.ApplyConfirmed` mutates only local runtime state:
   pixel X/Y/Z, sprite, current level name, gani, and movement/touch flags. The
   confirmed read-only/no-op branches are accepted and ignored.
+  Scalar inventory/stat props are assigned with the C++ caps:
+  arrows/bombs `0..99`, glove/bomb power `0..3`, magic points `0..100`.
 - `IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket` builds the
   confirmed `PLO_OTHERPLPROPS` movement forwarding bytes for the supported
   subset, including legacy/precise mirror props and sender-version ordering.
+  It now also forwards `PLPROP_APCOUNTER` using `getProp` semantics, which
+  serializes the stored counter plus one.
 - The dev-only TCP shell accepts decoded `PLI_PLAYERPROPS` frames after the
   login/level boundary and applies the local mutation. It now decodes confirmed
   gen5 uncompressed/zlib post-login frame payloads before this parser. It still

@@ -75,4 +75,32 @@ public sealed class RuntimePlayerPropsMutationTests
         Assert.False(player.MovementUpdated);
         Assert.False(player.TouchTestRequested);
     }
+
+    [Fact]
+    public void AppliesConfirmedScalarInventoryAndStatPropsWithCppClamps()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+        var updates = new[]
+        {
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ArrowsCount, 150),
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.BombsCount, 151),
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.GlovePower, 9),
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.BombPower, 8),
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.ApCounter, 123),
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.MagicPoints, 200),
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.AdditionalFlags, 77)
+        };
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
+
+        Assert.Equal(99, player.Arrows);
+        Assert.Equal(99, player.Bombs);
+        Assert.Equal(3, player.GlovePower);
+        Assert.Equal(3, player.BombPower);
+        Assert.Equal(123, player.ApCounter);
+        Assert.Equal(100, player.MagicPoints);
+        Assert.Equal(77, player.AdditionalFlags);
+        Assert.False(player.MovementUpdated);
+        Assert.False(player.TouchTestRequested);
+    }
 }

@@ -51,6 +51,12 @@ public static class IncomingPlayerPropsParser
                 case PlayerPropertyId.Y:
                 case PlayerPropertyId.Z:
                 case PlayerPropertyId.Sprite:
+                case PlayerPropertyId.ArrowsCount:
+                case PlayerPropertyId.BombsCount:
+                case PlayerPropertyId.GlovePower:
+                case PlayerPropertyId.BombPower:
+                case PlayerPropertyId.MagicPoints:
+                case PlayerPropertyId.AdditionalFlags:
                     updates.Add(IncomingPlayerPropertyUpdate.GChar(propertyId, reader.ReadGChar()));
                     break;
 
@@ -62,6 +68,7 @@ public static class IncomingPlayerPropsParser
                 case PlayerPropertyId.X2:
                 case PlayerPropertyId.Y2:
                 case PlayerPropertyId.Z2:
+                case PlayerPropertyId.ApCounter:
                     updates.Add(IncomingPlayerPropertyUpdate.GShort(propertyId, reader.ReadGShort()));
                     break;
 
@@ -160,6 +167,10 @@ public static class IncomingPlayerPropsForwarding
 
                 case PlayerPropertyId.Gani:
                     WriteProperty(levelBuff, PlayerPropertyId.Gani, writer => WriteGCharString(writer, update.StringValue ?? string.Empty));
+                    break;
+
+                case PlayerPropertyId.ApCounter:
+                    WriteProperty(levelBuff, PlayerPropertyId.ApCounter, writer => writer.WriteGShort((ushort)(update.GShortValue.GetValueOrDefault() + 1)));
                     break;
             }
         }
