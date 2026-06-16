@@ -1223,8 +1223,13 @@ Completion criteria:
 - [ ] Implement gen5 bzip2 payload framing if fixture-confirmed.
 - [ ] Implement inbound bzip2 branches if fixture-confirmed.
 - [ ] Implement websocket frame wrap/unwrap behavior.
-- [ ] Implement TLS/WolfSSL-equivalent behavior or document deployment
+- [x] Implement TLS/WolfSSL-equivalent behavior or document deployment
   compatibility strategy.
+  - 2026-06-16: Added `docs/spec/TRANSPORT_TLS_DEPLOYMENT_STRATEGY.md`.
+    The C# compatibility strategy is raw TCP for certified native-client flows,
+    optional external TLS termination only as deployment infrastructure, and
+    WebSocket/WolfSSL byte behavior remains blocked until C++ handshake/frame
+    captures are available.
 - [ ] Add C++ fixture harness outputs for every branch before C# code.
 
 Completion criteria:
