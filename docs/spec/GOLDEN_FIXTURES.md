@@ -1816,6 +1816,28 @@ PLPROP_Y2 GSHORT(1120)
     10]
 ```
 
+Confirmed legacy movement forwarding packet for `playerId=7`, `pixelX=560`,
+`pixelY=568`, sender version `>= CLVER_2_3`. `PLPROP_X/Y` add precise
+`PLPROP_X2/Y2` mirrors to `levelBuff2`, so modern sender order emits the
+precise mirrors first:
+
+```txt
+PLO_OTHERPLPROPS
+GSHORT 7
+PLPROP_X2 GSHORT(1120)
+PLPROP_Y2 GSHORT(1136)
+PLPROP_X GCHAR(70)
+PLPROP_Y GCHAR(71)
+"\n"
+
+=> [40, 32, 39,
+    110, 40, 128,
+    111, 40, 144,
+    47, 102,
+    48, 103,
+    10]
+```
+
 Confirmed precise Z forwarding packet for `playerId=7`, `pixelZ=-39`, sender
 version `>= CLVER_2_3`. C++ writes the legacy mirror to `levelBuff2` first, so
 modern sender order emits `PLPROP_Z` before `PLPROP_Z2`:

@@ -758,6 +758,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed precise coordinate serialization
     fixture for `PLPROP_X2/Y2/Z2`, covering C++ `Player::getProp` low-bit
     sign encoding for negative pixel coordinates.
+  - 2026-06-16: Added source-confirmed legacy `PLPROP_X/Y` forwarding fixture
+    proving modern senders receive the precise `PLPROP_X2/Y2` mirrors before
+    the legacy props, matching `levelBuff2` before `levelBuff`.
   - 2026-06-16: Added source-confirmed `PLPROP_Z2` forwarding fixture proving
     the modern sender order emits the legacy `PLPROP_Z` mirror before the
     precise `PLPROP_Z2` payload, matching `levelBuff2` before `levelBuff`.
