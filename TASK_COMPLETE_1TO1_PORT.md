@@ -1164,12 +1164,19 @@ Completion criteria:
 - `server/src/Weapon.cpp`
 - `server/src/NPC.cpp`
 
-- [ ] Document every RC/NC packet id, rights check, and response packet.
+- [x] Document every RC/NC packet id, rights check, and response packet.
   - 2026-06-16: Expanded the source-confirmed RC client-to-server packet ID
     catalog from recovered `IEnums.h` and added C# enum constant tests for the
     previously missing RC settings/player-props/account/admin-message IDs
     (`55..58`, `67`, `73..76`). Full rights-check and response-packet coverage
     remains open.
+  - 2026-06-16: Completed the documentation pass in
+    `docs/spec/RC_NC_ADMIN_SPEC.md`: full recovered RC/NC inbound/outbound
+    packet ids, `Player.cpp::createFunctions` handler coverage, RC rights
+    checks, exact denial/success response packets, NC handler responses,
+    `PLI_NC_LEVELLISTSET` unbound status, and the source-confirmed File Browser
+    no-folder-rights no-packet behavior. Production implementation remains in
+    the following unchecked RC/NC tasks.
 - [ ] Implement production RC/NC login/session sockets.
 - [ ] Implement file browser mutations with exact path/right behavior.
 - [ ] Implement account/admin-IP mutation commands.
