@@ -64,7 +64,7 @@ For sender client versions `>= CLVER_2_3`, C++ sends `levelBuff2` before
 
 | ID | C++ symbol | Read encoding | Direct mutation / behavior | Extra forwarding and side effects | C# status |
 | ---: | --- | --- | --- | --- | --- |
-| 0 | `PLPROP_NICKNAME` | `GCHAR len` + bytes | Applies word filter, defaults empty warned nickname to `unknown`, then `setNick`. | Adds global `PLO_OTHERPLPROPS`; echoes to self unless `FORWARDSELF` is set. | Blocked on word filter/name side effects. |
+| 0 | `PLPROP_NICKNAME` | `GCHAR len` + bytes | Applies word filter, defaults empty warned nickname to `unknown`, then `setNick`. | Adds global `PLO_OTHERPLPROPS`; echoes to self unless `FORWARDSELF` is set. | Parser consumes the confirmed string bytes. Runtime word-filter, `setNick`, global/self forwarding, and nickname persistence side effects remain blocked. |
 | 1 | `PLPROP_MAXPOWER` | `GUChar` | Sets max power and current power to max in non-V8 path. | Adds `PLPROP_CURPOWER` to level/self buffers; V8 also adds max power. | Implemented as runtime mutation using explicit heart-limit input. Non-V8 generic level forwarding emits the confirmed `PLPROP_CURPOWER` payload. Self-buffer and V8 max-power forwarding remain blocked. |
 | 2 | `PLPROP_CURPOWER` | `GUChar / 2` | Refuses healing when AP `< 40`; otherwise `setPower`. | Generic local/self forwarding only. | Implemented as runtime mutation with AP heal gate. Live forwarding emits the post-mutation current-power byte when runtime state is available; stateless forwarding remains blocked. |
 | 3 | `PLPROP_RUPEESCOUNT` | `GUInt`, capped at `9,999,999` | Sets gralats. RC path checks `normaladminscanchangegralats` or `PLPERM_SETRIGHTS`. | Generic forwarding only if `__sendLocal` permits; this prop is not local-forwarded. | Implemented for player-origin runtime mutation. RC permission/config mutation remains blocked. |
@@ -171,9 +171,10 @@ updates stay applied, matching the C++ function's sequential mutation shape as
 closely as the current guarded boundary allows.
 
 This is not a substitute implementation for the blocked C++ branch. For
-example, `PLPROP_CARRYNPC` remains blocked until NPC ownership, duplicate carry
-checks, `PLO_PLAYERPROPS`, `PLO_NPCDEL2`, `PLO_OTHERPLPROPS`, and
-`m_carryNpcId` mutation are ported together from `PlayerProps.cpp`. Likewise,
-`PLPROP_STATUS` remains blocked after byte parsing until the C++
-death/revive/drop/leader side effects and related packet order are ported from
-the same function.
+example, `PLPROP_NICKNAME` remains blocked until word-filter behavior,
+`setNick`, global `PLO_OTHERPLPROPS`, self echo, and persistence side effects
+are ported together from `PlayerProps.cpp`. `PLPROP_CARRYNPC` remains blocked
+until NPC ownership, duplicate carry checks, `PLO_PLAYERPROPS`, `PLO_NPCDEL2`,
+`PLO_OTHERPLPROPS`, and `m_carryNpcId` mutation are ported from the same file.
+Likewise, `PLPROP_STATUS` remains blocked after byte parsing until the C++
+death/revive/drop/leader side effects and related packet order are ported.

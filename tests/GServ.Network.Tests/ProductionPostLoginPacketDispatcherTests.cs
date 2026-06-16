@@ -86,6 +86,28 @@ public sealed class ProductionPostLoginPacketDispatcherTests
     }
 
     [Fact]
+    public void DispatchDecodedPacketBlocksParsedNicknameBecauseWordFilterAndSetNickAreNotPorted()
+    {
+        var player = new RuntimePlayer(2, "pc:Ruan", RuntimePlayerKind.Client);
+        var dispatcher = new ProductionPostLoginPacketDispatcher(player);
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar((byte)PlayerToServerPacketId.PlayerProps);
+        packet.WriteGChar((byte)PlayerPropertyId.X);
+        packet.WriteGChar(70);
+        packet.WriteGChar((byte)PlayerPropertyId.Nickname);
+        packet.WriteGChar(4);
+        packet.WriteBytes("Ruan"u8);
+
+        var result = dispatcher.DispatchDecodedPacket(packet.ToArray());
+
+        Assert.Equal(ProductionPostLoginPacketDispatchStatus.Blocked, result.Status);
+        Assert.False(result.ContinueSession);
+        Assert.Equal(560, player.PixelX);
+        Assert.Contains("PLPROP_NICKNAME", result.Message, StringComparison.Ordinal);
+        Assert.Equal(0, dispatcher.InvalidPacketCount);
+    }
+
+    [Fact]
     public void DispatchDecodedPacketMatchesMsgPliNullDisconnectThresholdForUnassignedPackets()
     {
         var player = new RuntimePlayer(2, "pc:Ruan", RuntimePlayerKind.Client);

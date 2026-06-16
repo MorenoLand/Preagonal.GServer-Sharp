@@ -52,10 +52,11 @@ Implemented:
   boundary. Confirmed earlier props in the same packet are applied in packet
   order, then the dispatcher returns a blocked result instead of crashing or
   pretending the later side-effect branch is implemented. This currently covers
-  cases such as `PLPROP_CARRYNPC`, whose C++ branch enters NPC ownership,
-  duplicate carry checks, NPC deletion packets, and local/global forwarding,
-  and `PLPROP_STATUS`, whose C++ branch enters death/revive/drop/leader
-  behavior.
+  cases such as `PLPROP_NICKNAME`, whose C++ branch enters word filtering,
+  `setNick`, global forwarding, and self echo, `PLPROP_CARRYNPC`, whose C++
+  branch enters NPC ownership, duplicate carry checks, NPC deletion packets,
+  and local/global forwarding, and `PLPROP_STATUS`, whose C++ branch enters
+  death/revive/drop/leader behavior.
 - Assigned-but-unimplemented C++ `TPLFunc` ids return a blocked result and do
   not increment the invalid-packet counter.
 - Unassigned ids follow the source-confirmed `msgPLI_NULL` invalid-packet
@@ -104,9 +105,9 @@ Confirmed tests cover:
 
 - decoded `PLI_PLAYERPROPS` applying the supported movement subset
 - decoded `PLI_PLAYERPROPS` blocking parsed-but-unported runtime side-effect
-  props such as `PLPROP_CARRYNPC` and `PLPROP_STATUS` without incrementing the
-  invalid-packet counter and without losing already-applied confirmed preceding
-  props
+  props such as `PLPROP_NICKNAME`, `PLPROP_CARRYNPC`, and `PLPROP_STATUS`
+  without incrementing the invalid-packet counter and without losing
+  already-applied confirmed preceding props
 - assigned-but-unimplemented packets returning blocked status without counting
   as invalid
 - unassigned packets following the `msgPLI_NULL` counter

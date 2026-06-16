@@ -95,6 +95,7 @@ public static class IncomingPlayerPropsParser
                     updates.Add(IncomingPlayerPropertyUpdate.GInt(propertyId, reader.ReadGInt()));
                     break;
 
+                case PlayerPropertyId.Nickname:
                 case PlayerPropertyId.CurrentLevel:
                 case PlayerPropertyId.BodyImage:
                 case PlayerPropertyId.PlayerLanguage:

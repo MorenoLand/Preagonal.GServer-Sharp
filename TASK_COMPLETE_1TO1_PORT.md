@@ -708,6 +708,11 @@ behavior, and movement-loop invocation.
     continue to following props, while production dispatch blocks at the
     runtime side-effect boundary until death/revive/drop/leader packet behavior
     is ported from C++.
+  - 2026-06-16: Implemented the source-confirmed `PLPROP_NICKNAME` parser
+    boundary. The parser consumes `GCHAR len + bytes` and can continue to
+    following props, while production dispatch blocks until the word filter,
+    `setNick`, global forwarding, self echo, and persistence side effects are
+    ported exactly.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -801,6 +806,10 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed `PLPROP_STATUS` fixtures for exact
     one-byte parsing and production blocked-dispatch behavior. Runtime
     death/revive/drop/leader effects remain blocked.
+  - 2026-06-16: Added source-confirmed `PLPROP_NICKNAME` fixtures for exact
+    string parsing and production blocked-dispatch behavior. Word-filter,
+    `setNick`, global forwarding, self echo, and persistence effects remain
+    blocked.
 
 Completion criteria:
 

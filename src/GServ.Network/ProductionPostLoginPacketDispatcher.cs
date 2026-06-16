@@ -105,6 +105,7 @@ public sealed class ProductionPostLoginPacketDispatcher
     private static string CppNameOf(PlayerPropertyId propertyId) =>
         propertyId switch
         {
+            PlayerPropertyId.Nickname => "PLPROP_NICKNAME",
             PlayerPropertyId.CarryNpc => "PLPROP_CARRYNPC",
             PlayerPropertyId.GmapLevelX => "PLPROP_GMAPLEVELX",
             PlayerPropertyId.GmapLevelY => "PLPROP_GMAPLEVELY",
