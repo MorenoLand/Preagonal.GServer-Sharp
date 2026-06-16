@@ -66,7 +66,9 @@ public static class LiveWorldSessionForwarder
                 CurrentLevelName: BuildCurrentLevelPropValue(sender),
                 AccountName: sender.AccountName,
                 AccountIp: sender.AccountIp,
-                CommunityName: sender.CommunityName));
+                CommunityName: sender.CommunityName,
+                EloRating: sender.EloRating,
+                EloDeviation: sender.EloDeviation));
 
         return ForwardConfirmedLevelAreaPacket(
             server,

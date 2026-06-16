@@ -22,6 +22,8 @@ public sealed class RuntimePlayer
     public string AccountName { get; }
     public uint AccountIp { get; set; }
     public string CommunityName { get; set; } = string.Empty;
+    public int EloRating { get; set; } = 1500;
+    public int EloDeviation { get; set; } = 350;
     public RuntimePlayerKind Kind { get; }
     public RuntimeLevel? Level { get; private set; }
     public string? Group { get; set; }

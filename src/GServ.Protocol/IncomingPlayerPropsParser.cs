@@ -450,6 +450,14 @@ public static class IncomingPlayerPropsForwarding
                         WriteProperty(levelBuff, PlayerPropertyId.CommunityName, writer => WriteGCharString(writer, communityName));
                     break;
 
+                case PlayerPropertyId.Rating:
+                    if (state?.EloRating is { } eloRating && state?.EloDeviation is { } eloDeviation)
+                    {
+                        WriteProperty(levelBuff, PlayerPropertyId.Rating, writer =>
+                            writer.WriteGInt((uint)(((eloRating & 0xFFF) << 9) | (eloDeviation & 0x1FF))));
+                    }
+                    break;
+
                 case PlayerPropertyId.Colors:
                     WriteProperty(levelBuff, PlayerPropertyId.Colors, writer =>
                     {
@@ -538,4 +546,6 @@ public sealed record IncomingPlayerPropsForwardingState(
     string? CurrentLevelName = null,
     string? AccountName = null,
     uint? AccountIp = null,
-    string? CommunityName = null);
+    string? CommunityName = null,
+    int? EloRating = null,
+    int? EloDeviation = null);

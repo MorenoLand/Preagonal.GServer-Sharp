@@ -1596,6 +1596,15 @@ PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_COMMUNITYNAME + GCHAR(4) + "Ruan" + "\n"
 bytes: 40 32 39 114 36 82 117 97 110 10
 ```
 
+Live `PLPROP_RATING` forwarding ignores the consumed client-sent value and uses
+current runtime ELO state. For rating `1500` and deviation `50`, C++ packs:
+
+```txt
+((1500 & 0xFFF) << 9) | (50 & 0x1FF)
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_RATING + GInt(768050) + "\n"
+bytes: 40 32 39 68 78 144 82 10
+```
+
 ## Combat Runtime Fixtures
 
 Inbound `PLI_HURTPLAYER` fixture:
@@ -2240,9 +2249,9 @@ PLPROP_RATING + GInt(123456)
 ```
 
 The incoming value is consumed, but the recovered C++ runtime mutation is
-commented out. Full generic forwarding for this property must use the current
-`getProp(PLPROP_RATING)` ELO/deviation state and remains blocked until that
-state is wired without invented defaults.
+commented out. The live state-backed forwarding path uses the current runtime
+ELO/deviation state and preserves the C++ bit packing; sparring/runtime ELO
+mutation remains blocked until that source-confirmed gameplay path is ported.
 
 Source-confirmed `PLPROP_ACCOUNTNAME` consume-only update:
 

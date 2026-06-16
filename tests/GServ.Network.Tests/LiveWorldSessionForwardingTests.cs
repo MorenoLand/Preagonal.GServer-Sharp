@@ -190,6 +190,36 @@ public sealed class LiveWorldSessionForwardingTests
     }
 
     [Fact]
+    public void ApplyAndForwardConfirmedRatingUsesRuntimeRatingLikeCpp()
+    {
+        var server = new RuntimeServer();
+        var level = new RuntimeLevel("start.nw");
+        var sender = Add(server, 7, RuntimePlayerKind.Client, level);
+        sender.EloRating = 1500;
+        sender.EloDeviation = 50;
+        Add(server, 8, RuntimePlayerKind.Client, level);
+        var sinks = CreateSinks(7, 8);
+
+        var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
+            server,
+            sender,
+            [IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.Rating)],
+            senderSupportsPreciseMovement: true,
+            AsSinks(sinks));
+
+        var expected = new GraalBinaryWriter();
+        expected.WriteGChar((byte)ServerToPlayerPacketId.OtherPlayerProps);
+        expected.WriteGShort(7);
+        expected.WriteGChar((byte)PlayerPropertyId.Rating);
+        expected.WriteGInt((uint)(((1500 & 0xFFF) << 9) | (50 & 0x1FF)));
+        expected.WriteByte((byte)'\n');
+
+        var delivery = Assert.Single(deliveries);
+        Assert.Equal(8, delivery.PlayerId);
+        Assert.Equal(expected.ToArray(), sinks[8].Packets.Single());
+    }
+
+    [Fact]
     public void ForwardConfirmedLevelAreaPacketFiltersByGmapGroupAndDistance()
     {
         var server = new RuntimeServer();

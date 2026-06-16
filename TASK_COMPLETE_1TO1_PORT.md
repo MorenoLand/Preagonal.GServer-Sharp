@@ -557,9 +557,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Implemented the source-confirmed `PLPROP_RATING` consume-only
     mutation boundary. The parser consumes the incoming `GInt`, and the runtime
     applier performs no ELO mutation because the recovered C++ assignment is
-    commented out. Generic forwarding for rating remains blocked until the
-    current `getProp(PLPROP_RATING)` ELO/deviation state is wired without
-    inventing defaults.
+    commented out. Live forwarding now serializes current runtime ELO/deviation
+    state through the C++ `getProp(PLPROP_RATING)` bit packing; sparring ELO
+    mutation remains blocked until that gameplay path is ported.
   - 2026-06-16: Implemented the source-confirmed `PLPROP_ACCOUNTNAME`
     consume-only mutation boundary. The parser consumes `GCHAR len + bytes`,
     and the runtime applier ignores the incoming value exactly because C++
@@ -689,6 +689,11 @@ behavior, and movement-loop invocation.
     discards the client-sent string exactly like C++; the live forwarding path
     now emits `getProp(PLPROP_COMMUNITYNAME)`-equivalent bytes using runtime
     state instead of echoing untrusted input.
+  - 2026-06-16: Implemented source-confirmed live `PLPROP_RATING` forwarding
+    from runtime ELO/deviation state. The parser still consumes and ignores the
+    client-sent `GInt` exactly like C++; the live forwarding path now emits
+    `getProp(PLPROP_RATING)`-equivalent bytes using
+    `((rating & 0xFFF) << 9) | (deviation & 0x1FF)`.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -765,6 +770,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed live `PLPROP_COMMUNITYNAME` fixture
     proving discarded inbound bytes are not echoed; forwarding uses runtime
     community-name state.
+  - 2026-06-16: Added source-confirmed live `PLPROP_RATING` fixture proving
+    discarded inbound bytes are not echoed; forwarding uses runtime ELO/
+    deviation state and C++ bit packing.
 
 Completion criteria:
 
