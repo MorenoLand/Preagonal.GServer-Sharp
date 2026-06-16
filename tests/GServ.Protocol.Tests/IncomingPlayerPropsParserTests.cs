@@ -329,6 +329,22 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedCurrentChatByClampingDeclaredLengthToRemainingBytes()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.CurrentChat);
+        body.WriteGChar(8);
+        body.WriteBytes("hello"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client21);
+
+        Assert.True(result.Success);
+        var update = Assert.Single(result.Updates);
+        Assert.Equal(PlayerPropertyId.CurrentChat, update.PropertyId);
+        Assert.Equal("hello", update.StringValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedAttachNpcByReadingObjectTypeAndNpcId()
     {
         var body = new GraalBinaryWriter();

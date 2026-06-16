@@ -2447,6 +2447,13 @@ PLPROP_CURCHAT + GCHAR(226) + 223 * "c" + PLPROP_X + GCHAR(70)
 => chat message length 223, then PLPROP_X is parsed normally
 ```
 
+Like other `CString::readChars` paths, a terminal truncated payload clamps to
+the remaining packet bytes:
+
+```txt
+PLPROP_CURCHAT + GCHAR(8) + "hello" => "hello"
+```
+
 Generic local forwarding uses C++ `getProp(PLPROP_CURCHAT)` shape:
 
 ```txt
