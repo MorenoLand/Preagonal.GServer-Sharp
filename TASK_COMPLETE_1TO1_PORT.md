@@ -603,6 +603,17 @@ behavior, and movement-loop invocation.
     `GCHAR(headImage.length + 100) + headImage`. Loaded/global forwarding
     recipient routing remains blocked until production session routing can
     match the original exactly.
+  - 2026-06-16: Implemented the source-confirmed `PLPROP_SWORDPOWER` and
+    `PLPROP_SHIELDPOWER` parser/runtime/generic-forwarding boundary for the
+    fixture-confirmed branches. The parser consumes default and custom image
+    forms, applies old-client extensionless `.gif` suffixes, and preserves the
+    C++ 1.41 shield no-change bug when an extended shield packet has no bytes
+    left. The runtime applier maps default images through explicit
+    `swordlimit`/`shieldlimit` options, applies custom power offsets
+    (`raw - 30` sword, `raw - 10` shield), truncates images to 223 bytes/chars,
+    and generic forwarding uses the C++ `getProp` offset/string payloads.
+    `healswords=true` negative-power wrap behavior and loaded/global recipient
+    routing remain blocked until fixture-confirmed.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -642,6 +653,10 @@ behavior, and movement-loop invocation.
     modern/old default heads, custom `len - 100` images, newline truncation,
     old-client `.gif` suffix, `len == 100` no-change parsing, 123-char runtime
     storage truncation, and generic local forwarding bytes.
+  - 2026-06-16: Added source-confirmed `PLPROP_SWORDPOWER` and
+    `PLPROP_SHIELDPOWER` fixtures for custom image parsing, old-client `.gif`
+    suffixes, default-image settings clamps, the old shield no-change bug,
+    223-char image truncation, and generic forwarding bytes.
 
 Completion criteria:
 

@@ -226,6 +226,65 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedSwordAndShieldPowerRawValuesAndCustomImages()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.SwordPower);
+        body.WriteGChar(35);
+        body.WriteGChar(5);
+        body.WriteBytes("slash"u8);
+        body.WriteGChar((byte)PlayerPropertyId.ShieldPower);
+        body.WriteGChar(12);
+        body.WriteGChar(6);
+        body.WriteBytes("guard1"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client21);
+
+        Assert.True(result.Success);
+        Assert.Equal([PlayerPropertyId.SwordPower, PlayerPropertyId.ShieldPower], result.Updates.Select(update => update.PropertyId));
+        Assert.Equal((byte)35, result.Updates[0].GCharValue);
+        Assert.Equal("slash", result.Updates[0].StringValue);
+        Assert.Equal((byte)12, result.Updates[1].GCharValue);
+        Assert.Equal("guard1", result.Updates[1].StringValue);
+    }
+
+    [Fact]
+    public void ParsesConfirmedOldClientSwordAndShieldCustomImagesWithGifSuffix()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.SwordPower);
+        body.WriteGChar(35);
+        body.WriteGChar(5);
+        body.WriteBytes("slash"u8);
+        body.WriteGChar((byte)PlayerPropertyId.ShieldPower);
+        body.WriteGChar(12);
+        body.WriteGChar(6);
+        body.WriteBytes("guard1"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client1411);
+
+        Assert.True(result.Success);
+        Assert.Equal("slash.gif", result.Updates[0].StringValue);
+        Assert.Equal("guard1.gif", result.Updates[1].StringValue);
+    }
+
+    [Fact]
+    public void ParsesConfirmedShieldClient141BugAsNoChangeWhenNoBytesRemain()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.ShieldPower);
+        body.WriteGChar(11);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client1411);
+
+        Assert.True(result.Success);
+        var update = Assert.Single(result.Updates);
+        Assert.Equal(PlayerPropertyId.ShieldPower, update.PropertyId);
+        Assert.Null(update.GCharValue);
+        Assert.Null(update.StringValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedDefaultHeadImageNumberForModernAndOldClients()
     {
         var body = new GraalBinaryWriter();
@@ -563,5 +622,30 @@ public sealed class IncomingPlayerPropsParserTests
             appendNewline: true);
 
         Assert.Equal([40, 32, 39, 43, 140, 104, 101, 97, 100, 46, 112, 110, 103, 10], packet);
+    }
+
+    [Fact]
+    public void ForwardsConfirmedSwordAndShieldWithCppPowerOffsetsAndImages()
+    {
+        var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
+            playerId: 7,
+            pixelX: 0,
+            pixelY: 0,
+            pixelZ: 0,
+            [
+                new IncomingPlayerPropertyUpdate(PlayerPropertyId.SwordPower, GCharValue: 2, StringValue: "sword2.png"),
+                new IncomingPlayerPropertyUpdate(PlayerPropertyId.ShieldPower, GCharValue: 1, StringValue: "shield1.png")
+            ],
+            senderSupportsPreciseMovement: true,
+            appendNewline: true);
+
+        Assert.Equal(
+            [
+                40, 32, 39,
+                40, 64, 42, 115, 119, 111, 114, 100, 50, 46, 112, 110, 103,
+                41, 43, 43, 115, 104, 105, 101, 108, 100, 49, 46, 112, 110, 103,
+                10
+            ],
+            packet);
     }
 }

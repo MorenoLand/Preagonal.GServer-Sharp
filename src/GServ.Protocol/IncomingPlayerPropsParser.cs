@@ -76,6 +76,14 @@ public static class IncomingPlayerPropsParser
                     updates.Add(IncomingPlayerPropertyUpdate.GChar(propertyId, reader.ReadGChar()));
                     break;
 
+                case PlayerPropertyId.SwordPower:
+                    updates.Add(ReadSwordPower(reader, clientVersion));
+                    break;
+
+                case PlayerPropertyId.ShieldPower:
+                    updates.Add(ReadShieldPower(reader, clientVersion));
+                    break;
+
                 case PlayerPropertyId.RupeesCount:
                     updates.Add(IncomingPlayerPropertyUpdate.GInt(propertyId, Math.Min(reader.ReadGInt(), 9_999_999)));
                     break;
@@ -200,6 +208,49 @@ public static class IncomingPlayerPropsParser
         return IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, image);
     }
 
+    private static IncomingPlayerPropertyUpdate ReadSwordPower(
+        GraalBinaryReader reader,
+        ClientVersionId clientVersion)
+    {
+        var power = reader.ReadGChar();
+        if (power <= 4)
+            return IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.SwordPower, power);
+
+        var length = reader.ReadGChar();
+        var image = length == 0
+            ? string.Empty
+            : Encoding.ASCII.GetString(reader.ReadBytes(length));
+        if (image.Length != 0 && clientVersion < ClientVersionId.Client21 && HasNoExtension(image))
+            image += ".gif";
+
+        return new IncomingPlayerPropertyUpdate(PlayerPropertyId.SwordPower, GCharValue: power, StringValue: image);
+    }
+
+    private static IncomingPlayerPropertyUpdate ReadShieldPower(
+        GraalBinaryReader reader,
+        ClientVersionId clientVersion)
+    {
+        var power = reader.ReadGChar();
+        if (power <= 3)
+            return IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ShieldPower, power);
+
+        if (reader.BytesLeft == 0)
+            return IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.ShieldPower);
+
+        var decodedPower = power - 10;
+        if (decodedPower < 0)
+            return IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.ShieldPower);
+
+        var length = reader.ReadGChar();
+        var image = length == 0
+            ? string.Empty
+            : Encoding.ASCII.GetString(reader.ReadBytes(length));
+        if (image.Length != 0 && clientVersion < ClientVersionId.Client21 && HasNoExtension(image))
+            image += ".gif";
+
+        return new IncomingPlayerPropertyUpdate(PlayerPropertyId.ShieldPower, GCharValue: power, StringValue: image);
+    }
+
     private static bool HasNoExtension(string value)
     {
         var slash = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
@@ -263,6 +314,14 @@ public static class IncomingPlayerPropsForwarding
 
                 case PlayerPropertyId.Sprite:
                     WriteProperty(levelBuff, PlayerPropertyId.Sprite, writer => writer.WriteGChar(update.GCharValue.GetValueOrDefault()));
+                    break;
+
+                case PlayerPropertyId.SwordPower:
+                    WriteProperty(levelBuff, PlayerPropertyId.SwordPower, writer => WritePowerImage(writer, update.GCharValue.GetValueOrDefault(), 30, update.StringValue ?? string.Empty));
+                    break;
+
+                case PlayerPropertyId.ShieldPower:
+                    WriteProperty(levelBuff, PlayerPropertyId.ShieldPower, writer => WritePowerImage(writer, update.GCharValue.GetValueOrDefault(), 10, update.StringValue ?? string.Empty));
                     break;
 
                 case PlayerPropertyId.CurrentLevel:
@@ -332,6 +391,12 @@ public static class IncomingPlayerPropsForwarding
     {
         writer.WriteGChar((byte)(value.Length + 100));
         writer.WriteBytes(Encoding.ASCII.GetBytes(value));
+    }
+
+    private static void WritePowerImage(GraalBinaryWriter writer, byte power, byte offset, string image)
+    {
+        writer.WriteGChar((byte)(power + offset));
+        WriteGCharString(writer, image);
     }
 
     private static bool IsGaniAttributeProperty(PlayerPropertyId propertyId) =>

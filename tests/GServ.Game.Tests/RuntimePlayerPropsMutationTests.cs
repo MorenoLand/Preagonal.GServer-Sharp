@@ -228,4 +228,64 @@ public sealed class RuntimePlayerPropsMutationTests
         Assert.False(player.MovementUpdated);
         Assert.False(player.TouchTestRequested);
     }
+
+    [Fact]
+    public void AppliesConfirmedSwordAndShieldDefaultImagesWithLimitsAndVersion()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+        var options = new RuntimePlayerPropsOptions(
+            ClientVersion: ClientVersionId.Client1411,
+            SwordLimit: 2,
+            ShieldLimit: 2);
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.SwordPower, 4),
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ShieldPower, 3)
+            ],
+            options);
+
+        Assert.Equal(2, player.SwordPower);
+        Assert.Equal("sword2.gif", player.SwordImage);
+        Assert.Equal(2, player.ShieldPower);
+        Assert.Equal("shield2.gif", player.ShieldImage);
+    }
+
+    [Fact]
+    public void AppliesConfirmedSwordAndShieldCustomImagesWithCppTruncation()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+        var longSword = new string('s', 230);
+        var longShield = new string('h', 230);
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [
+                new IncomingPlayerPropertyUpdate(PlayerPropertyId.SwordPower, GCharValue: 35, StringValue: longSword),
+                new IncomingPlayerPropertyUpdate(PlayerPropertyId.ShieldPower, GCharValue: 12, StringValue: longShield)
+            ]);
+
+        Assert.Equal(3, player.SwordPower);
+        Assert.Equal(new string('s', 223), player.SwordImage);
+        Assert.Equal(2, player.ShieldPower);
+        Assert.Equal(new string('h', 223), player.ShieldImage);
+    }
+
+    [Fact]
+    public void IgnoresConfirmedShieldBugNoChangeUpdate()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client)
+        {
+            ShieldPower = 2,
+            ShieldImage = "shield2.png"
+        };
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.ShieldPower)]);
+
+        Assert.Equal(2, player.ShieldPower);
+        Assert.Equal("shield2.png", player.ShieldImage);
+    }
 }

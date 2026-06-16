@@ -2236,3 +2236,53 @@ local forwarding uses C++ `getProp(PLPROP_HEADGIF)` shape:
 PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_HEADGIF + GCHAR(108) + "head.png" + "\n"
 bytes: 40 32 39 43 140 104 101 97 100 46 112 110 103 10
 ```
+
+Source-confirmed `PLPROP_SWORDPOWER` and `PLPROP_SHIELDPOWER` updates:
+
+```txt
+modern custom sword:
+PLPROP_SWORDPOWER + GCHAR(35) + GCHAR(5) + "slash"
+=> raw power 35, image "slash"; runtime power is 35 - 30 before settings clamp
+
+old-client extensionless custom sword:
+PLPROP_SWORDPOWER + GCHAR(35) + GCHAR(5) + "slash"
+=> image "slash.gif"
+
+modern custom shield:
+PLPROP_SHIELDPOWER + GCHAR(12) + GCHAR(6) + "guard1"
+=> raw power 12, image "guard1"; runtime power is 12 - 10 before settings clamp
+
+old-client extensionless custom shield:
+PLPROP_SHIELDPOWER + GCHAR(12) + GCHAR(6) + "guard1"
+=> image "guard1.gif"
+
+old 1.41 shield bug:
+PLPROP_SHIELDPOWER + GCHAR(11) with no bytes left
+=> no invented mutation value
+```
+
+Runtime default-image fixture with `clientVersion < CLVER_2_1`, `swordlimit=2`,
+and `shieldlimit=2`:
+
+```txt
+PLPROP_SWORDPOWER + GCHAR(4) => swordPower 2, swordImage "sword2.gif"
+PLPROP_SHIELDPOWER + GCHAR(3) => shieldPower 2, shieldImage "shield2.gif"
+```
+
+Generic local forwarding uses C++ `getProp` power offsets and image strings:
+
+```txt
+PLO_OTHERPLPROPS + GSHORT(7)
++ PLPROP_SWORDPOWER + GCHAR(32) + GCHAR(10) + "sword2.png"
++ PLPROP_SHIELDPOWER + GCHAR(11) + GCHAR(11) + "shield1.png"
++ "\n"
+bytes:
+40 32 39
+40 64 42 115 119 111 114 100 50 46 112 110 103
+41 43 43 115 104 105 101 108 100 49 46 112 110 103
+10
+```
+
+The `healswords=true` negative-power branch remains blocked because the C++
+stores `Character::swordPower` as `uint8_t`; wrap/serialization behavior needs
+dedicated fixture proof before the C# port should expose it as completed.

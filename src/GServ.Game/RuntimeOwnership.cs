@@ -38,6 +38,10 @@ public sealed class RuntimePlayer
     public byte Bombs { get; internal set; }
     public byte GlovePower { get; internal set; }
     public byte BombPower { get; internal set; }
+    public byte SwordPower { get; set; }
+    public string SwordImage { get; set; } = "sword1.png";
+    public byte ShieldPower { get; set; }
+    public string ShieldImage { get; set; } = "shield1.png";
     public ushort ApCounter { get; internal set; }
     public byte MagicPoints { get; internal set; }
     public byte Alignment { get; set; }
@@ -94,8 +98,10 @@ public static class RuntimePlayerPropsApplier
 {
     public static void ApplyConfirmed(
         RuntimePlayer player,
-        IEnumerable<GServ.Protocol.IncomingPlayerPropertyUpdate> updates)
+        IEnumerable<GServ.Protocol.IncomingPlayerPropertyUpdate> updates,
+        RuntimePlayerPropsOptions? options = null)
     {
+        options ??= RuntimePlayerPropsOptions.Default;
         foreach (var update in updates)
         {
             switch (update.PropertyId)
@@ -152,6 +158,14 @@ public static class RuntimePlayerPropsApplier
 
                 case GServ.Protocol.PlayerPropertyId.BombPower:
                     player.BombPower = Math.Min(update.GCharValue.GetValueOrDefault(), (byte)3);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.SwordPower:
+                    ApplySwordPower(player, update, options);
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.ShieldPower:
+                    ApplyShieldPower(player, update, options);
                     break;
 
                 case GServ.Protocol.PlayerPropertyId.ApCounter:
@@ -275,6 +289,58 @@ public static class RuntimePlayerPropsApplier
             player.SetColor(i, colors[i]);
     }
 
+    private static void ApplySwordPower(
+        RuntimePlayer player,
+        GServ.Protocol.IncomingPlayerPropertyUpdate update,
+        RuntimePlayerPropsOptions options)
+    {
+        if (update.GCharValue is not { } raw)
+            return;
+
+        int power;
+        string image;
+        if (raw <= 4)
+        {
+            power = Math.Clamp(raw, 0, options.SwordLimit);
+            image = "sword" + power + (options.ClientVersion < GServ.Protocol.ClientVersionId.Client21 ? ".gif" : ".png");
+        }
+        else
+        {
+            power = raw - 30;
+            image = update.StringValue ?? string.Empty;
+        }
+
+        player.SwordPower = (byte)Math.Clamp(power, 0, options.SwordLimit);
+        player.SwordImage = LimitString(image, 223);
+    }
+
+    private static void ApplyShieldPower(
+        RuntimePlayer player,
+        GServ.Protocol.IncomingPlayerPropertyUpdate update,
+        RuntimePlayerPropsOptions options)
+    {
+        if (update.GCharValue is not { } raw)
+            return;
+
+        int power;
+        string image;
+        if (raw <= 3)
+        {
+            power = Math.Clamp(raw, 0, options.ShieldLimit);
+            image = "shield" + power + (options.ClientVersion < GServ.Protocol.ClientVersionId.Client21 ? ".gif" : ".png");
+        }
+        else
+        {
+            power = raw - 10;
+            if (power < 0)
+                return;
+            image = update.StringValue ?? string.Empty;
+        }
+
+        player.ShieldPower = (byte)Math.Clamp(power, 0, options.ShieldLimit);
+        player.ShieldImage = LimitString(image, 223);
+    }
+
     private static string LimitString(string value, int length) =>
         value.Length <= length ? value : value[..length];
 
@@ -297,6 +363,14 @@ public static class RuntimePlayerPropsApplier
 
         return index >= 0;
     }
+}
+
+public sealed record RuntimePlayerPropsOptions(
+    GServ.Protocol.ClientVersionId ClientVersion = GServ.Protocol.ClientVersionId.Client21,
+    int SwordLimit = 3,
+    int ShieldLimit = 3)
+{
+    public static RuntimePlayerPropsOptions Default { get; } = new();
 }
 
 public sealed class RuntimeLevel
