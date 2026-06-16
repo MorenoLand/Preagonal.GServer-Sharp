@@ -69,6 +69,31 @@ public sealed class LiveWorldSessionForwardingTests
     }
 
     [Fact]
+    public void ApplyAndForwardConfirmedCurrentPowerUsesPostMutationStateLikeCpp()
+    {
+        var server = new RuntimeServer();
+        var level = new RuntimeLevel("start.nw");
+        var sender = Add(server, 7, RuntimePlayerKind.Client, level);
+        sender.Alignment = 39;
+        sender.Hitpoints = 2.0f;
+        sender.MaxPower = 10;
+        Add(server, 8, RuntimePlayerKind.Client, level);
+        var sinks = CreateSinks(7, 8);
+
+        var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
+            server,
+            sender,
+            [IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.CurrentPower, 8)],
+            senderSupportsPreciseMovement: true,
+            AsSinks(sinks));
+
+        Assert.Equal(2.0f, sender.Hitpoints);
+        var delivery = Assert.Single(deliveries);
+        Assert.Equal(8, delivery.PlayerId);
+        Assert.Equal([40, 32, 39, 34, 36, 10], sinks[8].Packets.Single());
+    }
+
+    [Fact]
     public void ForwardConfirmedLevelAreaPacketFiltersByGmapGroupAndDistance()
     {
         var server = new RuntimeServer();

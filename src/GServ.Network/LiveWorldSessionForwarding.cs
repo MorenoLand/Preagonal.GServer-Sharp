@@ -60,7 +60,8 @@ public static class LiveWorldSessionForwarder
             sender.PixelZ,
             updateArray,
             senderSupportsPreciseMovement,
-            appendNewline: true);
+            appendNewline: true,
+            state: new IncomingPlayerPropsForwardingState((byte)(sender.Hitpoints * 2.0f)));
 
         return ForwardConfirmedLevelAreaPacket(
             server,

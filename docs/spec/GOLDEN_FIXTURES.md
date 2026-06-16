@@ -1523,6 +1523,16 @@ PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_CURPOWER + GCHAR(30) + "\n"
 bytes: 40 32 39 34 62 10
 ```
 
+Live `PLPROP_CURPOWER` forwarding uses post-mutation runtime state. With AP
+`39`, current HP `2.0`, and incoming `PLPROP_CURPOWER + GCHAR(8)`, the C++
+healing gate refuses the increase and forwarding emits the existing HP byte
+`GCHAR(4)`:
+
+```txt
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_CURPOWER + GCHAR(4) + "\n"
+bytes: 40 32 39 34 36 10
+```
+
 Forwarded `PLPROP_APCOUNTER` uses C++ `getProp` semantics, so stored `123`
 emits `GSHORT(124)`:
 

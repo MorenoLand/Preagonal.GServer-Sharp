@@ -654,6 +654,11 @@ behavior, and movement-loop invocation.
     `GCHAR(maxPower * 2)` to the level forwarding buffer. The self buffer and
     V8-only max-power forwarding branch remain blocked until production
     self-recipient/V8 behavior is in scope.
+  - 2026-06-16: Implemented source-confirmed live `PLPROP_CURPOWER`
+    forwarding when post-mutation runtime state is available. This preserves
+    the C++ AP healing gate: if AP is below `40` and an incoming current-power
+    update would heal, runtime HP is unchanged and forwarding emits the
+    existing `hitpoints * 2` byte rather than echoing the incoming byte.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to
@@ -715,6 +720,8 @@ behavior, and movement-loop invocation.
     not forwarded.
   - 2026-06-16: Added source-confirmed non-V8 `PLPROP_MAXPOWER` forwarding
     fixture showing the emitted `PLPROP_CURPOWER + GCHAR(maxPower * 2)` bytes.
+  - 2026-06-16: Added source-confirmed live `PLPROP_CURPOWER` fixture covering
+    the AP-below-40 healing refusal and post-mutation forwarded HP byte.
 
 Completion criteria:
 

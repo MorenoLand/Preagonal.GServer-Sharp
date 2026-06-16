@@ -326,7 +326,8 @@ public static class IncomingPlayerPropsForwarding
         IEnumerable<IncomingPlayerPropertyUpdate> updates,
         bool senderSupportsPreciseMovement,
         bool appendNewline = false,
-        ClientVersionId senderClientVersion = ClientVersionId.Client21)
+        ClientVersionId senderClientVersion = ClientVersionId.Client21,
+        IncomingPlayerPropsForwardingState? state = null)
     {
         var levelBuff = new GraalBinaryWriter();
         var levelBuff2 = new GraalBinaryWriter();
@@ -367,6 +368,11 @@ public static class IncomingPlayerPropsForwarding
 
                 case PlayerPropertyId.MaxPower:
                     WriteProperty(levelBuff, PlayerPropertyId.CurrentPower, writer => writer.WriteGChar((byte)(update.GCharValue.GetValueOrDefault() * 2)));
+                    break;
+
+                case PlayerPropertyId.CurrentPower:
+                    if (state?.CurrentPowerRaw is { } currentPowerRaw)
+                        WriteProperty(levelBuff, PlayerPropertyId.CurrentPower, writer => writer.WriteGChar(currentPowerRaw));
                     break;
 
                 case PlayerPropertyId.Sprite:
@@ -507,3 +513,5 @@ public static class IncomingPlayerPropsForwarding
             or >= PlayerPropertyId.GAttrib6 and <= PlayerPropertyId.GAttrib9
             or >= PlayerPropertyId.GAttrib10 and <= PlayerPropertyId.GAttrib30;
 }
+
+public sealed record IncomingPlayerPropsForwardingState(byte CurrentPowerRaw);
