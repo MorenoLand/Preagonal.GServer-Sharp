@@ -131,6 +131,20 @@ public sealed class RuntimePlayerPropsMutationTests
     }
 
     [Fact]
+    public void AppliesConfirmedTerminalArrowEofValueWithCppClamp()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ArrowsCount, 224)]);
+
+        Assert.Equal(99, player.Arrows);
+        Assert.False(player.MovementUpdated);
+        Assert.False(player.TouchTestRequested);
+    }
+
+    [Fact]
     public void CurrentPowerIncreaseIsIgnoredWhenAlignmentIsBelowFortyLikeCpp()
     {
         var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client)

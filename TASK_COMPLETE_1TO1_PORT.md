@@ -650,6 +650,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added the matching malformed terminal `PLPROP_ATTACHNPC`
     golden fixture: missing `object_type` decodes as EOF `GUChar` value `224`,
     and missing NPC id decodes through `readGUInt()` as `4294438880`.
+  - 2026-06-16: Added source-confirmed malformed terminal `PLPROP_ARROWSCOUNT`
+    coverage: parser EOF `readGUChar()` yields `224`, and the runtime mutation
+    preserves the C++ `clip(arrows, 0, 99)` result of stored arrows `99`.
   - 2026-06-16: Implemented the source-confirmed `PLPROP_HEADGIF` state
     mutation and generic local forwarding boundary. The parser preserves the
     C++ `len < 100` default-head mapping, `len == 100` no-change sentinel,

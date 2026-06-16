@@ -1195,6 +1195,14 @@ zero-filled scalar value:
 PLPROP_ATTACHNPC => object_type 224, npcID 4294438880
 ```
 
+Inbound one-byte inventory/stat props that use `CString::readGUChar()` inherit
+the same EOF value. For `PLPROP_ARROWSCOUNT`, the parser observes `224`; the
+runtime mutation then applies the recovered C++ `clip(arrows, 0, 99)` rule:
+
+```txt
+PLPROP_ARROWSCOUNT => parsed 224 => stored arrows 99
+```
+
 Modern `sendLevel` no-map visibility tail fixture:
 
 ```txt
