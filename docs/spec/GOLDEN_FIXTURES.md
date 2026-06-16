@@ -366,6 +366,68 @@ output:
  52, 205, 199, 160]
 ```
 
+## File Transfer Cache Boundary
+
+`PLO_FILESENDFAILED + "miss.png" + "\n"`:
+
+```txt
+[62, 109, 105, 115, 115, 46, 112, 110, 103, 10]
+```
+
+`PLO_FILEUPTODATE + "head.png" + "\n"`:
+
+```txt
+[77, 104, 101, 97, 100, 46, 112, 110, 103, 10]
+```
+
+Modern `sendFile` chunk for `file="test.txt"`, `modTime=1`,
+`data="abc"`:
+
+```txt
+PLO_RAWDATA GINT(19) "\n"
+PLO_FILE GINT5(1) GCHAR(8) "test.txt" "abc" "\n"
+
+=> [132, 32, 32, 51, 10,
+    134, 32, 32, 32, 32, 33, 40,
+    116, 101, 115, 116, 46, 116, 120, 116,
+    97, 98, 99, 10]
+```
+
+Old-client `sendFile` chunk for `file="test.txt"`, `data="abc"`:
+
+```txt
+PLO_RAWDATA GINT(13) "\n"
+PLO_FILE GCHAR(8) "test.txt" "abc"
+
+=> [132, 32, 32, 45, 10,
+    134, 40,
+    116, 101, 115, 116, 46, 116, 120, 116,
+    97, 98, 99]
+```
+
+Large-file markers for `file="big.bin"`, size `32001`:
+
+```txt
+PLO_LARGEFILESTART "big.bin" "\n"
+=> [100, 98, 105, 103, 46, 98, 105, 110, 10]
+
+PLO_LARGEFILESIZE GINT5(32001) "\n"
+=> [116, 32, 32, 33, 154, 33, 10]
+
+PLO_LARGEFILEEND "big.bin" "\n"
+=> [101, 98, 105, 103, 46, 98, 105, 110, 10]
+```
+
+Update package boundary packets for `packageName="pkg"`, total size `100`:
+
+```txt
+PLO_UPDATEPACKAGESIZE GCHAR(3) "pkg" GINT5(100) "\n"
+=> [137, 35, 112, 107, 103, 32, 32, 32, 32, 132, 10]
+
+PLO_UPDATEPACKAGEDONE "pkg" "\n"
+=> [138, 112, 107, 103, 10]
+```
+
 ## Account Loading Fixtures
 
 These fixtures assert state transitions and persistence side-effect requests,

@@ -25,12 +25,17 @@ public sealed class ProtocolConstantTests
         Assert.Equal(16, (int)ServerToPlayerPacketId.DisconnectMessage);
         Assert.Equal(25, (int)ServerToPlayerPacketId.Signature);
         Assert.Equal(28, (int)ServerToPlayerPacketId.FlagSet);
+        Assert.Equal(30, (int)ServerToPlayerPacketId.FileSendFailed);
         Assert.Equal(34, (int)ServerToPlayerPacketId.NpcWeaponDelete);
+        Assert.Equal(45, (int)ServerToPlayerPacketId.FileUpToDate);
         Assert.Equal(100, (int)ServerToPlayerPacketId.RawData);
         Assert.Equal(101, (int)ServerToPlayerPacketId.BoardPacket);
         Assert.Equal(102, (int)ServerToPlayerPacketId.File);
+        Assert.Equal(105, (int)ServerToPlayerPacketId.UpdatePackageSize);
+        Assert.Equal(106, (int)ServerToPlayerPacketId.UpdatePackageDone);
         Assert.Equal(107, (int)ServerToPlayerPacketId.BoardLayer);
         Assert.Equal(156, (int)ServerToPlayerPacketId.SetActiveLevel);
+        Assert.Equal(187, (int)ServerToPlayerPacketId.UpdatePackageIsUpdated);
         Assert.Equal(174, (int)ServerToPlayerPacketId.GhostIcon);
         Assert.Equal(190, (int)ServerToPlayerPacketId.ServerListConnected);
         Assert.Equal(194, (int)ServerToPlayerPacketId.ClearWeapons);

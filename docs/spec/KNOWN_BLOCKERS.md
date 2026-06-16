@@ -71,6 +71,12 @@
   and chest packet builders. Player sign translation, NPC runtime creation,
   baddy ids/props/AI, chest opening gameplay, and `.graal`/`.zelda` parsers
   remain blocked.
+- File transfer cache boundary is implemented for confirmed `PLI_WANTFILE` and
+  `PLI_VERIFYWANTSEND` behavior, including file failed/up-to-date packets,
+  modern and old-client raw-data `PLO_FILE` chunks, large-file markers, CRC32,
+  and `.gupd` checksum-ignore behavior. Upload/write paths, production package
+  manager parsing, `PLI_UPDATEFILE` default-file cache behavior, and full
+  update-package lifecycle remain blocked.
 - Incoming decoded `PLI_PLAYERPROPS` movement/property parsing is implemented
   for the confirmed X/Y/Z, X2/Y2/Z2, sprite, current-level, and gani subset.
   Safe local runtime mutation, a packet builder for confirmed movement
