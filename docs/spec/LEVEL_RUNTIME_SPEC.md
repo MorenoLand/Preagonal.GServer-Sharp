@@ -225,6 +225,9 @@ paths may restore the previous level map or use the configured unstick level map
   `m_server->getLevel(level)`.
 - Both paths assert that `getLevel` succeeds in the C++ code.
 
+The pure C# map parser now exposes the confirmed metadata and preload selection
+without invoking production level loading. See `LEVEL_MAP_FORMAT_SPEC.md`.
+
 ## C# Port Mapping
 
 Recommended C# structure for this boundary:

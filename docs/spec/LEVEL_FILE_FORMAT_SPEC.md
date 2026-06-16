@@ -88,6 +88,9 @@ directives include:
 GMAP level names are untokenized with `guntokenizeI`, split by newline, and
 stored lowercased with map coordinates.
 
+The pure BIGMAP/GMAP parser is now implemented for source-confirmed map
+metadata behavior. See `docs/spec/LEVEL_MAP_FORMAT_SPEC.md`.
+
 ## C# Status
 
 Implemented source-confirmed format selection:
@@ -112,6 +115,10 @@ decoding, and static section preservation. See
 The first pure `.zelda` parser is implemented for confirmed versions, the `GR`
 fallback branch, 12-bit RLE tile decoding, and static section preservation. See
 `docs/spec/LEVEL_ZELDA_FORMAT_SPEC.md`.
+
+The first pure BIGMAP/GMAP parser is implemented for confirmed dimensions,
+lowercase level storage, map lookup, group-map metadata, images, and preload
+selection. See `docs/spec/LEVEL_MAP_FORMAT_SPEC.md`.
 
 No production level-file parser is wired to filesystem/runtime loading yet.
 

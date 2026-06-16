@@ -92,8 +92,11 @@
   load failure behavior are documented in `docs/spec/LEVEL_RUNTIME_SPEC.md`, but
   the production C# runtime implementation remains blocked. Pure `.graal` and
   `.zelda` parsing are implemented for confirmed static payloads, but production
-  legacy-format filesystem/runtime wiring remains blocked. `.gmap` parsing,
-  write/delete filesystem mutation, and file/resource transfer remain blocked.
+  legacy-format filesystem/runtime wiring remains blocked. Pure BIGMAP/GMAP
+  parsing, map lookup, group-map metadata, and preload selection are implemented
+  for confirmed metadata behavior, but production `Server::loadMaps`/
+  `loadMapLevels` wiring remains blocked. Write/delete filesystem mutation and
+  file/resource transfer remain blocked.
 - Pure `.nw` parsing is implemented for confirmed board tiles, links with an
   explicit target resolver, signs, chests with source-confirmed item names, NPC
   payload preservation, and baddy verse payload preservation. Board/layer/link/

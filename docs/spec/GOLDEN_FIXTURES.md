@@ -327,6 +327,86 @@ The `Z3-V1.03` fixture proves that baddy verses are not consumed for that
 version: a baddy triple followed immediately by the sentinel yields a baddy with
 an empty verse list and then the sign section begins.
 
+## BIGMAP / GMAP Parser Fixtures
+
+Source:
+
+```txt
+ai_resources/GServer-CPP-ORIGINAL/server/src/level/Map.cpp
+```
+
+BIGMAP fixture:
+
+```txt
+start.nw, second.nw,,
+"level, with comma.nw", THIRD.NW
+```
+
+Expected:
+
+```txt
+type=BIGMAP
+width=2
+height=2
+levels:
+  (0,0)=start.nw
+  (1,0)=second.nw
+  (0,1)=level, with comma.nw
+  (1,1)=third.nw
+```
+
+The trailing empty cells in the first row do not increase width. Interior empty
+cells are preserved for BIGMAP because C++ splits with `keepEmpty = true`.
+
+GMAP fixture:
+
+```txt
+WIDTH 3
+HEIGHT 2
+MAPIMG map.png
+MINIMAPIMG mini.png
+LOADFULLMAP
+LEVELNAMES
+start.nw, SECOND.NW
+"third level.nw", , fourth.nw
+LEVELNAMESEND
+```
+
+Expected:
+
+```txt
+type=GMAP
+width=3
+height=2
+mapImage=map.png
+miniMapImage=mini.png
+loadFullMap=true
+levels:
+  (0,0)=start.nw
+  (1,0)=second.nw
+  (2,0)=empty
+  (0,1)=third level.nw
+  (1,1)=fourth.nw
+  (2,1)=empty
+preload selection=[start.nw, second.nw, third level.nw, fourth.nw]
+```
+
+The blank middle entry in the second GMAP row is compressed because C++
+`tokenize("\n")` uses `keepEmpty = false`.
+
+`LOADATSTART` fixture:
+
+```txt
+LOADFULLMAP
+...
+LOADATSTART
+START.NW, "Second Level.NW"
+LOADATSTARTEND
+```
+
+Expected: `LOADATSTART` resets `loadFullMap=false` and preload selection becomes
+`[start.nw, second level.nw]`.
+
 ### GINT Property Example
 
 `PLPROP_RUPEESCOUNT` with value `1234`:

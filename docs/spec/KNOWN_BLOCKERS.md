@@ -98,8 +98,11 @@
   `LEVEL_RUNTIME_SPEC.md`, but the production C# runtime implementation remains
   blocked. Pure `.graal` and `.zelda` parsing are implemented for confirmed
   static payloads, but production legacy-format filesystem/runtime wiring
-  remains blocked. `.gmap` parsing, horse/baddy/NPC runtime construction,
-  write/delete filesystem mutation, and file-transfer behavior remain blocked.
+  remains blocked. Pure BIGMAP/GMAP parsing, map lookup, group-map metadata,
+  and preload selection are implemented for confirmed metadata behavior, but
+  production `Server::loadMaps`/`loadMapLevels` wiring remains blocked.
+  Horse/baddy/NPC runtime construction, write/delete filesystem mutation, and
+  file-transfer behavior remain blocked.
 - Pure `.nw` parsing is implemented for confirmed `BOARD`, `LINK`, `SIGN`,
   `CHEST`, `NPC`, and `BADDY` source-line behavior, plus board/layer/link/sign
   and chest packet builders. Player sign translation, NPC runtime creation,

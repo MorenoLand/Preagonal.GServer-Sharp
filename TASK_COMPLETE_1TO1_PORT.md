@@ -402,7 +402,12 @@ and all level formats.
     control codes, link filtering, v1.04 baddy verse consumption, v1.03
     no-verse behavior, and signs. Production filesystem/runtime wiring remains
     blocked.
-- [ ] Implement `.gmap` parser/map adjacency/group behavior.
+- [x] Implement `.gmap` parser/map adjacency/group behavior.
+  - 2026-06-16: Added pure BIGMAP/GMAP `MapFileParser` fixtures and
+    implementation for C++ `guntokenize`, dimensions, lowercase level storage,
+    exact map lookup, `getLevelAt`, group-map metadata, `MAPIMG`,
+    `MINIMAPIMG`, `LOADFULLMAP`, `LOADATSTART`, and preload selection.
+    Production `Server::loadMaps`/`loadMapLevels` wiring remains blocked.
 - [ ] Implement level cache ownership and invalidation only where confirmed.
 - [ ] Add golden fixtures for all level format signatures and representative
   packets.
