@@ -425,6 +425,9 @@ are left before a read. `readGChar()` then subtracts 32 from raw zero and
 
 ```txt
 empty buffer + readGUChar() => 224
+
+PLPROP_STATUS without its one-byte payload:
+PLPROP_STATUS => parsed status value 224
 ```
 
 Do not extend this fixture to truncated multi-byte scalar reads without a C++

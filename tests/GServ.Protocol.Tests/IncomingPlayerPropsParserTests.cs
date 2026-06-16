@@ -46,6 +46,20 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedTerminalStatusWithoutPayloadAsEofGCharValue()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.Status);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray());
+
+        Assert.True(result.Success);
+        var update = Assert.Single(result.Updates);
+        Assert.Equal(PlayerPropertyId.Status, update.PropertyId);
+        Assert.Equal((byte)224, update.GCharValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedNicknameBytesWithoutApplyingWordFilterOrSetNickSideEffects()
     {
         var body = new GraalBinaryWriter();

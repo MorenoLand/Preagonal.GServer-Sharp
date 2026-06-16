@@ -872,6 +872,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed `PLPROP_STATUS` fixtures for exact
     one-byte parsing and production blocked-dispatch behavior. Runtime
     death/revive/drop/leader effects remain blocked.
+  - 2026-06-16: Added source-confirmed malformed terminal `PLPROP_STATUS`
+    coverage: when the one-byte payload is missing, recovered `CString`
+    EOF behavior makes `readGUChar()` produce `224`.
   - 2026-06-16: Added source-confirmed `PLPROP_NICKNAME` fixtures for exact
     string parsing and production blocked-dispatch behavior. Word-filter,
     `setNick`, global forwarding, self echo, and persistence effects remain
