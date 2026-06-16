@@ -64,6 +64,22 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedNicknameByClampingDeclaredLengthToRemainingBytes()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.Nickname);
+        body.WriteGChar(4);
+        body.WriteBytes("Ru"u8);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray());
+
+        Assert.True(result.Success);
+        var update = Assert.Single(result.Updates);
+        Assert.Equal(PlayerPropertyId.Nickname, update.PropertyId);
+        Assert.Equal("Ru", update.StringValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedStringAndPreciseCoordinateProps()
     {
         var body = new GraalBinaryWriter();

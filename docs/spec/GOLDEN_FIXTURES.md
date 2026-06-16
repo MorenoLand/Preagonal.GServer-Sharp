@@ -1128,6 +1128,15 @@ PLPROP_X GCHAR(70)
     10]
 ```
 
+Inbound `PLPROP_NICKNAME` uses `GCHAR len` plus `CString::readChars(len)`.
+`readChars` clamps to bytes remaining, so a terminal truncated nickname payload
+parses the available bytes and remains blocked only at the runtime side-effect
+boundary:
+
+```txt
+PLPROP_NICKNAME + GCHAR(4) + "Ru" => "Ru"
+```
+
 Modern `sendLevel` no-map visibility tail fixture:
 
 ```txt

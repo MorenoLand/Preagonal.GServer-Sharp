@@ -818,6 +818,10 @@ behavior, and movement-loop invocation.
     string parsing and production blocked-dispatch behavior. Word-filter,
     `setNick`, global forwarding, self echo, and persistence effects remain
     blocked.
+  - 2026-06-16: Added source-confirmed `PLPROP_NICKNAME` truncated terminal
+    payload coverage, matching `CString::readChars` clamping the requested
+    nickname length to bytes remaining in the packet while keeping runtime
+    word-filter/`setNick` side effects blocked.
   - 2026-06-16: Added dev-only local pipeline coverage for parsed-but-unported
     player-prop side effects. The diagnostic shell now logs explicit
     `PLPROP_*` blocked side-effect messages instead of throwing when a
