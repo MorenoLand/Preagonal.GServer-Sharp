@@ -671,6 +671,30 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedConsumeOnlyNamesByClampingDeclaredLengthToRemainingBytes()
+    {
+        var accountBody = new GraalBinaryWriter();
+        accountBody.WriteGChar((byte)PlayerPropertyId.AccountName);
+        accountBody.WriteGChar(4);
+        accountBody.WriteBytes("Ru"u8);
+
+        var communityBody = new GraalBinaryWriter();
+        communityBody.WriteGChar((byte)PlayerPropertyId.CommunityName);
+        communityBody.WriteGChar(8);
+        communityBody.WriteBytes("comm"u8);
+
+        var account = IncomingPlayerPropsParser.Parse(accountBody.ToArray());
+        var community = IncomingPlayerPropsParser.Parse(communityBody.ToArray());
+
+        Assert.True(account.Success);
+        Assert.True(community.Success);
+        Assert.Equal(PlayerPropertyId.AccountName, Assert.Single(account.Updates).PropertyId);
+        Assert.Equal(PlayerPropertyId.CommunityName, Assert.Single(community.Updates).PropertyId);
+        Assert.Null(account.Updates[0].StringValue);
+        Assert.Null(community.Updates[0].StringValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedIpAddressByConsumingGInt5WithoutInventingMutationValue()
     {
         var body = new GraalBinaryWriter();

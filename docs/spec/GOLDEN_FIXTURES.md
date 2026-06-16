@@ -2318,6 +2318,13 @@ Full generic forwarding for this property must use the current
 `getProp(PLPROP_ACCOUNTNAME)` account state and remains blocked until that
 state-backed forwarding path exists.
 
+Terminal truncated account-name payloads still parse as consume-only updates
+because `CString::readChars` clamps to bytes remaining:
+
+```txt
+PLPROP_ACCOUNTNAME + GCHAR(4) + "Ru" => consume-only/no mutation value
+```
+
 Source-confirmed `PLPROP_COMMUNITYNAME` consume-only update:
 
 ```txt
@@ -2328,6 +2335,12 @@ The incoming community-name bytes are consumed, but C++ `setProps` discards
 them. The live state-backed forwarding path uses the current runtime community
 name; isolated stateless forwarding remains blocked because it must not echo
 client-sent community-name bytes.
+
+Terminal truncated community-name payloads follow the same consume-only clamp:
+
+```txt
+PLPROP_COMMUNITYNAME + GCHAR(8) + "comm" => consume-only/no mutation value
+```
 
 Source-confirmed `PLPROP_IPADDR` consume-only update:
 

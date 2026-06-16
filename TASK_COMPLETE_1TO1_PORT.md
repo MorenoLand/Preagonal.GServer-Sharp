@@ -750,6 +750,9 @@ behavior, and movement-loop invocation.
     and full state-backed forwarding order remain open.
   - 2026-06-16: Added the same source-confirmed blocked/update boundary
     fixtures for `PLPROP_COMMUNITYNAME`.
+  - 2026-06-16: Added source-confirmed truncated terminal payload coverage for
+    consume-only `PLPROP_ACCOUNTNAME` and `PLPROP_COMMUNITYNAME`, matching
+    `CString::readChars` clamping while still discarding client-sent values.
   - 2026-06-16: Added source-confirmed blocked/update boundary fixtures for
     `PLPROP_IPADDR`: exact `GInt5` consumption, no invented mutation value, and
     no runtime state change.
