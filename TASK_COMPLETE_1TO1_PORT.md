@@ -518,8 +518,13 @@ behavior, and movement-loop invocation.
     serialization.
 - [ ] Wire live `testSign` invocation through confirmed movement branches.
 - [ ] Keep NPC touch script events blocked until scripting runtime exists.
-- [ ] Confirm whether automatic player movement-to-link warp exists; implement
+- [x] Confirm whether automatic player movement-to-link warp exists; implement
   only if a direct C++ path is found.
+  - 2026-06-16: Confirmed in `docs/spec/MOVEMENT_LINKS_CHESTS_SPEC.md` that
+    this recovered C++ source does not show a direct automatic
+    player-movement-to-link warp path. Player link warp remains the explicit
+    `PLI_LEVELWARP`/`PLI_LEVELWARPMOD` client packet path; NPC link traversal is
+    separate and must not be copied into player movement.
 - [ ] Add golden tests for property order, forwarding version differences,
   blocked updates, and malformed values.
 
