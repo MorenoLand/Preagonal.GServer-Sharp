@@ -601,6 +601,14 @@ behavior, and movement-loop invocation.
     Generic local forwarding now serializes `GCHAR(horseImage.length) +
     horseImage`. Loaded/global recipient routing remains blocked until
     production session routing is exact.
+  - 2026-06-16: Implemented the source-confirmed `PLPROP_CURCHAT`
+    parser/runtime/generic-forwarding boundary for current-message storage.
+    The parser preserves C++'s maximum 223-byte read from the declared length
+    and leaves remaining bytes available for following properties. The runtime
+    applier stores the current chat message, and generic local forwarding uses
+    `GCHAR(chatMessage.length) + chatMessage`. `m_lastChat`, `processChat`,
+    word-filter self echo, and V8 NPC chat events remain blocked until those
+    systems are ported from C++.
   - 2026-06-16: Implemented the source-confirmed `PLPROP_HEADGIF` state
     mutation and generic local forwarding boundary. The parser preserves the
     C++ `len < 100` default-head mapping, `len == 100` no-change sentinel,
@@ -660,6 +668,9 @@ behavior, and movement-loop invocation.
   - 2026-06-16: Added source-confirmed `PLPROP_HORSEGIF` fixtures for
     old-client `.gif` suffixing, the 219-byte maximum read behavior that leaves
     following bytes for subsequent props, and generic local forwarding bytes.
+  - 2026-06-16: Added source-confirmed `PLPROP_CURCHAT` fixtures for the
+    223-byte maximum read behavior that leaves following bytes for subsequent
+    props, runtime message storage, and generic local forwarding bytes.
   - 2026-06-16: Added source-confirmed `PLPROP_HEADGIF` fixtures for
     modern/old default heads, custom `len - 100` images, newline truncation,
     old-client `.gif` suffix, `len == 100` no-change parsing, 123-char runtime

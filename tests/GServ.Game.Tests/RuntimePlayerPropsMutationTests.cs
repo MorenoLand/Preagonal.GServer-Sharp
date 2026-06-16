@@ -229,6 +229,20 @@ public sealed class RuntimePlayerPropsMutationTests
     }
 
     [Fact]
+    public void AppliesConfirmedCurrentChatPropWithoutMovementSideEffects()
+    {
+        var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
+
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentChat, "hello")]);
+
+        Assert.Equal("hello", player.ChatMessage);
+        Assert.False(player.MovementUpdated);
+        Assert.False(player.TouchTestRequested);
+    }
+
+    [Fact]
     public void AppliesConfirmedHeadImagePropWithCppLengthLimit()
     {
         var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);

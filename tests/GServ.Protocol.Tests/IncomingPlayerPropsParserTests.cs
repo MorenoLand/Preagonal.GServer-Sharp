@@ -260,6 +260,24 @@ public sealed class IncomingPlayerPropsParserTests
     }
 
     [Fact]
+    public void ParsesConfirmedCurrentChatByReadingAtMost223Bytes()
+    {
+        var body = new GraalBinaryWriter();
+        body.WriteGChar((byte)PlayerPropertyId.CurrentChat);
+        body.WriteGChar(226);
+        body.WriteBytes(Enumerable.Repeat((byte)'c', 223).ToArray());
+        body.WriteGChar((byte)PlayerPropertyId.X);
+        body.WriteGChar(70);
+
+        var result = IncomingPlayerPropsParser.Parse(body.ToArray(), ClientVersionId.Client21);
+
+        Assert.True(result.Success);
+        Assert.Equal([PlayerPropertyId.CurrentChat, PlayerPropertyId.X], result.Updates.Select(update => update.PropertyId));
+        Assert.Equal(new string('c', 223), result.Updates[0].StringValue);
+        Assert.Equal((byte)70, result.Updates[1].GCharValue);
+    }
+
+    [Fact]
     public void ParsesConfirmedSwordAndShieldPowerRawValuesAndCustomImages()
     {
         var body = new GraalBinaryWriter();
@@ -671,6 +689,21 @@ public sealed class IncomingPlayerPropsParserTests
             appendNewline: true);
 
         Assert.Equal([40, 32, 39, 53, 41, 104, 111, 114, 115, 101, 46, 112, 110, 103, 10], packet);
+    }
+
+    [Fact]
+    public void ForwardsConfirmedCurrentChatWithCurrentStringPayload()
+    {
+        var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
+            playerId: 7,
+            pixelX: 0,
+            pixelY: 0,
+            pixelZ: 0,
+            [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentChat, "hello")],
+            senderSupportsPreciseMovement: true,
+            appendNewline: true);
+
+        Assert.Equal([40, 32, 39, 44, 37, 104, 101, 108, 108, 111, 10], packet);
     }
 
     [Fact]

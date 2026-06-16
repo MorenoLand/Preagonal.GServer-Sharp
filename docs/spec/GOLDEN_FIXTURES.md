@@ -2306,3 +2306,22 @@ bytes:
 The `healswords=true` negative-power branch remains blocked because the C++
 stores `Character::swordPower` as `uint8_t`; wrap/serialization behavior needs
 dedicated fixture proof before the C# port should expose it as completed.
+
+Source-confirmed `PLPROP_CURCHAT` update:
+
+```txt
+PLPROP_CURCHAT + GCHAR(226) + 223 * "c" + PLPROP_X + GCHAR(70)
+=> chat message length 223, then PLPROP_X is parsed normally
+```
+
+Generic local forwarding uses C++ `getProp(PLPROP_CURCHAT)` shape:
+
+```txt
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_CURCHAT + GCHAR(5) + "hello" + "\n"
+bytes: 40 32 39 44 37 104 101 108 108 111 10
+```
+
+The current C# slice stores and serializes the current chat message only.
+`m_lastChat`, `processChat`, word-filter replacement/warning echo, and V8 NPC
+chat event dispatch remain blocked until those source-confirmed systems are
+ported.

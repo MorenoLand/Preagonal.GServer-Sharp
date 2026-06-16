@@ -55,6 +55,7 @@ public sealed class RuntimePlayer
     public string HeadImage { get; internal set; } = "head0.png";
     public string HorseImage { get; internal set; } = string.Empty;
     public string BodyImage { get; internal set; } = string.Empty;
+    public string ChatMessage { get; internal set; } = string.Empty;
     public string Language { get; internal set; } = string.Empty;
     public string Os { get; internal set; } = string.Empty;
     public uint TextCodePage { get; internal set; }
@@ -215,6 +216,10 @@ public static class RuntimePlayerPropsApplier
 
                 case GServ.Protocol.PlayerPropertyId.HorseGif:
                     player.HorseImage = update.StringValue ?? string.Empty;
+                    break;
+
+                case GServ.Protocol.PlayerPropertyId.CurrentChat:
+                    player.ChatMessage = LimitString(update.StringValue ?? string.Empty, 223);
                     break;
 
                 case GServ.Protocol.PlayerPropertyId.BodyImage:

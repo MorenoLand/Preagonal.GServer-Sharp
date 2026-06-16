@@ -100,6 +100,10 @@ public static class IncomingPlayerPropsParser
                     updates.Add(ReadHeadImage(reader, clientVersion));
                     break;
 
+                case PlayerPropertyId.CurrentChat:
+                    updates.Add(ReadCurrentChat(reader));
+                    break;
+
                 case PlayerPropertyId.HorseGif:
                     updates.Add(ReadHorseImage(reader, clientVersion));
                     break;
@@ -218,6 +222,13 @@ public static class IncomingPlayerPropsParser
             image += ".gif";
 
         return IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HorseGif, image);
+    }
+
+    private static IncomingPlayerPropertyUpdate ReadCurrentChat(GraalBinaryReader reader)
+    {
+        var length = reader.ReadGChar();
+        var message = Encoding.ASCII.GetString(reader.ReadBytes(Math.Min((int)length, 223)));
+        return IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentChat, message);
     }
 
     private static IncomingPlayerPropertyUpdate ReadSwordPower(
@@ -354,6 +365,10 @@ public static class IncomingPlayerPropsForwarding
 
                 case PlayerPropertyId.HorseGif:
                     WriteProperty(levelBuff, PlayerPropertyId.HorseGif, writer => WriteGCharString(writer, update.StringValue ?? string.Empty));
+                    break;
+
+                case PlayerPropertyId.CurrentChat:
+                    WriteProperty(levelBuff, PlayerPropertyId.CurrentChat, writer => WriteGCharString(writer, update.StringValue ?? string.Empty));
                     break;
 
                 case PlayerPropertyId.ApCounter:
