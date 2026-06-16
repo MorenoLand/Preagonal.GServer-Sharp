@@ -221,8 +221,12 @@ Implemented:
 - `.gupd` checksum-ignore behavior for verify-want-send
 - `PLI_UPDATEFILE` behavior is documented but not implemented as a production
   boundary yet
-- update package parsing and request lifecycle are documented but not wired to
-  production repositories yet
+- update package request lifecycle over an explicitly supplied package snapshot:
+  checksum comparison in entry order, reinstall checksum clearing, total
+  download size, missing-file sends through the confirmed `sendFile` boundary,
+  and `PLO_UPDATEPACKAGESIZE`/`PLO_UPDATEPACKAGEDONE` wrapper order
+- update package parsing is documented but not wired to production repositories
+  yet
 
 Blocked:
 
@@ -233,6 +237,7 @@ Blocked:
 - exact `FileSystem::find` relative path stripping beyond the current resource
   abstraction
 - update-package file send ordering because C++ stores entries in
-  `std::unordered_map`
+  `std::unordered_map`; the current C# lifecycle helper preserves the supplied
+  snapshot order and must be fed C++-captured order before certification
 - integration with production socket loop beyond already-confirmed
   `GraalFileQueue` queue/compression behavior

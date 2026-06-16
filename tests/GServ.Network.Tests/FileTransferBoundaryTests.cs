@@ -77,6 +77,65 @@ public sealed class FileTransferBoundaryTests
         Assert.Equal(2, session.TakeOutboundBytes().Count(value => value == 10));
     }
 
+    [Fact]
+    public void UpdatePackageRequestSendsOnlyFilesWithMissingOrDifferentChecksums()
+    {
+        var fileSystem = new MemoryResourceFileSystem();
+        fileSystem.Add("a.txt", Encoding.ASCII.GetBytes("A"), modTime: 1);
+        fileSystem.Add("b.txt", Encoding.ASCII.GetBytes("BC"), modTime: 2);
+        var package = new UpdatePackageSnapshot(
+            "pkg",
+            [
+                new UpdatePackageFileEntry("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
+                new UpdatePackageFileEntry("b.txt", Size: 2, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("BC")))
+            ]);
+        var session = new ClientSessionSkeleton(7);
+
+        var result = FileTransferBoundary.HandleUpdatePackageRequest(
+            session,
+            fileSystem,
+            package,
+            installType: 1,
+            clientChecksums: [Crc32.Compute(Encoding.ASCII.GetBytes("A")), 0],
+            ClientVersionId.Client6037);
+
+        Assert.Equal(2, result.TotalDownloadSize);
+        Assert.Equal(["b.txt"], result.MissingFiles);
+        Assert.Equal(
+            [
+                137, 35, 112, 107, 103, 32, 32, 32, 32, 34, 10,
+                132, 32, 32, 47, 10, 134, 32, 32, 32, 32, 34, 37, 98, 46, 116, 120, 116, 66, 67, 10,
+                138, 112, 107, 103, 10
+            ],
+            session.TakeOutboundBytes());
+    }
+
+    [Fact]
+    public void UpdatePackageReinstallClearsClientChecksumsAndSendsEveryPackageFile()
+    {
+        var fileSystem = new MemoryResourceFileSystem();
+        fileSystem.Add("a.txt", Encoding.ASCII.GetBytes("A"), modTime: 1);
+        fileSystem.Add("b.txt", Encoding.ASCII.GetBytes("B"), modTime: 1);
+        var package = new UpdatePackageSnapshot(
+            "pkg",
+            [
+                new UpdatePackageFileEntry("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
+                new UpdatePackageFileEntry("b.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("B")))
+            ]);
+        var session = new ClientSessionSkeleton(7);
+
+        var result = FileTransferBoundary.HandleUpdatePackageRequest(
+            session,
+            fileSystem,
+            package,
+            installType: 2,
+            clientChecksums: [Crc32.Compute(Encoding.ASCII.GetBytes("A")), Crc32.Compute(Encoding.ASCII.GetBytes("B"))],
+            ClientVersionId.Client6037);
+
+        Assert.Equal(2, result.TotalDownloadSize);
+        Assert.Equal(["a.txt", "b.txt"], result.MissingFiles);
+    }
+
     private sealed class MemoryResourceFileSystem : IResourceFileSystem
     {
         private readonly Dictionary<string, ResourceFile> _files = new(StringComparer.Ordinal);

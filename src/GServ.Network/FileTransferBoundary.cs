@@ -21,6 +21,12 @@ public sealed record FileTransferResult(
     bool Sent,
     IReadOnlyList<string> KnownFiles);
 
+public sealed record UpdatePackageFileEntry(string FileName, int Size, uint Checksum);
+
+public sealed record UpdatePackageSnapshot(string PackageName, IReadOnlyList<UpdatePackageFileEntry> Files);
+
+public sealed record UpdatePackageTransferResult(int TotalDownloadSize, IReadOnlyList<string> MissingFiles);
+
 public static class FileTransferBoundary
 {
     public static FileTransferResult HandleWantFile(
@@ -49,6 +55,42 @@ public static class FileTransferBoundary
         }
 
         return SendFile(session, fileSystem, fileName, clientVersion);
+    }
+
+    public static UpdatePackageTransferResult HandleUpdatePackageRequest(
+        ClientSessionSkeleton session,
+        IResourceFileSystem fileSystem,
+        UpdatePackageSnapshot package,
+        byte installType,
+        IReadOnlyList<uint> clientChecksums,
+        ClientVersionId clientVersion)
+    {
+        var useClientChecksums = installType != 2;
+        var missingFiles = new List<string>();
+        var totalDownloadSize = 0;
+
+        for (var i = 0; i < package.Files.Count; i++)
+        {
+            var entry = package.Files[i];
+            var needsFile = true;
+            if (useClientChecksums && i < clientChecksums.Count && entry.Checksum == clientChecksums[i])
+                needsFile = false;
+
+            if (!needsFile)
+                continue;
+
+            totalDownloadSize += entry.Size;
+            missingFiles.Add(entry.FileName);
+        }
+
+        session.QueuePacket(FileTransferPackets.UpdatePackageSize(package.PackageName, totalDownloadSize));
+
+        foreach (var fileName in missingFiles)
+            SendFile(session, fileSystem, fileName, clientVersion);
+
+        session.QueuePacket(FileTransferPackets.UpdatePackageDone(package.PackageName));
+
+        return new UpdatePackageTransferResult(totalDownloadSize, missingFiles);
     }
 
     private static FileTransferResult SendFile(

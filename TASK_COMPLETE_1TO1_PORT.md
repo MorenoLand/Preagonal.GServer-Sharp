@@ -758,7 +758,13 @@ lifecycle.
     `UpdatePackage::load`/`reload` parsing, CRC32/size calculation,
     base-filename lookup behavior, `std::unordered_map` ordering risk, and
     existing `PLI_UPDATEPACKAGEREQUESTFILE` send sequence.
-- [ ] Implement source-confirmed update package send/verify lifecycle.
+- [x] Implement source-confirmed update package send/verify lifecycle.
+  - 2026-06-16: Added `FileTransferBoundary.HandleUpdatePackageRequest` for a
+    supplied `UpdatePackageSnapshot`. It preserves C++ checksum comparison
+    semantics, reinstall checksum clearing, total-download-size calculation,
+    missing-file sends through the existing confirmed `sendFile` boundary, and
+    `PLO_UPDATEPACKAGESIZE`/`PLO_UPDATEPACKAGEDONE` order. Production package
+    manager parsing and unordered-map iteration certification remain blocked.
 - [ ] Implement upload/write paths only after exact rights/path behavior is
   confirmed.
 - [ ] Add tests for checksums, package done/size, failed/up-to-date, and path
