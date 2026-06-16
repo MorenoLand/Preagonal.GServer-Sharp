@@ -2615,9 +2615,19 @@ PLPROP_UDPPORT + GInt(14900)
 ```
 
 C++ stores the decoded UDP port in `m_udpport`. If the player is loaded and has
-a valid id, C++ also emits a direct `PLO_OTHERPLPROPS` UDP-port packet to other
-clients, and the generic forwarding tail can apply. Those sends remain blocked
-until production session routing can choose recipients exactly.
+a valid id, C++ also emits a direct `PLO_OTHERPLPROPS` UDP-port packet to every
+client except self, then the generic forwarding tail can emit the same payload
+to level-area clients:
+
+```txt
+direct global packet:
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_UDPPORT + GINT(14900) + "\n"
+bytes: 40 32 39 63 32 148 84 10
+
+same-level client sees the direct packet and the later generic local tail.
+other-level client sees only the direct packet.
+RC/NC sessions are not `PLTYPE_ANYCLIENT` recipients.
+```
 
 Source-confirmed `PLPROP_GMAPLEVELX/Y` parser boundary:
 
@@ -2641,10 +2651,20 @@ PLPROP_PSTATUSMSG + GCHAR(4)
 ```
 
 C++ stores the decoded player-list status-message index in `m_statusMsg`. If
-the player is loaded and has a valid id, C++ broadcasts
-`PLO_OTHERPLPROPS + id + PLPROP_PSTATUSMSG + GCHAR(status)` to all except self.
-That broadcast remains blocked until production player-list routing can choose
-recipients exactly.
+the player is loaded and has a valid id, C++ emits a direct
+`PLO_OTHERPLPROPS + id + PLPROP_PSTATUSMSG + GCHAR(status)` packet to every
+client except self. Because `__sendLocal[53]` is true, the generic local tail
+can then emit the same payload to level-area clients:
+
+```txt
+direct global packet:
+PLO_OTHERPLPROPS + GSHORT(7) + PLPROP_PSTATUSMSG + GCHAR(4) + "\n"
+bytes: 40 32 39 85 36 10
+
+same-level client sees the direct packet and the later generic local tail.
+other-level client sees only the direct packet.
+RC/NC sessions are not `PLTYPE_ANYCLIENT` recipients.
+```
 
 Source-confirmed modern `PLPROP_HORSEGIF` update:
 

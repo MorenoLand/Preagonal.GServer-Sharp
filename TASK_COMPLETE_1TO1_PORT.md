@@ -752,6 +752,13 @@ behavior, and movement-loop invocation.
     following props, while production dispatch blocks until the word filter,
     `setNick`, global forwarding, self echo, and persistence side effects are
     ported exactly.
+  - 2026-06-16: Implemented the source-confirmed live direct broadcast side
+    packets for `PLPROP_UDPPORT` and `PLPROP_PSTATUSMSG`. Like C++,
+    live-world forwarding now sends the direct
+    `PLO_OTHERPLPROPS + id + prop + value` packet to every client except self
+    before the generic local forwarding tail; same-level clients therefore see
+    both packets, other-level clients see only the direct packet, and RC/NC
+    sessions receive neither.
 - [x] Wire live `testSign` invocation through confirmed movement branches.
   - 2026-06-16: Added a source-confirmed movement sign-touch helper that runs
     only after movement requested touch testing, converts internal pixels to

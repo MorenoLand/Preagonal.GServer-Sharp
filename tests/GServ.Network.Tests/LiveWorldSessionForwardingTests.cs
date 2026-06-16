@@ -220,6 +220,68 @@ public sealed class LiveWorldSessionForwardingTests
     }
 
     [Fact]
+    public void ApplyAndForwardConfirmedPlayerStatusMessageSendsDirectGlobalBroadcastAndGenericLocalTail()
+    {
+        var server = new RuntimeServer();
+        var level = new RuntimeLevel("start.nw");
+        var sender = Add(server, 7, RuntimePlayerKind.Client, level);
+        Add(server, 8, RuntimePlayerKind.Client, level);
+        Add(server, 9, RuntimePlayerKind.RemoteControl, level);
+        Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        var sinks = CreateSinks(7, 8, 9, 10);
+
+        var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
+            server,
+            sender,
+            [IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.PlayerStatusMessage, 4)],
+            senderSupportsPreciseMovement: true,
+            AsSinks(sinks));
+
+        var expected = new GraalBinaryWriter();
+        expected.WriteGChar((byte)ServerToPlayerPacketId.OtherPlayerProps);
+        expected.WriteGShort(7);
+        expected.WriteGChar((byte)PlayerPropertyId.PlayerStatusMessage);
+        expected.WriteGChar(4);
+        expected.WriteByte((byte)'\n');
+
+        Assert.Equal(4, sender.StatusMessage);
+        Assert.Equal([8, 10, 8], deliveries.Select(delivery => delivery.PlayerId));
+        Assert.Equal([expected.ToArray(), expected.ToArray()], sinks[8].Packets);
+        Assert.Empty(sinks[9].Packets);
+        Assert.Equal(expected.ToArray(), sinks[10].Packets.Single());
+    }
+
+    [Fact]
+    public void ApplyAndForwardConfirmedUdpPortSendsDirectGlobalBroadcastAndGenericLocalTail()
+    {
+        var server = new RuntimeServer();
+        var level = new RuntimeLevel("start.nw");
+        var sender = Add(server, 7, RuntimePlayerKind.Client, level);
+        Add(server, 8, RuntimePlayerKind.Client, level);
+        Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        var sinks = CreateSinks(7, 8, 10);
+
+        var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
+            server,
+            sender,
+            [IncomingPlayerPropertyUpdate.GInt(PlayerPropertyId.UdpPort, 14900)],
+            senderSupportsPreciseMovement: true,
+            AsSinks(sinks));
+
+        var expected = new GraalBinaryWriter();
+        expected.WriteGChar((byte)ServerToPlayerPacketId.OtherPlayerProps);
+        expected.WriteGShort(7);
+        expected.WriteGChar((byte)PlayerPropertyId.UdpPort);
+        expected.WriteGInt(14900);
+        expected.WriteByte((byte)'\n');
+
+        Assert.Equal(14900u, sender.UdpPort);
+        Assert.Equal([8, 10, 8], deliveries.Select(delivery => delivery.PlayerId));
+        Assert.Equal([expected.ToArray(), expected.ToArray()], sinks[8].Packets);
+        Assert.Equal(expected.ToArray(), sinks[10].Packets.Single());
+    }
+
+    [Fact]
     public void TryApplyAndForwardPlayerPropsBlocksParsedButUnportedSideEffectsWithoutForwarding()
     {
         var server = new RuntimeServer();

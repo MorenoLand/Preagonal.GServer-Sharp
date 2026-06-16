@@ -450,6 +450,10 @@ public static class IncomingPlayerPropsForwarding
                     WriteProperty(levelBuff, PlayerPropertyId.UdpPort, writer => writer.WriteGInt(unchecked((uint)update.GIntValue.GetValueOrDefault())));
                     break;
 
+                case PlayerPropertyId.PlayerStatusMessage:
+                    WriteProperty(levelBuff, PlayerPropertyId.PlayerStatusMessage, writer => writer.WriteGChar(update.GCharValue.GetValueOrDefault()));
+                    break;
+
                 case PlayerPropertyId.AccountName:
                     if (state?.AccountName is { } accountName)
                         WriteProperty(levelBuff, PlayerPropertyId.AccountName, writer => WriteGCharString(writer, accountName));

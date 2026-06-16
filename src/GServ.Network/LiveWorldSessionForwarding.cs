@@ -89,6 +89,7 @@ public static class LiveWorldSessionForwarder
         IReadOnlyDictionary<ushort, ILiveWorldSessionSink> sinks)
     {
         var updateArray = updates.ToArray();
+        var directDeliveries = new List<LiveWorldForwardingDelivery>();
         foreach (var update in updateArray)
         {
             try
@@ -100,6 +101,8 @@ public static class LiveWorldSessionForwarder
                 return LiveWorldPlayerPropsForwardingResult.Blocked(
                     $"{CppNameOf(update.PropertyId)} was parsed with source-confirmed bytes, but its runtime side effects are not ported yet: {ex.Message}");
             }
+
+            directDeliveries.AddRange(BuildAndDeliverDirectPlayerPropPackets(server, sender, update, sinks));
         }
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -119,14 +122,60 @@ public static class LiveWorldSessionForwarder
                 EloRating: sender.EloRating,
                 EloDeviation: sender.EloDeviation));
 
-        var deliveries = ForwardConfirmedLevelAreaPacket(
+        var levelDeliveries = ForwardConfirmedLevelAreaPacket(
             server,
             sender,
             packet,
             sinks,
             new HashSet<ushort> { sender.Id });
 
+        var deliveries = new List<LiveWorldForwardingDelivery>(directDeliveries.Count + levelDeliveries.Count);
+        deliveries.AddRange(directDeliveries);
+        deliveries.AddRange(levelDeliveries);
+
         return LiveWorldPlayerPropsForwardingResult.Delivered(deliveries);
+    }
+
+    private static IReadOnlyList<LiveWorldForwardingDelivery> BuildAndDeliverDirectPlayerPropPackets(
+        RuntimeServer server,
+        RuntimePlayer sender,
+        IncomingPlayerPropertyUpdate update,
+        IReadOnlyDictionary<ushort, ILiveWorldSessionSink> sinks)
+    {
+        var payload = new GraalBinaryWriter();
+        switch (update.PropertyId)
+        {
+            case PlayerPropertyId.UdpPort:
+                payload.WriteGChar((byte)PlayerPropertyId.UdpPort);
+                payload.WriteGInt(sender.UdpPort);
+                break;
+
+            case PlayerPropertyId.PlayerStatusMessage:
+                payload.WriteGChar((byte)PlayerPropertyId.PlayerStatusMessage);
+                payload.WriteGChar(sender.StatusMessage);
+                break;
+
+            default:
+                return [];
+        }
+
+        var packet = PlayerPropertySerializer.BuildOtherPlayerPropsPacket(
+            sender.Id,
+            payload.ToArray(),
+            appendNewline: true);
+
+        var recipients = new List<ushort>();
+        foreach (var other in server.Players)
+        {
+            if (other.Id == sender.Id)
+                continue;
+            if (!other.IsClient)
+                continue;
+
+            recipients.Add(other.Id);
+        }
+
+        return Deliver(packet, recipients, sinks);
     }
 
     private static IReadOnlyList<LiveWorldForwardingDelivery> Deliver(
