@@ -24,6 +24,26 @@ list-server SVI_VERIACC2
 
 The C# port currently stops before `Player::sendLogin` and marks the session `ServerListAuthAcceptedPreWorld`.
 
+## Server-List Registration Packet Flow
+
+```txt
+connectServer success
+  -> clear file queue buffers
+  -> codec gen1
+  -> SVO_REGISTERV3 + APP_VERSION, send immediately
+  -> codec gen2
+  -> SVO_SERVERHQPASS + hq_password
+  -> SVO_NEWSERVER + length-prefixed server info fields
+  -> SVO_SERVERHQLEVEL + (0 if onlystaff else hq_level default 1)
+  -> SVO_SENDTEXT "Listserver,settings,allowedversions,{gtokenized versions}"
+  -> SVO_SETPLYR
+  -> SVO_PLYRADD for each current player
+```
+
+The C# protocol project now has byte-level body builders for these confirmed
+packets. Production socket connection and queue flushing remain separate from
+the packet body builders.
+
 ## Queue Behavior
 
 `ServerList::sendPacket` appends a newline before passing the packet into
@@ -31,4 +51,5 @@ The C# port currently stops before `Player::sendLogin` and marks the session `Se
 registration, so `CFileQueue::sendCompress` zlib-compresses queued bytes and
 prefixes a raw big-endian short length when flushed. The zlib socket flush
 format is now fixture-confirmed in `docs/spec/CFILEQUEUE_FIXTURE_HARNESS.md`;
-real list-server connection/auth lifecycle remains a separate milestone.
+real list-server socket connection/reconnect lifecycle remains a separate
+milestone.

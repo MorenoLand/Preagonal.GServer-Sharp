@@ -39,6 +39,38 @@ identity bytes
 
 The packet is queued through `ServerList::sendPacket`, which appends `\n` if missing. The current C# builder emits the packet body before queue newline/compression so tests can lock the field order and raw bytes.
 
+## Server-List Registration Boundary
+
+`ServerList::connectServer` performs these confirmed packet steps after the
+socket connects:
+
+1. Clear pending `CFileQueue` buffers.
+2. Set the list-server queue codec to `ENCRYPT_GEN_1`.
+3. Send `SVO_REGISTERV3` with raw `APP_VERSION`, flushing immediately.
+4. Set the list-server queue codec to `ENCRYPT_GEN_2`.
+5. Send `SVO_SERVERHQPASS` with `adminconfig.txt` key `hq_password`.
+6. Send `SVO_NEWSERVER` with GCHAR-length strings for `name`, `description`,
+   `language`, `APP_VERSION`, `url`, `serverip`, `serverport`, and `localip`.
+7. Send `SVO_SERVERHQLEVEL`; the value is `0` when `onlystaff=true`, otherwise
+   `adminconfig.txt` key `hq_level` with default `1`.
+8. Send allowed-version config through `SVO_SENDTEXT` as
+   `Listserver,settings,allowedversions,{comma-separated gtokenized versions}`.
+9. Send current players through `SVO_SETPLYR`, followed by `SVO_PLYRADD` for
+   each current player.
+
+Implemented C# packet body builders:
+
+- `RegisterV3`
+- `ServerHqPass`
+- `NewServer`
+- `ServerHqLevel`
+- `AllowedVersionsText`
+- `SetPlayers`
+
+The exact socket connection lifecycle, reconnect behavior, local IP discovery,
+and `CFileQueue` gen1-to-gen2 flush sequencing are still not a production
+socket implementation.
+
 ## Server-List Auth Response
 
 `ServerList::msgSVI_VERIACC2` reads:
@@ -56,6 +88,21 @@ The response overwrites the local player account name with the server-list accou
 If `message != "SUCCESS"`, C++ sends `PLO_DISCMESSAGE` with that message, sets load-only, disconnects, and does not call `Player::sendLogin`.
 
 If `message == "SUCCESS"`, C++ calls `Player::sendLogin`. The C# implementation now continues through the source-confirmed beginning of `Player::sendLogin` in `PlayerSendLoginContinuation`, then stops at `ReadyForWorldEntry` before `Server::playerLoggedIn`.
+
+## Production C# Auth Boundary
+
+`ProductionAuthServerListBoundary` models the production shape without inventing
+account validation:
+
+- Runs the source-confirmed pre-world checks through `PreWorldAuthBoundary`.
+- Reads list-server connectivity from `IProductionServerListGateway`.
+- Queues `SVO_VERIACC2` through `SendLoginPacketForPlayer` only when the
+  pre-world checks accept the login.
+- Does not inject a fake success response.
+
+The dev-only TCP shell still performs an explicit fake server-list success, but
+that remains isolated behind `EnableDevOnlyAuth=true` and is not production
+behavior.
 
 ## `Player::sendLogin` Pre-World Checks
 

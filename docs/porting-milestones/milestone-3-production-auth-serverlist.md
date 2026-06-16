@@ -19,17 +19,17 @@
 
 ## Required Work
 
-- [ ] Re-trace list-server connection, registration, account verification, version enforcement, and rejection paths.
-- [ ] Update `docs/spec/AUTH_SERVERLIST_SPEC.md` and `docs/spec/AUTH_SERVERLIST_PACKET_FLOW.md`.
-- [ ] Add packet builders/tests for confirmed `SVO_*`, `SVI_*`, login reject, and disconnect messages.
-- [ ] Add production auth interface names that preserve C++ concepts in docs.
-- [ ] Remove or isolate fake dev auth from production code paths.
-- [ ] Implement confirmed version checks from `allowedversions.txt` and list-server responses.
-- [ ] Add tests for invalid version, rejected account, banned response, and allowed auth only where exact response packets are confirmed.
-- [ ] Run `dotnet build GServharp.sln`.
-- [ ] Run `dotnet test GServharp.sln`.
-- [ ] Confirm `git status --short ai_resources` is empty.
-- [ ] Commit with message `Implement production auth serverlist boundary`.
+- [x] Re-trace list-server connection, registration, account verification, version enforcement, and rejection paths.
+- [x] Update `docs/spec/AUTH_SERVERLIST_SPEC.md` and `docs/spec/AUTH_SERVERLIST_PACKET_FLOW.md`.
+- [x] Add packet builders/tests for confirmed `SVO_*`, `SVI_*`, login reject, and disconnect messages.
+- [x] Add production auth interface names that preserve C++ concepts in docs.
+- [x] Remove or isolate fake dev auth from production code paths.
+- [x] Implement confirmed version checks from `allowedversions.txt` and list-server responses.
+- [x] Add tests for invalid version, rejected account, banned response, and allowed auth only where exact response packets are confirmed.
+- [x] Run `dotnet build GServharp.sln`.
+- [x] Run `dotnet test GServharp.sln`.
+- [x] Confirm `git status --short ai_resources` is empty.
+- [x] Commit with message `Implement production auth serverlist boundary`.
 
 ## Compatibility Constraints
 
@@ -41,3 +41,11 @@
 
 - Production auth no longer depends on fake local accept logic.
 - Confirmed rejection and auth-boundary packets have golden tests.
+
+## Completion Notes
+
+- Fake server-list success remains only in the dev-only TCP shell and is still
+  gated by `EnableDevOnlyAuth=true`.
+- Real account/password authority is still external to the game server and is
+  represented by the production gateway interface.
+- Real list-server socket lifecycle is intentionally left for a later milestone.

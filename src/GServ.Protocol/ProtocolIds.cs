@@ -53,8 +53,14 @@ public enum ServerToPlayerPacketId : byte
 
 public enum ServerToListServerPacketId : byte
 {
+    PlayerSet = 7,
     PlayerAdd = 14,
-    VerifyAccount2 = 17
+    VerifyAccount2 = 17,
+    NewServer = 22,
+    ServerHqPass = 23,
+    ServerHqLevel = 24,
+    RegisterV3 = 30,
+    SendText = 31
 }
 
 public enum ListServerToServerPacketId : byte

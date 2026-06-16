@@ -14,6 +14,10 @@
 - The login-server-name branch is blocked because C++ references `PLO_FULLSTOP`, but recovered `IEnums.h` only defines `PLO_FULLSTOP2 = 177`. Do not assume they are equivalent without source proof.
 - Exact `CString::guntokenize()` behavior for ban reasons remains blocked; current C# tests cover plain reasons and the confirmed newline-to-carriage-return replacement path only.
 - Real account/password validation must not be invented. The C++ server delegates password/auth verification to the list server through `SVO_VERIACC2`/`SVI_VERIACC2`.
+- Production auth now has confirmed list-server packet body builders for
+  registration/HQ/version config and a non-fake `IProductionServerListGateway`
+  boundary for `SVO_VERIACC2`. Real list-server socket lifecycle, reconnect,
+  local IP discovery, and queue codec transition timing remain blocked.
 - Account file parsing for confirmed `GRACC001` fields/defaults is implemented.
   The C# account loading boundary now also performs source-confirmed
   case-insensitive lookup, default-account fallback, startlevel/startx/starty
