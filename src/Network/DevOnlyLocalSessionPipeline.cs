@@ -191,7 +191,7 @@ public sealed class DevOnlyLocalSessionPipeline(
         SendLevelBoundary.BeginModern(
             session,
             ModernLevelPayload.FromNwStatic(staticPayload),
-            new SendLevelRequest(RequestedModTime: loaded.ModTime, CachedLevelModTime: 0, FromAdjacent: false));
+            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 0, FromAdjacent: false));
     }
 
     private static DevOnlyLocalStopPoint ToStopPoint(ClientSessionSkeleton session) =>

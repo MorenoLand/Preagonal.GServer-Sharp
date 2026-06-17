@@ -53,7 +53,10 @@ public sealed class DevOnlyLocalSessionPipelineTests
         Assert.Equal(DevOnlyLocalStopPoint.BeforeRuntimeWorldSimulation, result.StopPoint);
         Assert.Contains(result.Log, line => line.Contains("DEV-ONLY auth accepted", StringComparison.Ordinal));
         Assert.Contains(result.Log, line => line.Contains("Loaded .nw level start.nw", StringComparison.Ordinal));
-        Assert.Equal(0x04, result.OutboundBytes[2]);
+        Assert.Equal(0x06, result.OutboundBytes[2]);
+        var decoded = new InboundPacketDecoder(EncryptionGeneration.Gen5, key: 42)
+            .DecodeSocketFrame(result.OutboundBytes.AsSpan(2));
+        Assert.Contains(RawDataHeader(1 + 64 * 64 * 2 + 1), decoded.DecodedPayload);
         Assert.DoesNotContain(LevelNamePacket("start.nw"), result.OutboundBytes);
         Assert.Contains(result.Log, line => line.Contains("DEV-ONLY socket flush used Gen5", StringComparison.Ordinal));
     }
@@ -109,7 +112,7 @@ public sealed class DevOnlyLocalSessionPipelineTests
 
         var result = await serveTask;
         Assert.True(result.Accepted);
-        Assert.Equal(0x04, received[2]);
+        Assert.Equal(0x06, received[2]);
     }
 
     [Fact]
@@ -228,6 +231,15 @@ public sealed class DevOnlyLocalSessionPipelineTests
         ..System.Text.Encoding.ASCII.GetBytes(levelName),
         (byte)'\n'
     ];
+
+    private static byte[] RawDataHeader(int length)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.RawData);
+        writer.WriteGInt(unchecked((uint)length));
+        writer.WriteByte((byte)'\n');
+        return writer.ToArray();
+    }
 
     private static byte[] PlayerPropsPacket(PlayerPropertyId first, byte firstValue, PlayerPropertyId second, byte secondValue)
     {

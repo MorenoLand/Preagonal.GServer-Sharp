@@ -25,7 +25,7 @@
 - [x] Add production settings DTOs and readers only for confirmed fields.
 - [x] Add a server-root resolver that keeps the current dev-only mode opt-in and separates it from production startup.
 - [x] Add startup diagnostics that clearly state when behavior is blocked rather than silently faking production behavior.
-- [x] Update `KNOWN_BLOCKERS.md` and `docs/spec/KNOWN_BLOCKERS.md`.
+- [x] Update `docs/KNOWN_BLOCKERS.md` and `docs/spec/docs/KNOWN_BLOCKERS.md`.
 - [x] Run `dotnet build GServharp.sln`.
 - [x] Run `dotnet test GServharp.sln`.
 - [x] Confirm `git status --short ai_resources` is empty.

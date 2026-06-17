@@ -56,8 +56,8 @@
   -> `sendLevel` boundary. It is not production-compatible and must remain
   opt-in because it uses fake local auth, stops on unsupported post-login frames
   before gameplay/runtime dispatch, and selects the current-modtime level branch
-  so small/medium responses can use confirmed gen5 zlib `FlushSocket` framing
-  without entering blocked bzip2 board payload output.
+  so the diagnostic login sends a full static `.nw` board payload through the
+  confirmed gen5 bzip2 `FlushSocket` branch.
 - Production account loading has a pure `GRACC001` parser plus source-confirmed
   default-account fallback, start overrides, save-format serialization,
   case-preserved filename selection, disk write attempt reporting, and

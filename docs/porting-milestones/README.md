@@ -10,7 +10,7 @@ Execute docs/porting-milestones/milestone-1-production-settings-startup.md
 
 Rules for every milestone:
 
-- Read `AGENTS.md`, `COMPATIBILITY_RULES.md`, `SERVER_SPEC.md`, `PORTING_PLAN.md`, `KNOWN_BLOCKERS.md`, and the milestone file first.
+- Read `docs/AGENTS.md`, `docs/COMPATIBILITY_RULES.md`, `docs/SERVER_SPEC.md`, `docs/PORTING_PLAN.md`, `docs/KNOWN_BLOCKERS.md`, and the milestone file first.
 - Use `ai_resources/GServer-CPP-ORIGINAL/` and `external/gs2lib/` as source of truth.
 - Never modify `ai_resources/`.
 - Do not invent behavior.

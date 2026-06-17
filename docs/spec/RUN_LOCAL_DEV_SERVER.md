@@ -37,9 +37,8 @@ Expected limitations:
 - uses dev-only local auth, not the production list server
 - writes socket-framed queued bytes through confirmed `CFileQueue.FlushSocket`
   paths
-- uses the source-confirmed "level modtime already current" branch during the
-  diagnostic `.nw` boundary; full board/resource transfer is still not certified
-  against live C++ and client captures
+- sends the diagnostic `.nw` level's full static board payload through
+  `PLO_RAWDATA` and the confirmed Gen5 bzip2 socket-flush branch
 - applies only decoded `PLI_PLAYERPROPS` local state for confirmed safe
   movement/player-property updates
 - stops clearly on source-confirmed parsed props whose runtime side effects are
@@ -61,8 +60,7 @@ bytes, gen5 zlib payloads through `0x2000` bytes, gen5 bzip2 payloads above
 
 A synthetic/manual TCP diagnostic is possible. A tiny closed-source game client
 connection test may now reach the first socket-framed login/level boundary if
-the client sends the same supported Client3 login prelude and can tolerate the
-diagnostic "level already current" branch.
+the client sends the same supported Client3 login prelude.
 
 Recommended tiny level fixture:
 
@@ -77,6 +75,6 @@ Run:
 dotnet run --project src/Server/Server.csproj -- --dev-only-local --dev-root <root> --dev-level start.nw --port 14900
 ```
 
-A meaningful playable session is still not expected because full board payload
-certification, production auth/server-list behavior, live movement forwarding,
-NPCs, scripts, file transfer, and live world runtime are not implemented.
+A meaningful playable session is still not expected because production
+auth/server-list behavior, live movement forwarding, NPCs, scripts, file
+transfer, and live world runtime are not implemented.

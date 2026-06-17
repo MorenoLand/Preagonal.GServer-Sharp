@@ -14,7 +14,7 @@
 - C++ NPC/server scripting files and CMake dependency declarations.
 - Recovered exact `gs2compiler` source when available.
 - C++ V8 binding files and build settings.
-- Existing docs: `docs/research/scripting-system.md`, `KNOWN_BLOCKERS.md`.
+- Existing docs: `docs/research/scripting-system.md`, `docs/KNOWN_BLOCKERS.md`.
 
 ## Required Work
 

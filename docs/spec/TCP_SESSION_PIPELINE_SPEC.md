@@ -87,10 +87,10 @@ confirmed gen5 length prefix, compression type, zlib/uncompressed choice, and
 iterator-XOR encryption. For web-client login packets, it uses confirmed gen1
 passthrough behavior.
 
-The shell deliberately asks the send-level boundary for the source-confirmed
-"client already has this level modtime" branch. That keeps small diagnostic
-`.nw` payloads in the gen5 zlib range. It also means a fresh closed-source
-client may not receive a full board payload yet.
+The shell asks the send-level boundary for the full static `.nw` payload, so a
+fresh closed-source client can receive the raw board packet during diagnostic
+login. For even tiny `.nw` levels this normally crosses the Gen5 bzip2 threshold
+because a full 64x64 board is sent as raw level data.
 
 ## Known Gaps
 

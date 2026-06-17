@@ -15,7 +15,7 @@
 - `external/gs2lib/src/CSocket.cpp`
 - `external/gs2lib/include/CSocket.h`
 - C++ websocket branches gated by `WOLFSSL_ENABLED`.
-- Existing docs: `docs/research/startup-runtime.md`, `docs/spec/TCP_SESSION_PIPELINE_SPEC.md`, `KNOWN_BLOCKERS.md`.
+- Existing docs: `docs/research/startup-runtime.md`, `docs/spec/TCP_SESSION_PIPELINE_SPEC.md`, `docs/KNOWN_BLOCKERS.md`.
 
 ## Required Work
 

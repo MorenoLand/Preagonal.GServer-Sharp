@@ -6,3 +6,4 @@ obj/
 **/bin/
 **/obj/
 tools/**/build/
+tools/dev-server-root/*.log

@@ -34,11 +34,11 @@ removed from scope with a dated note and continue; do not implement it.
 
 Read these files before every run:
 
-- `AGENTS.md`
-- `COMPATIBILITY_RULES.md`
-- `SERVER_SPEC.md`
-- `PORTING_PLAN.md`
-- `KNOWN_BLOCKERS.md`
+- `docs/AGENTS.md`
+- `docs/COMPATIBILITY_RULES.md`
+- `docs/SERVER_SPEC.md`
+- `docs/PORTING_PLAN.md`
+- `docs/KNOWN_BLOCKERS.md`
 - all files under `docs/`
 - this file
 
@@ -72,7 +72,7 @@ Rules:
 When the user says:
 
 ```txt
-Run TASK_COMPLETE_1TO1_PORT.md
+Run docs/TASK_COMPLETE_1TO1_PORT.md
 ```
 
 Do this:
@@ -202,7 +202,7 @@ production socket/session dispatch where safe.
     `HandlerStopped`. Reviewed existing `FileQueueCompatibilityTests` for
     confirmed queue-flush and partial-send coverage.
 - [x] Update `docs/spec/TCP_SESSION_PIPELINE_SPEC.md`,
-  `docs/spec/KNOWN_BLOCKERS.md`, and `KNOWN_BLOCKERS.md`.
+  `docs/spec/docs/KNOWN_BLOCKERS.md`, and `docs/KNOWN_BLOCKERS.md`.
   - 2026-06-16: Updated the TCP/session docs, production socket spec,
     post-login dispatch spec, and blockers to reflect the production
     listener/receive-buffer/post-login-dispatch boundary and the remaining

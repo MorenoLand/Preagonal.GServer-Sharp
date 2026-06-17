@@ -1,4 +1,4 @@
-Read `AGENTS.md`, `COMPATIBILITY_RULES.md`, `SERVER_SPEC.md`, `PORTING_PLAN.md`, `KNOWN_BLOCKERS.md`, and all docs under `docs/`.
+Read `docs/AGENTS.md`, `docs/COMPATIBILITY_RULES.md`, `docs/SERVER_SPEC.md`, `docs/PORTING_PLAN.md`, `docs/KNOWN_BLOCKERS.md`, and all docs under `docs/`.
 
 Continue the C#/.NET 1:1 port using only source-confirmed behavior.
 
@@ -173,8 +173,8 @@ docs/spec/TCP_SESSION_PIPELINE_SPEC.md
 docs/spec/RUN_LOCAL_DEV_SERVER.md
 docs/spec/CFILEQUEUE_FIXTURE_HARNESS.md
 docs/spec/GOLDEN_FIXTURES.md
-docs/spec/KNOWN_BLOCKERS.md
-KNOWN_BLOCKERS.md
+docs/spec/docs/KNOWN_BLOCKERS.md
+docs/KNOWN_BLOCKERS.md
 ```
 
 Run:
