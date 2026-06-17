@@ -29,14 +29,20 @@ if (!config.Enabled)
         return;
     }
 
-var runtimeServer = new RuntimeServer();
-var runtimeLevelCache = new RuntimeLevelCache();
-var runtime = new ProductionHostRuntime(runtimeServer);
+    var runtimeServer = new RuntimeServer();
+    var runtimeLevelCache = new RuntimeLevelCache();
+    var runtime = new ProductionHostRuntime(runtimeServer);
+    using var serverListSocket = new ProductionServerListTcpSocket();
+    var serverListOptions = ProductionServerListStartupOptions.FromStartupSnapshot(snapshot, productionArgs);
+    var serverListResult = new ProductionServerListLifecycle(serverListSocket).ConnectServer(serverListOptions);
+    Console.WriteLine(serverListResult.Connected
+        ? $"Registered '{serverListOptions.Name}' with list server {serverListOptions.ListIp}:{serverListOptions.ListPort}."
+        : $"Could not connect/register with list server {serverListOptions.ListIp}:{serverListOptions.ListPort}.");
 
-runtime.CleanupHandler = () =>
-{
-    runtimeServer.CleanupForShutdown(player => { });
-    runtimeLevelCache.Clear();
+    runtime.CleanupHandler = () =>
+    {
+        runtimeServer.CleanupForShutdown(player => { });
+        runtimeLevelCache.Clear();
 };
 var hostLoop = new ProductionHostLoop(runtime, ProductionHostLoop.StaticTime, TimeSpan.Zero);
 

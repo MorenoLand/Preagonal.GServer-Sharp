@@ -77,6 +77,11 @@ public sealed class GraalFileQueue
         }
     }
 
+    public void AddRawPacket(ReadOnlySpan<byte> packetBytes)
+    {
+        _normalBuffer.Enqueue(packetBytes.ToArray());
+    }
+
     public void SetCodec(EncryptionGeneration generation, byte key)
     {
         _outboundGeneration = generation;

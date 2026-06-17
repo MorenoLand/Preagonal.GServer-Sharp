@@ -199,17 +199,24 @@ Implemented:
   - parses confirmed `SVI_VERIACC2` payloads
   - resolves the pending player session by id/type
   - applies the C++ success/rejection boundary without inventing auth
+- `ProductionServerListTcpSocket`
+  - connects to a concrete TCP endpoint
+  - writes server-list packet bodies through the confirmed `GraalFileQueue`
+    socket framing/compression path
+  - preserves the source-confirmed gen1 registration then gen2 server-list
+    packet codec switch
 
 Not implemented:
 
-- a concrete production TCP client implementation of `IProductionServerListSocket`
 - real `CSocketManager`-style readiness polling for the list-server socket
 - zlib frame receive loop for live list-server responses
 - `SVO_PLYRADD` replay from live production player repositories inside
   `ProductionServerListLifecycle`
 - full handling for `SVI_*` packets beyond auth response parsing and ping
   packet body construction
-- production connection to an actual remote list server
+- production startup now attempts registration with the configured remote list
+  server, but live response polling and real client auth bridging are still
+  pending
 
 ## Tests
 
@@ -223,3 +230,5 @@ Current tests cover:
   allowed-versions text, request-list text, ping, and verify-account
 - auth response success, rejection, and missing-session branches through
   `ProductionServerListAuthResponseHandler`
+- concrete TCP socket output for gen1 registration and gen2 list-server frames
+- production startup mapping into list-server registration options
