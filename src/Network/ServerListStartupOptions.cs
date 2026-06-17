@@ -14,6 +14,7 @@ public static class ServerListStartupOptions
             throw new InvalidOperationException("Server startup must resolve a server before list-server registration.");
 
         var options = snapshot.ServerOptions;
+        var admin = snapshot.AdminConfig;
         var serverName = string.IsNullOrEmpty(overrides.ServerName)
             ? options.GetString("name", snapshot.Resolution.ServerName)
             : overrides.ServerName;
@@ -38,8 +39,8 @@ public static class ServerListStartupOptions
             ServerIp: serverIp,
             ServerPort: serverPort,
             LocalIp: localIp,
-            HqPassword: options.GetString("hq_password", ""),
-            HqLevel: options.GetInt("hq_level", 1),
+            HqPassword: admin.GetString("hq_password", ""),
+            HqLevel: admin.GetInt("hq_level", 1),
             OnlyStaff: options.GetBool("onlystaff", false),
             AllowedVersions: SplitCsv(options.GetString("allowedversions", "")));
     }

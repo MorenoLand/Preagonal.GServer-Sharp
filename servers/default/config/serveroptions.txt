@@ -143,7 +143,7 @@ minimap =
 # --- Private server options.  The changestaffacct right is required to alter these. ---
 # --------------------------------------------------------------------------------------
 # The server details seen from the server list.
-name = My Server
+name = GSharp
 description = My Server
 url = http://www.graal.in/
 

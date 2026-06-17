@@ -19,12 +19,14 @@ public sealed class ServerListStartupOptionsTests
                 listip=custom-list.example.test
                 listport=14901
                 description=Test server
-                hq_password=secret
                 serverip=203.0.113.9
                 allowedversions=G3D0311C
                 allowedversions=G3D0321C
                 """),
-            Gs2Settings.Parse(""));
+            Gs2Settings.Parse("""
+                hq_password=secret
+                hq_level=3
+                """));
 
         var options = ServerListStartupOptions.FromStartupSnapshot(
             snapshot,
@@ -49,7 +51,7 @@ public sealed class ServerListStartupOptionsTests
         Assert.Equal("14901", options.ServerPort);
         Assert.Equal("AUTO", options.LocalIp);
         Assert.Equal("secret", options.HqPassword);
-        Assert.Equal(1, options.HqLevel);
+        Assert.Equal(3, options.HqLevel);
         Assert.False(options.OnlyStaff);
         Assert.Equal(["G3D0311C", "G3D0321C"], options.AllowedVersions);
     }
