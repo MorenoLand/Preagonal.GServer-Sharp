@@ -8,7 +8,7 @@ public sealed class ServerListLifecycleTests
     [Fact]
     public void ConnectServerSuccessUsesConfirmedRegistrationPacketOrderAndCodecSwitch()
     {
-        var socket = new RecordinGServerListSocket
+        var socket = new RecordingServerListSocket
         {
             LocalIp = "10.0.0.5"
         };
@@ -58,7 +58,7 @@ public sealed class ServerListLifecycleTests
         string socketLocalIp,
         string expectedLocalIp)
     {
-        var socket = new RecordinGServerListSocket
+        var socket = new RecordingServerListSocket
         {
             LocalIp = socketLocalIp
         };
@@ -77,7 +77,7 @@ public sealed class ServerListLifecycleTests
     [Fact]
     public void ConnectServerReturnsFalseWhenSocketInitializeFailsAndDoesNotRegister()
     {
-        var socket = new RecordinGServerListSocket
+        var socket = new RecordingServerListSocket
         {
             InitializeResult = false
         };
@@ -106,7 +106,7 @@ public sealed class ServerListLifecycleTests
             OnlyStaff: false,
             AllowedVersions: ["G3D0311C"]);
 
-    private sealed class RecordinGServerListSocket : IServerListSocket
+    private sealed class RecordingServerListSocket : IServerListSocket
     {
         public bool IsConnected { get; private set; }
         public string LocalIp { get; init; } = "";

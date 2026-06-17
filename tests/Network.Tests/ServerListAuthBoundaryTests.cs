@@ -54,7 +54,7 @@ public sealed class ServerListAuthBoundaryTests
     [Fact]
     public void HandleVerifyAccount2SuccessOverwritesAccountAndMovesSessionToPreWorldBoundary()
     {
-        var session = BeginPendinGServerListAuth();
+        var session = BeginPendingServerListAuth();
         var handler = new ServerListAuthResponseHandler((id, type) =>
             id == 7 && type == PlayerSessionType.Client3 ? session : null);
 
@@ -74,7 +74,7 @@ public sealed class ServerListAuthBoundaryTests
     [Fact]
     public void HandleVerifyAccount2FailureQueuesDisconnectAndRejectsSession()
     {
-        var session = BeginPendinGServerListAuth();
+        var session = BeginPendingServerListAuth();
         var handler = new ServerListAuthResponseHandler((id, type) =>
             id == 7 && type == PlayerSessionType.Client3 ? session : null);
 
@@ -123,7 +123,7 @@ public sealed class ServerListAuthBoundaryTests
         return session;
     }
 
-    private static ClientSessionSkeleton BeginPendinGServerListAuth()
+    private static ClientSessionSkeleton BeginPendingServerListAuth()
     {
         var session = Client3Session();
         var gateway = new CapturingGateway(isConnected: true);

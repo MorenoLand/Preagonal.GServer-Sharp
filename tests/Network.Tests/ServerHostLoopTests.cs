@@ -11,7 +11,7 @@ namespace Preagonal.GServer.Network.Tests;
         public void RunOneIterationExecutesSourceConfirmedActionOrderAndCleanup()
     {
         var clock = new FakeHostClock();
-        var runtime = new RecordinGServerHostRuntime();
+        var runtime = new RecordingServerHostRuntime();
         var loop = new ServerHostLoop(runtime, clock.Next);
 
         clock.Current = TimeSpan.Zero;
@@ -40,7 +40,7 @@ namespace Preagonal.GServer.Network.Tests;
     public void RunCallsInitializeBeforeLoopAndCleanupWhenInitializeFails()
     {
         var clock = new FakeHostClock();
-        var runtime = new RecordinGServerHostRuntime { InitializeResult = false };
+        var runtime = new RecordingServerHostRuntime { InitializeResult = false };
         var loop = new ServerHostLoop(runtime, clock.Next);
 
         loop.Run(TimeSpan.Zero);
@@ -56,7 +56,7 @@ namespace Preagonal.GServer.Network.Tests;
     public void RestartRequestsRunCleanupThenReinitializeBeforeContinuing()
     {
         var clock = new FakeHostClock();
-        var runtime = new RecordinGServerHostRuntime { InitializeResult = true };
+        var runtime = new RecordingServerHostRuntime { InitializeResult = true };
         var loop = new ServerHostLoop(runtime, clock.Next);
 
         clock.Current = TimeSpan.FromSeconds(1);
@@ -74,7 +74,7 @@ namespace Preagonal.GServer.Network.Tests;
     public void RestartFailureStopsTheLoopAtNextIterationBoundary()
     {
         var clock = new FakeHostClock();
-        var runtime = new RecordinGServerHostRuntime { InitializeResult = false };
+        var runtime = new RecordingServerHostRuntime { InitializeResult = false };
         var loop = new ServerHostLoop(runtime, clock.Next);
 
         clock.Current = TimeSpan.FromSeconds(1);
@@ -123,7 +123,7 @@ namespace Preagonal.GServer.Network.Tests;
     public void ShutdownRequestStopsWithoutFurtherIterations()
     {
         var clock = new FakeHostClock();
-        var runtime = new RecordinGServerHostRuntime();
+        var runtime = new RecordingServerHostRuntime();
         using var cts = new CancellationTokenSource();
 
         var loop = new ServerHostLoop(runtime, clock.Next);
@@ -137,7 +137,7 @@ namespace Preagonal.GServer.Network.Tests;
         Assert.True(runtime.CleanupCalled);
     }
 
-    private sealed class RecordinGServerHostRuntime : IServerHostRuntime
+    private sealed class RecordingServerHostRuntime : IServerHostRuntime
     {
         public bool V8NpcServerEnabled { get; }
 

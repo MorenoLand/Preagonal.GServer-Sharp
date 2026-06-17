@@ -6,7 +6,7 @@ namespace Preagonal.GServer.Network.Tests;
 public sealed class ServerListStartupOptionsTests
 {
     [Fact]
-    public void FromStartupSnapshotUsesCppDefaultsAndOverridesForListServerRegistration()
+    public void BuildsRegistrationOptions()
     {
         var snapshot = new ServerStartupSnapshot(
             new ServerStartupResolution(
@@ -57,7 +57,7 @@ public sealed class ServerListStartupOptionsTests
     }
 
     [Fact]
-    public void FromStartupSnapshotUsesDocumentedServerOptionsDefaultsWhenKeysAreAbsent()
+    public void UsesServerOptionDefaults()
     {
         var snapshot = new ServerStartupSnapshot(
             new ServerStartupResolution(
@@ -86,10 +86,12 @@ public sealed class ServerListStartupOptionsTests
         Assert.Equal("14802", options.ServerPort);
         Assert.Equal("AUTO", options.ServerIp);
         Assert.Equal("AUTO", options.LocalIp);
+        Assert.Contains("G3D0311C", options.AllowedVersions);
+        Assert.Contains("GNW03014", options.AllowedVersions);
     }
 
     [Fact]
-    public void FromStartupSnapshotRegistersPublicNameFromServerOptions()
+    public void UsesPublicName()
     {
         var snapshot = new ServerStartupSnapshot(
             new ServerStartupResolution(true, "default", @"C:\servers\default\", ServerStartupSource.CommandLineOrEnvironment, null),

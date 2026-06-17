@@ -1,4 +1,5 @@
 using Preagonal.GServer.Persistence;
+using Preagonal.GServer.Protocol;
 
 namespace Preagonal.GServer.Network;
 
@@ -46,5 +47,7 @@ public static class ServerListStartupOptions
     }
 
     private static IReadOnlyList<string> SplitCsv(string value) =>
-        value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string.IsNullOrWhiteSpace(value)
+            ? GraalVersionCatalog.AllClientVersionTokens
+            : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
