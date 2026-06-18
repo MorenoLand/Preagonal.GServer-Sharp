@@ -144,7 +144,8 @@ public static class RcNcPackets
         string levelName,
         byte statusMessage,
         string nickname,
-        string communityName)
+        string communityName,
+        byte? listFlags = null)
     {
         var writer = NewServerPacket(ServerToPlayerPacketId.AddPlayer);
         writer.WriteGShort(playerId);
@@ -157,6 +158,12 @@ public static class RcNcPackets
         WriteGCharString(writer, nickname);
         writer.WriteGChar((byte)PlayerPropertyId.CommunityName);
         WriteGCharString(writer, communityName);
+        if (listFlags is { } flags)
+        {
+            writer.WriteGChar((byte)PlayerPropertyId.Unknown81);
+            writer.WriteGChar(flags);
+        }
+
         return WithTrailingNewline(writer);
     }
 

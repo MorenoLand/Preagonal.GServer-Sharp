@@ -64,7 +64,9 @@ public sealed class LoginAuthBridge(
     private const int SetCommentsRight = 0x01000;
     private const int AdminMessageRight = 0x00200;
     private const int ModifyStaffAccountRight = 0x04000;
+    private const int WarpToRight = 0x00001;
     private const int WarpToPlayerRight = 0x00002;
+    private const int UpdateLevelRight = 0x00008;
     private const int SetAttributesRight = 0x00040;
     private const int SetSelfAttributesRight = 0x00080;
     private const int SetServerFlagsRight = 0x08000;
@@ -356,6 +358,14 @@ public sealed class LoginAuthBridge(
                 continue;
             }
 
+            var chatCommand = parsed.Updates.FirstOrDefault(static update => update.PropertyId == PlayerPropertyId.CurrentChat);
+            if (chatCommand?.StringValue is { } chatMessage &&
+                TryHandleClientChatCommand(player, chatMessage, touched))
+            {
+                notes.Add($"chat-command={chatMessage}");
+                continue;
+            }
+
             var result = LiveWorldSessionForwarder.TryApplyAndForwardConfirmedPlayerProps(
                 runtimeServer,
                 player,
@@ -561,6 +571,143 @@ public sealed class LoginAuthBridge(
 
             QueueSelfPacket(targetId, packet, touched);
         }
+    }
+
+    private bool TryHandleClientChatCommand(RuntimePlayer player, string chatMessage, ISet<ushort> touched)
+    {
+        var command = chatMessage.Trim();
+        if (command.Length == 0)
+            return false;
+
+        var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+            return false;
+
+        if ((parts[0].Equals("unstick", StringComparison.OrdinalIgnoreCase) ||
+             parts[0].Equals("unstuck", StringComparison.OrdinalIgnoreCase)) &&
+            parts.Length == 2 &&
+            parts[1].Equals("me", StringComparison.OrdinalIgnoreCase))
+        {
+            if (IsJailedLevel(player.CurrentLevelName))
+                return false;
+
+            var level = worldEntryOptions?.AccountSettings.GetString("unstickmelevel", "onlinestartlocal.nw") ?? "onlinestartlocal.nw";
+            WarpClient(player, level, GetFloatOption("unstickmex", 30.0f), GetFloatOption("unstickmey", 30.5f), touched);
+            QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(ChatProp("Warped!"), appendNewline: true), touched);
+            return true;
+        }
+
+        if (parts[0].Equals("warpto", StringComparison.OrdinalIgnoreCase))
+        {
+            if (parts.Length == 2)
+            {
+                if (!CanWarp(player.Id, WarpToPlayerRight))
+                {
+                    QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(ChatProp("(not authorized to warp)"), appendNewline: true), touched);
+                    return true;
+                }
+
+                var target = FindClientByAccountOrNickname(parts[1]);
+                if (target is not null && !string.IsNullOrWhiteSpace(target.CurrentLevelName))
+                    WarpClient(player, target.CurrentLevelName, target.PixelX / 16.0f, target.PixelY / 16.0f, touched);
+                return true;
+            }
+
+            if (parts.Length == 3 &&
+                float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var x) &&
+                float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var y))
+            {
+                if (!CanWarp(player.Id, WarpToRight))
+                {
+                    QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(ChatProp("(not authorized to warp)"), appendNewline: true), touched);
+                    return true;
+                }
+
+                MoveClient(player, x, y, touched);
+                return true;
+            }
+
+            if (parts.Length == 4 &&
+                float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var levelX) &&
+                float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var levelY))
+            {
+                if (!CanWarp(player.Id, WarpToRight))
+                {
+                    QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(ChatProp("(not authorized to warp)"), appendNewline: true), touched);
+                    return true;
+                }
+
+                WarpClient(player, parts[3], levelX, levelY, touched);
+                return true;
+            }
+        }
+
+        if (command.Equals("update level", StringComparison.OrdinalIgnoreCase) && HasRight(player.Id, UpdateLevelRight))
+        {
+            if (!string.IsNullOrWhiteSpace(player.CurrentLevelName))
+                _levels.Remove(player.CurrentLevelName);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool CanWarp(ushort playerId, int right) =>
+        HasRight(playerId, right) || GetBoolOption("warptoforall", defaultValue: false);
+
+    private bool IsJailedLevel(string levelName)
+    {
+        var jailLevels = worldEntryOptions?.AccountSettings.GetString("jaillevels", "") ?? "";
+        return jailLevels.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(level => level.Equals(levelName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private RuntimePlayer? FindClientByAccountOrNickname(string name) =>
+        _activePlayers.Values.FirstOrDefault(player =>
+            player.Kind == RuntimePlayerKind.Client &&
+            (player.AccountName.Equals(name, StringComparison.OrdinalIgnoreCase) ||
+             player.Nickname.TrimStart('*').Equals(name.TrimStart('*'), StringComparison.OrdinalIgnoreCase)));
+
+    private void MoveClient(RuntimePlayer player, float x, float y, ISet<ushort> touched)
+    {
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, (byte)(x * 2)),
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2))
+            ]);
+        QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(PositionProps(x, y), appendNewline: true), touched);
+    }
+
+    private void WarpClient(RuntimePlayer player, string level, float x, float y, ISet<ushort> touched)
+    {
+        RuntimePlayerPropsApplier.ApplyConfirmed(
+            player,
+            [
+                IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentLevel, level),
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, (byte)(x * 2)),
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2))
+            ]);
+        player.JoinLevel(GetOrCreateLevel(level));
+        QueueSelfPacket(player.Id, AppendNewline(WarpPackets.BuildPlayerWarp(x, y, level)), touched);
+    }
+
+    private static byte[] PositionProps(float x, float y)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)PlayerPropertyId.X);
+        writer.WriteGChar((byte)(x * 2));
+        writer.WriteGChar((byte)PlayerPropertyId.Y);
+        writer.WriteGChar((byte)(y * 2));
+        return writer.ToArray();
+    }
+
+    private static byte[] ChatProp(string message)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)PlayerPropertyId.CurrentChat);
+        WriteGCharString(writer, message);
+        return writer.ToArray();
     }
 
     private bool HandleControlPacket(
@@ -997,6 +1144,12 @@ public sealed class LoginAuthBridge(
 
             if (string.IsNullOrWhiteSpace(slices.ClientGs2))
                 return new ScriptCompileFeedback(true, []);
+
+            if (LooksLikeGs1ClientScript(slices.ClientGs2))
+            {
+                SendCompilerOutputToNc(origin, "error", "client-side GS1 is not compiled by the GS2 compiler", touched);
+                return new ScriptCompileFeedback(false, []);
+            }
 
             if (!TryPreflightGs2(slices.ClientGs2, out var clientPreflightError))
             {
@@ -2697,6 +2850,17 @@ public sealed class LoginAuthBridge(
         return int.TryParse(value, out var parsed) ? parsed : defaultValue;
     }
 
+    private float GetFloatOption(string key, float defaultValue)
+    {
+        if (worldEntryOptions is null)
+            return defaultValue;
+
+        var value = worldEntryOptions.AccountSettings.GetString(key, defaultValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : defaultValue;
+    }
+
     private IReadOnlyList<ClientSessionOutbound> FlushTouchedBroadcasts(IEnumerable<ushort> touched)
     {
         var broadcasts = new List<ClientSessionOutbound>();
@@ -3134,12 +3298,18 @@ public sealed class LoginAuthBridge(
             snapshot.LoginPropertySource.CurrentLevel,
             snapshot.LoginPropertySource.StatusMessage,
             snapshot.LoginPropertySource.Nickname,
-            snapshot.LoginPropertySource.CommunityName);
+            snapshot.LoginPropertySource.CommunityName,
+            IsControl(snapshot.Type) || snapshot.Type == PlayerSessionType.NpcServer ? (byte)1 : null);
 
     private string FormatScriptOutput(string scriptName, string line) =>
         worldEntryOptions?.AccountSettings.GetString("scriptcall", "echo").Trim().Equals("debug", StringComparison.OrdinalIgnoreCase) == true
             ? $"GS2 {scriptName}: {line}"
             : line;
+
+    private static bool LooksLikeGs1ClientScript(string source) =>
+        source.Contains("setplayerprop #", StringComparison.OrdinalIgnoreCase) ||
+        source.Contains("setstring ", StringComparison.OrdinalIgnoreCase) ||
+        source.Contains("timeout=", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsClient(PlayerSessionType type) =>
         (type & PlayerSessionType.AnyClient) != 0;
