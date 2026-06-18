@@ -2,5 +2,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Game\Game.csproj" />
+    <PackageReference Include="Preagonal.Scripting.GS2Engine" Version="1.10.26" />
   </ItemGroup>
 </Project>
