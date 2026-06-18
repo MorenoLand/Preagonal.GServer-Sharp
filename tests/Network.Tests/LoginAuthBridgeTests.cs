@@ -117,6 +117,46 @@ public sealed class LoginAuthBridgeTests
     }
 
     [Fact]
+    public void RcLoginUsesControlTailInsteadOfClientWorldWarp()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        File.WriteAllText(Path.Combine(serverRoot.Path, "config", "rcmessage.txt"), "Welcome RC\n");
+        var resources = ServerResourceFileSystems.LoadFolderConfig(
+            serverRoot.Path,
+            File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
+        var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
+        var gateway = new RecordingGateway { IsConnected = true };
+        var bridge = new LoginAuthBridge(
+            gateway,
+            AuthOptions(),
+            new LoginWorldEntryOptions(
+                new DiskAccountFileSystem(serverRoot.Path),
+                new AccountLoadSettings(new Dictionary<string, string>
+                {
+                    ["staffguilds"] = "Server,Manager",
+                    ["statuslist"] = "Online,Away"
+                }),
+                levelLoader,
+                new FileLevelLookup(levelLoader),
+                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")));
+
+        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Rc2LoginPacket("YOURACCOUNT", key: 42));
+        var result = bridge.HandleVerifyAccount2(VerifyAccount2Payload("YOURACCOUNT", 7, PlayerSessionType.RemoteControl2, "SUCCESS"));
+        var decoded = DecodeSocketPayload(result.OutboundBytes, key: 42);
+
+        Assert.Equal(ServerListAuthResponseStatus.AcceptedPreWorld, result.Status);
+        Assert.True(IndexOf(decoded, RcNcPackets.ClearWeapons()) >= 0);
+        Assert.True(IndexOf(decoded, RcNcPackets.RcChat("Welcome RC")) >= 0);
+        Assert.True(IndexOf(decoded, RcNcPackets.Unknown190()) >= 0);
+        Assert.True(IndexOf(decoded, RcNcPackets.StaffGuilds("Server,Manager")) >= 0);
+        Assert.True(IndexOf(decoded, RcNcPackets.StatusList("Online,Away")) >= 0);
+        Assert.True(IndexOf(decoded, RcNcPackets.RcMaxUploadFileSize(20 * 1024 * 1024)) >= 0);
+        Assert.True(IndexOf(decoded, LevelNamePacketPrefix()) < 0);
+        Assert.NotEmpty(gateway.SentPlayerAdds);
+    }
+
+
+    [Fact]
     public void SecondClientLoginExchangesPlayerPropsWithFirstClient()
     {
         using var serverRoot = TestDefaultServerRoot();
@@ -719,6 +759,20 @@ public sealed class LoginAuthBridgeTests
         return packet.ToArray();
     }
 
+    private static byte[] Rc2LoginPacket(string account = "Ruan", byte key = 42, string versionToken = "GSERV025")
+    {
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar(6);
+        packet.WriteGChar(key);
+        packet.WriteBytes(System.Text.Encoding.ASCII.GetBytes(versionToken));
+        packet.WriteGChar((byte)account.Length);
+        packet.WriteBytes(System.Text.Encoding.ASCII.GetBytes(account));
+        packet.WriteGChar(2);
+        packet.WriteBytes("pw"u8);
+        packet.WriteBytes("win"u8);
+        return packet.ToArray();
+    }
+
     private static byte[] VerifyAccount2Payload(
         string account,
         ushort id,
@@ -803,6 +857,13 @@ public sealed class LoginAuthBridgeTests
         packet.WriteGShort(playerId);
         packet.WriteGChar((byte)PlayerPropertyId.JoinLeaveLevel);
         packet.WriteGChar(1);
+        return packet.ToArray();
+    }
+
+    private static byte[] LevelNamePacketPrefix()
+    {
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar((byte)ServerToPlayerPacketId.LevelName);
         return packet.ToArray();
     }
 

@@ -253,6 +253,39 @@ public sealed class PostLoginWorldEntryBoundaryTests
             session.TakeOutboundBytes());
     }
 
+    [Fact]
+    public void RcLoginQueuesCppControlTailAndMarksActive()
+    {
+        using var root = new TempServerRoot();
+        Directory.CreateDirectory(Path.Combine(root.Path, "config"));
+        File.WriteAllText(Path.Combine(root.Path, "config", "rcmessage.txt"), "Line one\r\n\r\nLine two\r\n");
+        var session = ReadyForRemoteControlEntrySession();
+
+        var result = PostLoginWorldEntryBoundary.BeginRemoteControl(
+            session,
+            BaseSnapshot() with { Type = PlayerSessionType.RemoteControl2 },
+            new PostLoginRemoteControlOptions(
+                root.Path,
+                "GSharp",
+                "Server,Manager",
+                "Online,Away",
+                20 * 1024 * 1024));
+
+        Assert.True(result.Accepted);
+        Assert.Equal(SessionLifecycle.ReadyForWorldEntry, session.Lifecycle);
+        Assert.Equal(
+            new byte[] { 226, 10 }
+                .Concat(System.Text.Encoding.ASCII.GetBytes("jLine one\n"))
+                .Concat(System.Text.Encoding.ASCII.GetBytes("jLine two\n"))
+                .Concat(new byte[] { 222, 10 })
+                .Concat(System.Text.Encoding.ASCII.GetBytes("O\"Server\",\"Manager\"\n"))
+                .Concat(new byte[] { 212 })
+                .Concat(System.Text.Encoding.ASCII.GetBytes("Online,Away\n"))
+                .Concat(new byte[] { 135, 32, 42, 32, 32, 32, 10 })
+                .ToArray(),
+            session.TakeOutboundBytes());
+    }
+
     private static PostLoginPlayerSnapshot BaseSnapshot()
     {
         var account = new GraalBinaryWriter();
@@ -350,6 +383,29 @@ public sealed class PostLoginWorldEntryBoundaryTests
         return session;
     }
 
+    private static ClientSessionSkeleton ReadyForRemoteControlEntrySession()
+    {
+        var session = new ClientSessionSkeleton(7);
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar(6);
+        packet.WriteGChar(42);
+        packet.WriteBytes("GSERV025"u8);
+        packet.WriteGChar(4);
+        packet.WriteBytes("Ruan"u8);
+        packet.WriteGChar(2);
+        packet.WriteBytes("pw"u8);
+        packet.WriteBytes("win"u8);
+        Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
+        Assert.True(session.ReceiveServerListAuthResponse(
+            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.RemoteControl2, "SUCCESS")));
+        Assert.True(PlayerSendLoginContinuation.Begin(
+            session,
+            new PlayerSendLoginAccount("pc:Ruan", false, "", true, true, true, ["0.0.0.0"], false),
+            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+        _ = session.TakeOutboundBytes();
+        return session;
+    }
+
     private sealed class MemoryResourceFileSystem : IResourceFileSystem
     {
         private readonly Dictionary<string, ResourceFile> _files = new(StringComparer.Ordinal);
@@ -359,5 +415,21 @@ public sealed class PostLoginWorldEntryBoundaryTests
 
         public ResourceFile? Find(string file) =>
             _files.GetValueOrDefault(file);
+    }
+
+    private sealed class TempServerRoot : IDisposable
+    {
+        public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "preagonal-rc-" + Guid.NewGuid().ToString("N"));
+
+        public TempServerRoot()
+        {
+            Directory.CreateDirectory(Path);
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Path))
+                Directory.Delete(Path, recursive: true);
+        }
     }
 }

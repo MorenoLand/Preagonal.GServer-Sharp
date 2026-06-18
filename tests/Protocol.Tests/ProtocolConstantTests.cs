@@ -102,6 +102,7 @@ public sealed class ProtocolConstantTests
         Assert.Equal(74, (int)ServerToPlayerPacketId.RcChat);
         Assert.Equal(79, (int)ServerToPlayerPacketId.NpcServerAddress);
         Assert.Equal(103, (int)ServerToPlayerPacketId.RcMaxUploadFileSize);
+        Assert.Equal(180, (int)ServerToPlayerPacketId.StatusList);
         Assert.Equal(157, (int)ServerToPlayerPacketId.NcNpcAttributes);
         Assert.Equal(160, (int)ServerToPlayerPacketId.NcNpcScript);
         Assert.Equal(167, (int)ServerToPlayerPacketId.NcWeaponListGet);

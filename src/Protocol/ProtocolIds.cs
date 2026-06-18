@@ -195,6 +195,7 @@ public enum ServerToPlayerPacketId : byte
     GhostIcon = 174,
     Shoot = 175,
     ServerWarp = 178,
+    StatusList = 180,
     UpdatePackageIsUpdated = 187,
     Shoot2 = 191,
     NcClassDelete = 188,

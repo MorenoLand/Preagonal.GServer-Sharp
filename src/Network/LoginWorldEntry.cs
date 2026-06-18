@@ -33,6 +33,37 @@ public static class LoginWorldEntry
 
         var account = accountLogin.Account;
         snapshot = BuildSnapshot(session, account, options.AccountLoginOptions.RemoteIp);
+        if (IsRemoteControl(session.Type))
+        {
+            var rcPostLogin = PostLoginWorldEntryBoundary.BeginRemoteControl(
+                session,
+                snapshot with
+                {
+                    CurrentLevelProperty = GCharString(" "),
+                    LoginPropertySource = snapshot.LoginPropertySource with
+                    {
+                        Nickname = string.IsNullOrEmpty(snapshot.LoginPropertySource.Nickname)
+                            ? "*" + snapshot.LoginPropertySource.AccountName
+                            : snapshot.LoginPropertySource.Nickname,
+                        CurrentLevel = " ",
+                        HeadImage = options.AccountSettings.GetString("staffhead", "head25.png"),
+                        X = 0,
+                        Y = 0,
+                        Z = 0
+                    }
+                },
+                new PostLoginRemoteControlOptions(
+                    options.AccountFileSystem.ServerPath,
+                    options.AccountLoginOptions.ServerName,
+                    options.AccountSettings.GetString("staffguilds", ""),
+                    options.AccountSettings.GetString(
+                        "playerlisticons",
+                        options.AccountSettings.GetString("statuslist", "")),
+                    MaxUploadBytes: 20 * 1024 * 1024));
+            serverListAddPlayerPacket = rcPostLogin.ServerListAddPlayerPacket;
+            return true;
+        }
+
         var postLogin = PostLoginWorldEntryBoundary.BeginClient(
             session,
             snapshot,
@@ -224,6 +255,9 @@ public static class LoginWorldEntry
         var value = settings.GetString(key, defaultValue ? "true" : "false");
         return value.Equals("true", StringComparison.OrdinalIgnoreCase) || value == "1";
     }
+
+    private static bool IsRemoteControl(PlayerSessionType type) =>
+        (type & PlayerSessionType.AnyRemoteControl) != 0;
 
     private static byte[] GCharString(string value)
     {

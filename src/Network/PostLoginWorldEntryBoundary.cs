@@ -24,6 +24,13 @@ public sealed record PostLoginClientOptions(
     IReadOnlyDictionary<string, byte[]>? ProtectedWeaponPackets = null,
     IReadOnlyList<byte[]>? OrderedClassPackets = null);
 
+public sealed record PostLoginRemoteControlOptions(
+    string ServerPath,
+    string ServerName,
+    string StaffGuilds,
+    string StatusList,
+    uint MaxUploadBytes);
+
 public sealed record PostLoginPlayerSnapshot(
     ushort PlayerId,
     PlayerSessionType Type,
@@ -52,6 +59,8 @@ public sealed record PostLoginClientBoundaryResult(
 
 public static class PostLoginWorldEntryBoundary
 {
+    private const string DefaultStatusList = "Online,Away,DND,Eating,Hiding,No PMs,RPing,Sparring,PKing";
+
     public static PostLoginClientBoundaryResult BeginClient(
         ClientSessionSkeleton session,
         PostLoginPlayerSnapshot snapshot,
@@ -94,6 +103,35 @@ public static class PostLoginWorldEntryBoundary
             PostLoginClientStopPoint.BeforeWarp);
     }
 
+    public static PostLoginClientBoundaryResult BeginRemoteControl(
+        ClientSessionSkeleton session,
+        PostLoginPlayerSnapshot snapshot,
+        PostLoginRemoteControlOptions options)
+    {
+        if (session.Lifecycle != SessionLifecycle.ReadyForWorldEntry)
+            throw new InvalidOperationException("sendLoginRC boundary requires ReadyForWorldEntry.");
+
+        var serverListAddPlayerPacket = BuildServerListAddPlayerPacket(snapshot);
+        session.QueuePacket(RcNcPackets.ClearWeapons());
+
+        foreach (var line in LoadRcMessageLines(options))
+            session.QueuePacket(RcNcPackets.RcChat(line));
+
+        session.QueuePacket(RcNcPackets.Unknown190());
+
+        if (!string.IsNullOrWhiteSpace(options.StaffGuilds))
+            session.QueuePacket(RcNcPackets.StaffGuilds(options.StaffGuilds));
+
+        session.QueuePacket(RcNcPackets.StatusList(
+            string.IsNullOrWhiteSpace(options.StatusList) ? DefaultStatusList : options.StatusList));
+        session.QueuePacket(RcNcPackets.RcMaxUploadFileSize(options.MaxUploadBytes));
+
+        return new PostLoginClientBoundaryResult(
+            true,
+            serverListAddPlayerPacket,
+            PostLoginClientStopPoint.BeforeWarp);
+    }
+
     private static void SendOldClientMapWorkaround(
         ClientSessionSkeleton session,
         PostLoginClientOptions? options)
@@ -115,6 +153,22 @@ public static class PostLoginWorldEntryBoundary
                 map.MapName,
                 session.LoginPacket.VersionId);
         }
+    }
+
+    private static IReadOnlyList<string> LoadRcMessageLines(PostLoginRemoteControlOptions options)
+    {
+        var path = Path.Combine(options.ServerPath, "config", "rcmessage.txt");
+        if (File.Exists(path))
+        {
+            var lines = File.ReadAllLines(path)
+                .Select(static line => line.Trim())
+                .Where(static line => line.Length != 0)
+                .ToArray();
+            if (lines.Length != 0)
+                return lines;
+        }
+
+        return [$"Welcome to {options.ServerName} RC."];
     }
 
     private static void SendLoginWeaponsAndClasses(

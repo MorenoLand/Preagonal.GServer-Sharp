@@ -25,6 +25,21 @@ public sealed class RcNcPacketTests
     }
 
     [Fact]
+    public void RcLoginPacketsUseCppOpcodesAndTextShapes()
+    {
+        Assert.Equal(new byte[] { 226, 10 }, RcNcPackets.ClearWeapons());
+        Assert.Equal(new byte[] { 222, 10 }, RcNcPackets.Unknown190());
+        Assert.Equal(
+            Encoding.ASCII.GetBytes("O\"Server\",\"Manager\"\n"),
+            RcNcPackets.StaffGuilds("Server, Manager"));
+        Assert.Equal(
+            new byte[] { 212 }
+                .Concat(Encoding.ASCII.GetBytes("Online,Away,No PMs\n"))
+                .ToArray(),
+            RcNcPackets.StatusList("Online, Away, No PMs"));
+    }
+
+    [Fact]
     public void FileBrowserMessageUsesConfirmedOpcodeAndTextPayload()
     {
         var bytes = RcNcPackets.FileBrowserMessage("Welcome to the File Browser.");

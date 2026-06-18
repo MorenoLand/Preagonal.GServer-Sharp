@@ -6,8 +6,44 @@ public sealed record RcFileBrowserEntry(string Name, string Rights, uint Size, u
 
 public static class RcNcPackets
 {
+    public static byte[] ClearWeapons() =>
+        BlankPacket(ServerToPlayerPacketId.ClearWeapons);
+
+    public static byte[] Unknown190() =>
+        BlankPacket(ServerToPlayerPacketId.ServerListConnected);
+
     public static byte[] RcChat(string message) =>
         PacketWithAsciiPayload(ServerToPlayerPacketId.RcChat, message);
+
+    public static byte[] StaffGuilds(string guilds)
+    {
+        var writer = NewServerPacket(ServerToPlayerPacketId.StaffGuilds);
+        var wroteGuild = false;
+        foreach (var guild in guilds.Split(',', StringSplitOptions.None))
+        {
+            var trimmed = guild.Trim();
+            if (trimmed.Length == 0)
+                continue;
+
+            if (wroteGuild)
+                writer.WriteByte((byte)',');
+            writer.WriteByte((byte)'"');
+            writer.WriteBytes(Encoding.ASCII.GetBytes(trimmed.Replace("\"", "\"\"", StringComparison.Ordinal)));
+            writer.WriteByte((byte)'"');
+            wroteGuild = true;
+        }
+
+        return WithTrailingNewline(writer);
+    }
+
+    public static byte[] StatusList(string statuses)
+    {
+        var values = statuses
+            .Split(',', StringSplitOptions.None)
+            .Select(static status => status.Trim())
+            .Where(static status => status.Length != 0);
+        return PacketWithAsciiPayload(ServerToPlayerPacketId.StatusList, string.Join(",", values));
+    }
 
     public static byte[] RcMaxUploadFileSize(uint bytes)
     {
@@ -106,6 +142,9 @@ public static class RcNcPackets
         writer.WriteBytes(Encoding.ASCII.GetBytes(payload));
         return WithTrailingNewline(writer);
     }
+
+    private static byte[] BlankPacket(ServerToPlayerPacketId packetId) =>
+        WithTrailingNewline(NewServerPacket(packetId));
 
     private static GraalBinaryWriter NewServerPacket(ServerToPlayerPacketId packetId)
     {
