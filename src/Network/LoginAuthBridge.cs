@@ -891,7 +891,8 @@ public sealed class LoginAuthBridge(
             case PlayerToServerPacketId.RcListRemoteControls:
                 if (!IsRemoteControl(session.Type))
                     return false;
-                foreach (var snapshot in _activeSnapshots.Values.Where(snapshot => IsRemoteControl(snapshot.Type)))
+                foreach (var snapshot in _activeSnapshots.Values.Where(snapshot =>
+                    IsRemoteControl(snapshot.Type) || snapshot.Type == PlayerSessionType.NpcServer))
                     QueueSelfPacket(session.Id, BuildRcAddPlayer(snapshot), touched);
                 return true;
             case PlayerToServerPacketId.RcFileBrowserStart:

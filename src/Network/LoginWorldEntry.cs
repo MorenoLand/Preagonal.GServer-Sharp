@@ -37,7 +37,7 @@ public static class LoginWorldEntry
         duplicateDisconnects = accountLogin.DuplicateDisconnects;
         var account = accountLogin.Account;
         snapshot = BuildSnapshot(session, account, options.AccountLoginOptions.RemoteIp);
-        if (IsControl(session.Type))
+        if (IsRemoteControl(session.Type))
         {
             var controlSnapshot = snapshot with
             {
@@ -64,6 +64,24 @@ public static class LoginWorldEntry
                         options.AccountSettings.GetString("statuslist", "")),
                     MaxUploadBytes: 20 * 1024 * 1024));
             serverListAddPlayerPacket = rcPostLogin.ServerListAddPlayerPacket;
+            return true;
+        }
+
+        if (IsNpcControl(session.Type))
+        {
+            snapshot = snapshot with
+            {
+                CurrentLevelProperty = GCharString(" "),
+                LoginPropertySource = snapshot.LoginPropertySource with
+                {
+                    CurrentLevel = " ",
+                    HeadImage = options.AccountSettings.GetString("staffhead", "head25.png"),
+                    X = 0,
+                    Y = 0,
+                    Z = 0
+                }
+            };
+            serverListAddPlayerPacket = PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket(snapshot);
             return true;
         }
 
@@ -338,8 +356,11 @@ public static class LoginWorldEntry
         return value.Equals("true", StringComparison.OrdinalIgnoreCase) || value == "1";
     }
 
-    private static bool IsControl(PlayerSessionType type) =>
-        (type & PlayerSessionType.AnyControl) != 0;
+    private static bool IsRemoteControl(PlayerSessionType type) =>
+        (type & PlayerSessionType.AnyRemoteControl) != 0;
+
+    private static bool IsNpcControl(PlayerSessionType type) =>
+        (type & PlayerSessionType.AnyNpcControl) != 0;
 
     private static string DisplayNickname(string accountName, string nickname)
     {

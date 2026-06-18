@@ -345,6 +345,24 @@ public sealed class LoginAuthBridgeTests
     }
 
     [Fact]
+    public void RcListRefreshShowsNpcServer()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        File.WriteAllText(
+            Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
+            "name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n");
+        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+
+        var result = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(RcPacket(PlayerToServerPacketId.RcListRemoteControls), 42));
+
+        var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
+        Assert.True(IndexOf(decoded, RcNcPackets.AddPlayer(1, "(npcserver)", " ", 0, "Testbed (Server)", "(npcserver)", 1)) >= 0);
+    }
+
+    [Fact]
     public void RcSeesDeleteWhenClientLeaves()
     {
         using var serverRoot = TestDefaultServerRoot();
@@ -419,6 +437,8 @@ public sealed class LoginAuthBridgeTests
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, login.OutboundBytes);
         Assert.True(IndexOf(decoded, RcNcPackets.RcChat("Welcome to the NPC-Server for My Server")) >= 0);
+        Assert.Equal(0, CountOf(decoded, RcNcPackets.RcChat("Welcome to the Graal Reborn GServer Remote Control")));
+        Assert.Equal(0, CountOf(decoded, RcNcPackets.RcChat("Say /help for a list of available commands")));
     }
 
     [Fact]
