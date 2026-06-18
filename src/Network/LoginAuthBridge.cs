@@ -39,6 +39,8 @@ public sealed class LoginAuthBridge(
     LoginWorldEntryOptions? worldEntryOptions = null,
     RuntimeServer? runtimeServer = null)
 {
+    private sealed record NpcServerEndpoint(ushort Id, string Host, int Port);
+
     private readonly Dictionary<(ushort PlayerId, PlayerSessionType Type), ClientSessionSkeleton> _pendingSessions = [];
     private readonly Dictionary<(ushort PlayerId, PlayerSessionType Type), string> _remoteAddresses = [];
     private readonly Dictionary<ushort, ClientSessionSkeleton> _activeSessions = [];
@@ -48,6 +50,7 @@ public sealed class LoginAuthBridge(
     private readonly Dictionary<ushort, InboundPacketDecoder> _activeDecoders = [];
     private readonly Dictionary<ushort, ClientPacketStreamFramer> _activeFramers = [];
     private readonly Dictionary<ushort, GraalFileQueue> _outboundQueues = [];
+    private Dictionary<string, string>? _serverFlags;
     private readonly Dictionary<string, RuntimeLevel> _levels = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<ushort, string> _loginFrameDebug = [];
     private readonly Random _rng = new();
@@ -60,6 +63,10 @@ public sealed class LoginAuthBridge(
     private const int WarpToPlayerRight = 0x00002;
     private const int SetAttributesRight = 0x00040;
     private const int SetSelfAttributesRight = 0x00080;
+    private const int SetServerFlagsRight = 0x08000;
+    private const int SetServerOptionsRight = 0x10000;
+    private const int SetFolderOptionsRight = 0x20000;
+    private const int NpcControlRight = 0x80000;
 
     public ClientFrameBridgeResult HandleClientFrame(
         ClientSocketSessionContext context,
@@ -139,6 +146,7 @@ public sealed class LoginAuthBridge(
             _activeAccounts[session.Id] = snapshot.Account;
             ActivateRuntimePlayer(session, snapshot);
             serverList.SendPlayerAdd(playerAdd);
+            QueueNpcServerAddress(session, snapshot.Account);
             _pendingSessions.Remove(key);
             _remoteAddresses.Remove(key);
         }
@@ -597,15 +605,30 @@ public sealed class LoginAuthBridge(
                     return false;
                 QueueSelfPacket(session.Id, RcNcPackets.ServerOptionsGet(ReadConfigFile("serveroptions.txt")), touched);
                 return true;
+            case PlayerToServerPacketId.RcServerOptionsSet:
+                if (!IsRemoteControl(session.Type))
+                    return false;
+                HandleServerOptionsSet(session.Id, sender.AccountName, payload, touched);
+                return true;
             case PlayerToServerPacketId.RcFolderConfigGet:
                 if (!IsRemoteControl(session.Type))
                     return false;
                 QueueSelfPacket(session.Id, RcNcPackets.FolderConfigGet(ReadConfigFile("foldersconfig.txt")), touched);
                 return true;
+            case PlayerToServerPacketId.RcFolderConfigSet:
+                if (!IsRemoteControl(session.Type))
+                    return false;
+                HandleFolderConfigSet(session.Id, sender.AccountName, payload, touched);
+                return true;
             case PlayerToServerPacketId.RcServerFlagsGet:
                 if (!IsRemoteControl(session.Type))
                     return false;
-                QueueSelfPacket(session.Id, RcNcPackets.ServerFlagsGet([]), touched);
+                QueueSelfPacket(session.Id, RcNcPackets.ServerFlagsGet(LoadServerFlags()), touched);
+                return true;
+            case PlayerToServerPacketId.RcServerFlagsSet:
+                if (!IsRemoteControl(session.Type))
+                    return false;
+                HandleServerFlagsSet(session.Id, sender.AccountName, payload, touched);
                 return true;
             case PlayerToServerPacketId.RcAccountListGet:
                 if (!IsRemoteControl(session.Type))
@@ -1713,6 +1736,198 @@ public sealed class LoginAuthBridge(
         return File.Exists(path) ? File.ReadAllText(path).Replace("\r", "", StringComparison.Ordinal) : "";
     }
 
+    private void HandleServerOptionsSet(ushort playerId, string accountName, ReadOnlySpan<byte> payload, ISet<ushort> touched)
+    {
+        if (!HasRight(playerId, SetServerOptionsRight))
+        {
+            QueueSelfPacket(playerId, RcNcPackets.RcChat($"Server: {accountName} is not authorized to change the server options."), touched);
+            return;
+        }
+
+        var options = NormalizeConfigText(GUntokenize(ReadAsciiPayload(payload)));
+        WriteConfigFile("serveroptions.txt", options);
+        BroadcastToRemoteControls(RcNcPackets.RcChat($"{accountName} has updated the server options."), touched);
+        BroadcastNpcAddresses(touched);
+    }
+
+    private void HandleFolderConfigSet(ushort playerId, string accountName, ReadOnlySpan<byte> payload, ISet<ushort> touched)
+    {
+        if (!HasRight(playerId, SetFolderOptionsRight))
+        {
+            QueueSelfPacket(playerId, RcNcPackets.RcChat($"Server: {accountName} is not authorized to change the folder config."), touched);
+            return;
+        }
+
+        var folders = NormalizeConfigText(GUntokenize(ReadAsciiPayload(payload)));
+        WriteConfigFile("foldersconfig.txt", folders);
+        BroadcastToRemoteControls(RcNcPackets.RcChat($"{accountName} updated the folder config."), touched);
+    }
+
+    private void HandleServerFlagsSet(ushort playerId, string accountName, ReadOnlySpan<byte> payload, ISet<ushort> touched)
+    {
+        if (!HasRight(playerId, SetServerFlagsRight))
+        {
+            QueueSelfPacket(playerId, RcNcPackets.RcChat("Server: You are not authorized to set the server flags."), touched);
+            return;
+        }
+
+        var previous = LoadServerFlags().ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.Ordinal);
+        var reader = new GraalBinaryReader(payload);
+        var count = reader.ReadGShort();
+        var flags = new Dictionary<string, string>(StringComparer.Ordinal);
+        for (var i = 0; i < count && reader.BytesLeft > 0; i++)
+        {
+            var flag = ReadGCharString(reader);
+            var equals = flag.IndexOf('=', StringComparison.Ordinal);
+            if (equals < 0)
+                flags[flag] = "";
+            else
+                flags[flag[..equals]] = flag[(equals + 1)..];
+        }
+
+        _serverFlags = flags;
+        WriteServerFlags(flags);
+        foreach (var flag in flags)
+        {
+            if (previous.TryGetValue(flag.Key, out var oldValue) && oldValue == flag.Value)
+                continue;
+
+            BroadcastToClients(BuildFlagSetPacket(new LoginFlag(flag.Key, flag.Value)), touched);
+        }
+
+        BroadcastToRemoteControls(RcNcPackets.RcChat($"{accountName} has updated the server flags."), touched);
+    }
+
+    private void WriteConfigFile(string fileName, string text)
+    {
+        var root = worldEntryOptions?.AccountFileSystem.ServerPath;
+        if (root is null)
+            return;
+
+        var path = Path.Combine(root, "config", fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, text.Replace("\n", Environment.NewLine, StringComparison.Ordinal));
+    }
+
+    private IReadOnlyList<KeyValuePair<string, string>> LoadServerFlags()
+    {
+        if (_serverFlags is not null)
+            return _serverFlags.ToArray();
+
+        var flags = new Dictionary<string, string>(StringComparer.Ordinal);
+        var path = ServerFilePath("serverflags.txt");
+        if (path is not null && File.Exists(path))
+        {
+            foreach (var rawLine in File.ReadAllLines(path))
+            {
+                var line = rawLine.Trim();
+                if (line.Length == 0)
+                    continue;
+
+                var equals = line.IndexOf('=', StringComparison.Ordinal);
+                if (equals < 0)
+                    flags[line] = "";
+                else
+                    flags[line[..equals]] = line[(equals + 1)..];
+            }
+        }
+
+        _serverFlags = flags;
+        return flags.ToArray();
+    }
+
+    private void WriteServerFlags(IReadOnlyDictionary<string, string> flags)
+    {
+        var path = ServerFilePath("serverflags.txt");
+        if (path is null)
+            return;
+
+        var lines = flags.Select(static flag => flag.Value.Length == 0 ? flag.Key : $"{flag.Key}={flag.Value}");
+        File.WriteAllText(path, string.Join(Environment.NewLine, lines) + Environment.NewLine);
+    }
+
+    private string? ServerFilePath(string fileName)
+    {
+        var root = worldEntryOptions?.AccountFileSystem.ServerPath;
+        return root is null ? null : Path.Combine(root, fileName);
+    }
+
+    private static string NormalizeConfigText(string text)
+    {
+        var normalized = text.Replace("\r", "", StringComparison.Ordinal).TrimEnd('\n');
+        return normalized.Length == 0 ? "" : normalized + "\n";
+    }
+
+    private void BroadcastNpcAddresses(ISet<ushort> touched)
+    {
+        foreach (var (playerId, session) in _activeSessions)
+        {
+            if (!IsRemoteControl(session.Type) || !_activeAccounts.TryGetValue(playerId, out var account))
+                continue;
+
+            QueueNpcServerAddress(session, account, touched);
+        }
+    }
+
+    private void QueueNpcServerAddress(ClientSessionSkeleton session, AccountFileData? account, ISet<ushort>? touched = null)
+    {
+        if (!IsRemoteControl(session.Type) || account is null || (account.AdminRights & NpcControlRight) == 0)
+            return;
+
+        var endpoint = LoadNpcServerEndpoint();
+        if (endpoint is null)
+            return;
+
+        QueueSelfPacket(session.Id, RcNcPackets.NpcServerAddress(endpoint.Id, endpoint.Host, endpoint.Port), touched ?? new HashSet<ushort>());
+    }
+
+    private NpcServerEndpoint? LoadNpcServerEndpoint()
+    {
+        var root = worldEntryOptions?.AccountFileSystem.ServerPath;
+        var settings = worldEntryOptions?.AccountSettings;
+        if (root is null || settings is null)
+            return null;
+
+        var config = Gs2Settings.LoadFile(Path.Combine(root, "config", "npcserver.txt"));
+        var enabled = config.IsOpened
+            ? config.GetBool("enabled", GetBool(settings, "serverside", false))
+            : GetBool(settings, "serverside", false);
+        if (!enabled)
+            return null;
+
+        var id = (ushort)Math.Clamp(config.GetInt("id", 0), ushort.MinValue, ushort.MaxValue);
+        var host = config.GetString("host", "AUTO");
+        if (IsAuto(host))
+            host = config.GetString("ns_ip", settings.GetString("ns_ip", "AUTO"));
+        if (IsAuto(host))
+            host = settings.GetString("localip", "AUTO");
+        if (IsAuto(host))
+            host = settings.GetString("serverip", "AUTO");
+        if (IsAuto(host))
+            host = "127.0.0.1";
+
+        var portText = config.GetString("port", "AUTO");
+        if (IsAuto(portText))
+            portText = settings.GetString("ncport", "AUTO");
+        if (IsAuto(portText))
+            portText = settings.GetString("serverport", "0");
+        return int.TryParse(portText, out var port) && port > 0
+            ? new NpcServerEndpoint(id, host, port)
+            : null;
+    }
+
+    private static bool GetBool(IAccountLoadSettings settings, string key, bool defaultValue)
+    {
+        if (!settings.Exists(key))
+            return defaultValue;
+
+        var value = settings.GetString(key, defaultValue ? "true" : "false");
+        return value.Equals("true", StringComparison.OrdinalIgnoreCase) || value == "1";
+    }
+
+    private static bool IsAuto(string value) =>
+        string.IsNullOrWhiteSpace(value) || value.Equals("AUTO", StringComparison.OrdinalIgnoreCase);
+
     private bool HasRight(ushort playerId, int right) =>
         _activeAccounts.TryGetValue(playerId, out var account) &&
         (account.AdminRights & right) != 0;
@@ -2267,6 +2482,15 @@ public sealed class LoginAuthBridge(
             playerId,
             [(byte)((byte)PlayerPropertyId.PlayerConnected + 32)],
             appendNewline: true);
+
+    private static byte[] BuildFlagSetPacket(LoginFlag flag)
+    {
+        var writer = new GraalBinaryWriter();
+        writer.WriteGChar((byte)ServerToPlayerPacketId.FlagSet);
+        writer.WriteBytes(System.Text.Encoding.ASCII.GetBytes(flag.Value.Length == 0 ? flag.Name : $"{flag.Name}={flag.Value}"));
+        writer.WriteByte((byte)'\n');
+        return writer.ToArray();
+    }
 
     private static byte[] BuildServerWarpPacket(ReadOnlySpan<byte> serverPacket)
     {

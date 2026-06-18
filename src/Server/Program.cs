@@ -32,7 +32,7 @@ if (!config.Enabled)
 
     var runtimeServer = new RuntimeServer();
     var runtimeLevelCache = new RuntimeLevelCache();
-    var runtime = new ServerHostRuntime(runtimeServer);
+    var runtime = new ServerHostRuntime(runtimeServer, snapshot.ServerOptions.GetBool("serverside", false));
     using var serverListSocket = new ServerListTcpSocket();
     var serverListOptions = ServerListStartupOptions.FromStartupSnapshot(snapshot, productionArgs);
     var serverListResult = new ServerListLifecycle(serverListSocket).ConnectServer(serverListOptions);

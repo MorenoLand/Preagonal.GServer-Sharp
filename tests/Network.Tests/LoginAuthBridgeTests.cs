@@ -209,6 +209,47 @@ public sealed class LoginAuthBridgeTests
     }
 
     [Fact]
+    public void RcSavesServerOps()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        var optionsPath = Path.Combine(serverRoot.Path, "config", "serveroptions.txt");
+        var foldersPath = Path.Combine(serverRoot.Path, "config", "foldersconfig.txt");
+        var flagsPath = Path.Combine(serverRoot.Path, "serverflags.txt");
+        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var clientQueue = new GraalFileQueue();
+        clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
+
+        var setOptions = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerOptionsSet, GTokenize("name = Changed\nserverport = 14901\n"))));
+        var setFolders = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcFolderConfigSet, GTokenize("level world/*.nw\nfile accounts/*.txt\n"))));
+        var setFlags = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(clientQueue, RcFlagsSetPacket("event=on", "motd=hello")));
+
+        Assert.Contains("name = Changed", File.ReadAllText(optionsPath));
+        Assert.Contains("level world/*.nw", File.ReadAllText(foldersPath));
+        Assert.Equal("event=on\nmotd=hello\n", File.ReadAllText(flagsPath).Replace("\r", "", StringComparison.Ordinal));
+        Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, setOptions.OutboundBytes, setFolders.OutboundBytes, setFlags.OutboundBytes), RcNcPackets.RcChat("YOURACCOUNT has updated the server flags.")) >= 0);
+    }
+
+    [Fact]
+    public void RcGetsNpcAddress()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        File.WriteAllText(Path.Combine(serverRoot.Path, "config", "npcserver.txt"), "enabled = true\nid = 44\nhost = 127.0.0.1\nport = 14950\n");
+        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+
+        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var decoded = DecodeSocketPayload(login.OutboundBytes, key: 42);
+
+        Assert.True(IndexOf(decoded, RcNcPackets.NpcServerAddress(44, "127.0.0.1", 14950)) >= 0);
+    }
+
+    [Fact]
     public void RcFileBrowserStartReturnsFolderListAndDirectory()
     {
         using var serverRoot = TestDefaultServerRoot();
@@ -1401,6 +1442,42 @@ public sealed class LoginAuthBridgeTests
         return packet.ToArray();
     }
 
+    private static byte[] RcFlagsSetPacket(params string[] flags)
+    {
+        var packet = new GraalBinaryWriter();
+        packet.WriteGChar((byte)PlayerToServerPacketId.RcServerFlagsSet);
+        packet.WriteGShort((ushort)flags.Length);
+        foreach (var flag in flags)
+            WriteGCharString(packet, flag);
+        packet.WriteByte((byte)'\n');
+        return packet.ToArray();
+    }
+
+    private static string GTokenize(string value)
+    {
+        var lines = value.EndsWith('\n') ? value.Split('\n') : (value + "\n").Split('\n');
+        var tokens = new List<string>();
+        foreach (var raw in lines.Take(lines.Length - 1))
+        {
+            var temp = raw.Replace("\r", string.Empty, StringComparison.Ordinal);
+            var complex = temp.StartsWith('"') ||
+                          temp.Any(static c => c < 33 || c > 126 || c == ',' || c == '/') ||
+                          temp.Trim().Length == 0;
+            if (!complex)
+            {
+                tokens.Add(temp);
+                continue;
+            }
+
+            temp = temp
+                .Replace("\\", "\\\\", StringComparison.Ordinal)
+                .Replace("\"", "\"\"", StringComparison.Ordinal);
+            tokens.Add($"\"{temp}\"");
+        }
+
+        return string.Join(",", tokens);
+    }
+
     private static byte[] RcPacketWithGCharStrings(PlayerToServerPacketId id, params string[] values)
     {
         var packet = new GraalBinaryWriter();
@@ -1413,6 +1490,13 @@ public sealed class LoginAuthBridgeTests
 
         packet.WriteByte((byte)'\n');
         return packet.ToArray();
+    }
+
+    private static void WriteGCharString(GraalBinaryWriter writer, string value)
+    {
+        var bytes = System.Text.Encoding.ASCII.GetBytes(value);
+        writer.WriteGChar((byte)bytes.Length);
+        writer.WriteBytes(bytes);
     }
 
     private static GraalFileQueue Gen3Queue()
