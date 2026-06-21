@@ -274,17 +274,29 @@ public static class RcNcPackets
     public static byte[] NcNpcAttributes(uint npcId, string name, string type, string owner, string levelName, string x, string y)
     {
         var writer = NewServerPacket(ServerToPlayerPacketId.NcNpcAttributes);
-        writer.WriteBytes(Encoding.ASCII.GetBytes(GTokenize(string.Join('\n', [
-            $"id={npcId}",
-            $"name={name}",
-            $"type={type}",
-            $"scripter={owner}",
-            $"level={levelName}",
-            $"x={x}",
-            $"y={y}",
-            ""
-        ]))));
+        var npcName = string.IsNullOrWhiteSpace(name) ? $"npcs[{npcId}]" : name;
+        var dump = new StringBuilder();
+        dump.Append("Variables dump from npc ").Append(npcName).Append("\n\n");
+        AppendNpcDumpLine(dump, npcName, "type", type);
+        AppendNpcDumpLine(dump, npcName, "scripter", owner);
+        AppendNpcDumpLine(dump, npcName, "level", levelName);
+        dump.Append("\nAttributes:\n");
+        dump.Append(npcName).Append(".id: ").Append(npcId).Append('\n');
+        AppendNpcDumpLine(dump, npcName, "name", name);
+        AppendNpcDumpLine(dump, npcName, "type", type);
+        AppendNpcDumpLine(dump, npcName, "scripter", owner);
+        AppendNpcDumpLine(dump, npcName, "level", levelName);
+        AppendNpcDumpLine(dump, npcName, "xprecise", x);
+        AppendNpcDumpLine(dump, npcName, "yprecise", y);
+        writer.WriteBytes(Encoding.ASCII.GetBytes(GTokenize(dump.ToString())));
         return WithTrailingNewline(writer);
+    }
+
+    private static void AppendNpcDumpLine(StringBuilder dump, string npcName, string field, string value)
+    {
+        value = value.Trim();
+        if (value.Length != 0)
+            dump.Append(npcName).Append('.').Append(field).Append(": ").Append(value).Append('\n');
     }
 
     public static byte[] NcNpcDelete(uint npcId)

@@ -957,7 +957,9 @@ public sealed class LoginAuthBridgeTests
         var flagsDecoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, flagsGet.OutboundBytes);
         var deletePayloads = new[] { delete.OutboundBytes }.Concat(delete.Broadcasts.Select(static packet => packet.OutboundBytes)).ToArray();
         var deleteDecoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, deletePayloads);
-        Assert.True(IndexOf(getDecoded, RcNcPackets.NcNpcAttributes(10000, "n0", "OBJECT", "moondeath", "onlinestartlocal.nw", "1.5", "2.5")) >= 0);
+        var attrDump = "Variables dump from npc n0\n\nn0.type: OBJECT\nn0.scripter: moondeath\nn0.level: onlinestartlocal.nw\n\nAttributes:\nn0.id: 10000\nn0.name: n0\nn0.type: OBJECT\nn0.scripter: moondeath\nn0.level: onlinestartlocal.nw\nn0.xprecise: 1.5\nn0.yprecise: 2.5\n";
+        var attrPacket = new[] { (byte)((byte)ServerToPlayerPacketId.NcNpcAttributes + 32) }.Concat(System.Text.Encoding.ASCII.GetBytes(GTokenize(attrDump))).ToArray();
+        Assert.True(IndexOf(getDecoded, attrPacket) >= 0);
         Assert.True(IndexOf(flagsDecoded, RcNcPackets.NcNpcFlags(10000, "foo=bar")) >= 0);
         Assert.True(IndexOf(deleteDecoded, RcNcPackets.NcNpcDelete(10000)) >= 0);
     }
