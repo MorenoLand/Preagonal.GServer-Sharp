@@ -207,7 +207,7 @@ public sealed class Gs2ServerScriptHost
             var previousPlayer = CurrentPlayer.Value;
             CurrentPlayer.Value = _player;
             Script.GlobalVariables.AddOrUpdate("name", scriptName.ToStackEntry());
-            Script.GlobalVariables.AddOrUpdate("params", args.ToList().ToStackEntry());
+            Script.GlobalVariables.AddOrUpdate("params", args.Cast<object?>().ToList().ToStackEntry());
             RegisterGlobalObject("server", BuildFlagObject(_serverFlags, "server."));
             RegisterGlobalObject("serverr", BuildFlagObject(_serverFlags, "serverr."));
             RegisterGlobalObject("serveroptions", BuildObject(_serverOptions));
@@ -390,7 +390,7 @@ public sealed class Gs2ServerScriptHost
     private static IStackEntry ValueEntry(string value)
     {
         var parts = value.Split(',', StringSplitOptions.None);
-        return parts.Length > 1 ? parts.ToList().ToStackEntry() : value.ToStackEntry();
+        return parts.Length > 1 ? parts.Cast<object?>().ToList().ToStackEntry() : value.ToStackEntry();
     }
 
     private static string NormalizeSingleLineFunction(string source)

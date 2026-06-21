@@ -283,6 +283,26 @@ public sealed class ScriptingBoundaryTests
     }
 
     [Fact]
+    public async Task MissingFlagIndexSafe()
+    {
+        var host = new Gs2ServerScriptHost();
+        host.SetEnvironment(new Dictionary<string, string>(), new Dictionary<string, string>());
+        var compile = new Gs2CompilerAdapter().Compile(
+            "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  if (serverr.poopybutthole[0] == true) echo(\"bad\");\n  echo(\"ok\");\n}",
+            "weapon",
+            "-gr_movement");
+        Assert.True(compile.Success, compile.Error);
+
+        var load = host.LoadWeapon("-gr_movement", compile.Bytecode);
+        Assert.True(load.Success, load.Error);
+
+        var run = await host.Call("-gr_movement", "onCreated");
+
+        Assert.True(run.Success, run.Error);
+        Assert.Empty(run.Output);
+    }
+
+    [Fact]
     public async Task ServerScriptRunsSingleLineFunction()
     {
         var host = new Gs2ServerScriptHost();

@@ -962,8 +962,8 @@ public sealed class LoginAuthBridge(
             case PlayerToServerPacketId.RcListRemoteControls:
                 if (!IsRemoteControl(session.Type))
                     return false;
-                foreach (var snapshot in _activeSnapshots.Values.Where(snapshot =>
-                    IsRemoteControl(snapshot.Type) || snapshot.Type == PlayerSessionType.NpcServer))
+                EnsureNpcServerPlayer(touched);
+                foreach (var snapshot in _activeSnapshots.Values.Where(snapshot => snapshot.Type != PlayerSessionType.NpcControl))
                     QueueSelfPacket(session.Id, BuildRcAddPlayer(snapshot), touched);
                 return true;
             case PlayerToServerPacketId.RcFileBrowserStart:
@@ -1319,10 +1319,7 @@ public sealed class LoginAuthBridge(
                 ApplyScriptSideEffects(run, NpcServerPlayerId, touched);
 
                 if (!run.Success)
-                {
                     SendCompilerOutputToNc($"{origin} server-side", "error", run.Error, touched);
-                    return new ScriptCompileFeedback(false, []);
-                }
             }
 
             if (string.IsNullOrWhiteSpace(slices.ClientGs2))

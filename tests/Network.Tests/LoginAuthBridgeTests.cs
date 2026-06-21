@@ -856,7 +856,7 @@ public sealed class LoginAuthBridgeTests
             SocketPayload(ncQueue, NcWeaponAddPacket(
                 "-gr_movement",
                 "tool.png",
-                "function onActionServerSide() {\n  triggerclient(\"gui\", name, \"kek\");\n}\n//#CLIENTSIDE\n//#GS2\nfunction onActionClientside() {\n}")));
+                "function onCreated() {\n  if (serverr.poopybutthole[0] == true) echo(\"bad\");\n}\nfunction onActionServerSide() {\n  triggerclient(\"gui\", name, \"kek\");\n}\n//#CLIENTSIDE\n//#GS2\nfunction onActionClientside() {\n}")));
         var clientBroadcast = Assert.Single(add.Broadcasts, packet => packet.PlayerId == 8);
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 43);
