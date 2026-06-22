@@ -376,6 +376,42 @@ public sealed class LoginAuthBridgeTests
     }
 
     [Fact]
+    public void RcListRefreshDeletesRowsBeforeReadding()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+
+        var result = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(RcPacket(PlayerToServerPacketId.RcListRemoteControls), 42));
+
+        var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
+        var deleteIndex = IndexOf(decoded, RcNcPackets.DeletePlayer(7));
+        var addIndex = LastIndexOf(decoded, RcNcPackets.AddPlayer(7, "YOURACCOUNT", " ", 0, "*YOURACCOUNT", "YOURACCOUNT"));
+        Assert.True(deleteIndex >= 0);
+        Assert.True(addIndex > deleteIndex);
+    }
+
+    [Fact]
+    public void RcNicknamePropRefreshesPlayerListRows()
+    {
+        using var serverRoot = TestDefaultServerRoot();
+        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+
+        var result = bridge.HandleClientFrame(
+            new ClientSocketSessionContext(7, "127.0.0.1"),
+            SocketPayload(NicknamePacket("Denveous"), 42));
+
+        var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
+        var deleteIndex = IndexOf(decoded, RcNcPackets.DeletePlayer(7));
+        var addIndex = IndexOf(decoded, RcNcPackets.AddPlayer(7, "YOURACCOUNT", " ", 0, "Denveous", "YOURACCOUNT"));
+        Assert.True(deleteIndex >= 0);
+        Assert.True(addIndex > deleteIndex);
+    }
+
+    [Fact]
     public void RcLoginReceivesNpcServer()
     {
         using var serverRoot = TestDefaultServerRoot();
@@ -2094,6 +2130,17 @@ public sealed class LoginAuthBridgeTests
     private static int IndexOf(byte[] bytes, byte[] pattern)
     {
         for (var i = 0; i <= bytes.Length - pattern.Length; i++)
+        {
+            if (bytes.AsSpan(i, pattern.Length).SequenceEqual(pattern))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int LastIndexOf(byte[] bytes, byte[] pattern)
+    {
+        for (var i = bytes.Length - pattern.Length; i >= 0; i--)
         {
             if (bytes.AsSpan(i, pattern.Length).SequenceEqual(pattern))
                 return i;

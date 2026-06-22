@@ -393,6 +393,8 @@ public sealed class LoginAuthBridge(
                 return new ClientFrameBridgeResult(false, [], [], result.Message);
 
             notes.Add($"props={parsed.Updates.Count}:deliveries={result.Deliveries.Count}");
+            if (parsed.Updates.Any(static update => update.PropertyId is PlayerPropertyId.Nickname or PlayerPropertyId.CurrentLevel or PlayerPropertyId.PlayerStatusMessage))
+                RefreshActiveSnapshotAndRcRows(player, touched);
             foreach (var delivery in result.Deliveries)
                 touched.Add(delivery.PlayerId);
         }
@@ -966,6 +968,8 @@ public sealed class LoginAuthBridge(
                 if (!IsRemoteControl(session.Type))
                     return false;
                 EnsureNpcServerPlayer(touched);
+                foreach (var snapshot in _activeSnapshots.Values.Where(snapshot => snapshot.Type != PlayerSessionType.NpcControl))
+                    QueueSelfPacket(session.Id, RcNcPackets.DeletePlayer(snapshot.PlayerId), touched);
                 foreach (var snapshot in _activeSnapshots.Values.Where(snapshot => snapshot.Type != PlayerSessionType.NpcControl))
                     QueueSelfPacket(session.Id, BuildRcAddPlayer(snapshot), touched);
                 return true;
@@ -2618,7 +2622,7 @@ public sealed class LoginAuthBridge(
             var sendSize = Math.Min(FileTransferPackets.ChunkSize, data.Length - offset);
             QueueSelfPacket(
                 playerId,
-                FileTransferPackets.BuildFileChunk(safeFileName, data.AsSpan(offset, sendSize), modTime, includeModTime: true),
+                FileTransferPackets.BuildRawFileChunk(safeFileName, data.AsSpan(offset, sendSize), modTime),
                 touched);
             offset += sendSize;
         }
@@ -2862,6 +2866,34 @@ public sealed class LoginAuthBridge(
                 continue;
 
             QueueSelfPacket(playerId, packet, touched);
+        }
+    }
+
+    private void RefreshActiveSnapshotAndRcRows(RuntimePlayer player, ISet<ushort> touched)
+    {
+        if (!_activeSnapshots.TryGetValue(player.Id, out var snapshot))
+            return;
+
+        var currentLevel = player.Kind == RuntimePlayerKind.RemoteControl ? " " : player.CurrentLevelName;
+        var updated = snapshot with
+        {
+            LoginPropertySource = snapshot.LoginPropertySource with
+            {
+                Nickname = player.Nickname,
+                CurrentLevel = currentLevel,
+                StatusMessage = player.StatusMessage
+            },
+            NicknameProperty = GCharString(player.Nickname),
+            CurrentLevelProperty = GCharString(currentLevel)
+        };
+        _activeSnapshots[player.Id] = updated;
+        foreach (var (rcId, session) in _activeSessions)
+        {
+            if (!IsRemoteControl(session.Type))
+                continue;
+
+            QueueSelfPacket(rcId, RcNcPackets.DeletePlayer(player.Id), touched);
+            QueueSelfPacket(rcId, BuildRcAddPlayer(updated), touched);
         }
     }
 

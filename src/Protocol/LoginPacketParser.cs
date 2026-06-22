@@ -83,13 +83,15 @@ public static class LoginPacketParser
             }
         }
 
-        if (IsAnyClient(type) && clientVersionId == ClientVersionId.Unknown &&
+        if ((IsAnyClient(type) || IsAnyRemoteControl(type)) && clientVersionId == ClientVersionId.Unknown &&
             TryFindClientVersion(loginPayload, out var versionOffset, out var foundVersionToken, out var foundVersionId))
         {
+            type = PlayerSessionType.Client;
             key = versionOffset > 1 ? unchecked((byte)(loginPayload[versionOffset - 1] - 32)) : null;
             reader = new GraalBinaryReader(loginPayload[(versionOffset + 8)..]);
             versionToken = foundVersionToken;
             clientVersionId = foundVersionId;
+            rcVersionId = RemoteControlVersionId.Unknown;
         }
 
         var accountName = ReadGCharString(reader);
