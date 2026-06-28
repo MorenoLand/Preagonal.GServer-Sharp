@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Persistence;
 using Xunit;
 
@@ -9,7 +10,7 @@ public sealed class ServerListStartupOptionsTests
     public void BuildsRegistrationOptions()
     {
         var snapshot = new ServerStartupSnapshot(
-            new ServerStartupResolution(
+            new(
                 Success: true,
                 ServerName: "Classic",
                 ServerPath: @"C:\servers\Classic\",
@@ -31,7 +32,7 @@ public sealed class ServerListStartupOptionsTests
 
         var options = ServerListStartupOptions.FromStartupSnapshot(
             snapshot,
-            new ServerStartupOverrides(
+            new(
                 Server: "Classic",
                 Port: "14901",
                 LocalIp: "AUTO",
@@ -61,7 +62,7 @@ public sealed class ServerListStartupOptionsTests
     public void UsesServerOptionDefaults()
     {
         var snapshot = new ServerStartupSnapshot(
-            new ServerStartupResolution(
+            new(
                 Success: true,
                 ServerName: "Classic",
                 ServerPath: @"C:\servers\Classic\",
@@ -73,7 +74,7 @@ public sealed class ServerListStartupOptionsTests
 
         var options = ServerListStartupOptions.FromStartupSnapshot(
             snapshot,
-            new ServerStartupOverrides(
+            new(
                 Server: "Classic",
                 Port: null,
                 LocalIp: null,
@@ -95,13 +96,13 @@ public sealed class ServerListStartupOptionsTests
     public void UsesPublicName()
     {
         var snapshot = new ServerStartupSnapshot(
-            new ServerStartupResolution(true, "default", @"C:\servers\default\", ServerStartupSource.CommandLineOrEnvironment, null),
+            new(true, "default", @"C:\servers\default\", ServerStartupSource.CommandLineOrEnvironment, null),
             Gs2Settings.Parse("name=My Server"),
             Gs2Settings.Parse(""));
 
         var options = ServerListStartupOptions.FromStartupSnapshot(
             snapshot,
-            new ServerStartupOverrides("default", null, null, null, null, null, null, false));
+            new("default", null, null, null, null, null, null, false));
 
         Assert.Equal("My Server", options.Name);
     }

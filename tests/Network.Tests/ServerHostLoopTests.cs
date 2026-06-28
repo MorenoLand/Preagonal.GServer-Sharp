@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Game;
 using Xunit;

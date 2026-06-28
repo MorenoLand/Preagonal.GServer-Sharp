@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Game;
 using Preagonal.GServer.Protocol;
 using Xunit;
@@ -18,7 +19,7 @@ public sealed class PostLoginFrameHandlerTests
             log.Add);
 
         var result = await handler.HandleFrameAsync(
-            new ClientSocketSessionContext(2, "127.0.0.1"),
+            new(2, "127.0.0.1"),
             WithNewline(PlayerPropsPacket(PlayerPropertyId.X, 70, PlayerPropertyId.Y, 71)),
             CancellationToken.None);
 
@@ -41,7 +42,7 @@ public sealed class PostLoginFrameHandlerTests
             log.Add);
 
         var result = await handler.HandleFrameAsync(
-            new ClientSocketSessionContext(2, "127.0.0.1"),
+            new(2, "127.0.0.1"),
             WithNewline(Packet(4, 1, 2, 3)),
             CancellationToken.None);
 
@@ -68,7 +69,7 @@ public sealed class PostLoginFrameHandlerTests
         }
 
         var result = await handler.HandleFrameAsync(
-            new ClientSocketSessionContext(2, "127.0.0.1"),
+            new(2, "127.0.0.1"),
             frame.ToArray(),
             CancellationToken.None);
 

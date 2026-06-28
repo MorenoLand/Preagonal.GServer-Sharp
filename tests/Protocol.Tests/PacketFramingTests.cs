@@ -72,7 +72,7 @@ public sealed class PacketFramingTests
 
         var packets = PacketFramer.ParseClientPackets(
             writer.ToArray(),
-            new ClientPacketParseOptions(StripRawDataTrailingNewline: true));
+            new(StripRawDataTrailingNewline: true));
 
         Assert.Collection(
             packets,
@@ -87,7 +87,7 @@ public sealed class PacketFramingTests
         header.WriteGChar((byte)PlayerToServerPacketId.RawData);
         header.WriteGInt(4);
         header.WriteByte((byte)'\n');
-        var framer = new ClientPacketStreamFramer(new ClientPacketParseOptions(StripRawDataTrailingNewline: true));
+        var framer = new ClientPacketStreamFramer(new(StripRawDataTrailingNewline: true));
 
         var first = framer.Parse(header.ToArray());
         var second = framer.Parse("abc\n"u8);

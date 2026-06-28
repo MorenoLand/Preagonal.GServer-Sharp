@@ -64,7 +64,7 @@ public sealed class InventoryItemRulesTests
     [Fact]
     public void InvalidPickupItemReturnsEmptyPayload()
     {
-        Assert.Empty(InventoryItemRules.BuildPickupPlayerProps(LevelItemType.Invalid, new DurablePlayerInventoryState()));
+        Assert.Empty(InventoryItemRules.BuildPickupPlayerProps(LevelItemType.Invalid, new()));
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class InventoryItemRulesTests
             [],
             [],
             [],
-            [new NwLevelChest(10, 11, LevelItemType.RedRupee, 3)]);
+            [new(10, 11, LevelItemType.RedRupee, 3)]);
         var opened = new HashSet<string>(StringComparer.Ordinal);
         var state = new DurablePlayerInventoryState { Rupees = 5 };
 

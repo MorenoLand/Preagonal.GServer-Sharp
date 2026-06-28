@@ -101,7 +101,7 @@ public sealed class CombatPlayerGameplayTests
         var result = CombatPlayerGameplay.ApplyNonSparKillClaimAlignmentPenalty(
             killerAlignment,
             loserAlignment,
-            new AlignmentTimerSettings(30, 90, 300, 600, 1200));
+            new(30, 90, 300, 600, 1200));
 
         Assert.Equal(expectedAlignment, result.Alignment);
         Assert.Equal(expectedCounter, result.ApCounter);

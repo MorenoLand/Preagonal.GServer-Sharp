@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Game;
 using Preagonal.GServer.Protocol;
 using Xunit;

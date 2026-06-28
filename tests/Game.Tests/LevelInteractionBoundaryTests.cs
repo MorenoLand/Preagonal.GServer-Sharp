@@ -10,8 +10,8 @@ public sealed class LevelInteractionBoundaryTests
         var level = new NwLevelSnapshot(
             "GLEVNW01",
             [
-                new NwLevelLink("first.nw", 1, 2, 3, 4, "5", "6"),
-                new NwLevelLink("second.nw", 4, 6, 2, 2, "7", "8")
+                new("first.nw", 1, 2, 3, 4, "5", "6"),
+                new("second.nw", 4, 6, 2, 2, "7", "8")
             ],
             [],
             [],
@@ -42,7 +42,7 @@ public sealed class LevelInteractionBoundaryTests
             [],
             [],
             [],
-            [new NwLevelChest(10, 11, LevelItemType.RedRupee, 3)]);
+            [new(10, 11, LevelItemType.RedRupee, 3)]);
         var opened = new HashSet<string>(StringComparer.Ordinal);
 
         var result = LevelInteraction.TryOpenChest(level, "start.nw", 10, 11, opened);
@@ -63,7 +63,7 @@ public sealed class LevelInteractionBoundaryTests
             [],
             [],
             [],
-            [new NwLevelChest(10, 11, LevelItemType.RedRupee, 3)]);
+            [new(10, 11, LevelItemType.RedRupee, 3)]);
         var opened = new HashSet<string>(["10:11:start.nw"], StringComparer.Ordinal);
 
         var alreadyOpened = LevelInteraction.TryOpenChest(level, "start.nw", 10, 11, opened);

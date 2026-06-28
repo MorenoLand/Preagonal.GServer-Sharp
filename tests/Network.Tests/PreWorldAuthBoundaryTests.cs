@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
@@ -10,7 +11,7 @@ public sealed class PreWorldAuthBoundaryTests
     public void FullServerRejectsBeforeServerListRequest()
     {
         var session = Client3Session();
-        var boundary = new PreWorldAuthBoundary(new PreWorldAuthOptions(
+        var boundary = new PreWorldAuthBoundary(new(
             MaxPlayers: 1,
             CurrentPlayerCount: 1,
             IsIpBanned: false,
@@ -32,7 +33,7 @@ public sealed class PreWorldAuthBoundaryTests
     public void DisallowedClientVersionRejectsWithAllowedVersionText()
     {
         var session = Client3Session();
-        var boundary = new PreWorldAuthBoundary(new PreWorldAuthOptions(
+        var boundary = new PreWorldAuthBoundary(new(
             MaxPlayers: 128,
             CurrentPlayerCount: 0,
             IsIpBanned: false,
@@ -54,7 +55,7 @@ public sealed class PreWorldAuthBoundaryTests
     public void ConnectedServerListReceivesVerifyAccountRequestAndSessionWaits()
     {
         var session = Client3Session();
-        var boundary = new PreWorldAuthBoundary(new PreWorldAuthOptions(
+        var boundary = new PreWorldAuthBoundary(new(
             MaxPlayers: 128,
             CurrentPlayerCount: 0,
             IsIpBanned: false,

@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
 
@@ -14,7 +15,7 @@ public sealed class ServerListLifecycleTests
         };
         var lifecycle = new ServerListLifecycle(socket);
 
-        var result = lifecycle.ConnectServer(new ServerListConnectOptions(
+        var result = lifecycle.ConnectServer(new(
             ListIp: "list.example.test",
             ListPort: "14900",
             Name: "Classic",

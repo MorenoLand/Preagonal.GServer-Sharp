@@ -226,7 +226,7 @@ public sealed class RuntimePlayerPropsMutationTests
             player,
             [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.BodyImage, longImage)]);
 
-        Assert.Equal(new string('a', 223), player.BodyImage);
+        Assert.Equal(new('a', 223), player.BodyImage);
         Assert.False(player.MovementUpdated);
         Assert.False(player.TouchTestRequested);
     }
@@ -280,7 +280,7 @@ public sealed class RuntimePlayerPropsMutationTests
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
-            [new IncomingPlayerPropertyUpdate(PlayerPropertyId.AttachNpc, GCharValue: 99, GIntValue: 123)]);
+            [new(PlayerPropertyId.AttachNpc, GCharValue: 99, GIntValue: 123)]);
 
         Assert.Equal(123u, player.AttachedNpcId);
         Assert.False(player.MovementUpdated);
@@ -294,7 +294,7 @@ public sealed class RuntimePlayerPropsMutationTests
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
-            [new IncomingPlayerPropertyUpdate(PlayerPropertyId.AttachNpc, GCharValue: 224, GUIntValue: 4_294_438_880u)]);
+            [new(PlayerPropertyId.AttachNpc, GCharValue: 224, GUIntValue: 4_294_438_880u)]);
 
         Assert.Equal(4_294_438_880u, player.AttachedNpcId);
         Assert.False(player.MovementUpdated);
@@ -311,7 +311,7 @@ public sealed class RuntimePlayerPropsMutationTests
             player,
             [IncomingPlayerPropertyUpdate.String(PlayerPropertyId.HeadGif, longImage)]);
 
-        Assert.Equal(new string('h', 123), player.HeadImage);
+        Assert.Equal(new('h', 123), player.HeadImage);
         Assert.False(player.MovementUpdated);
         Assert.False(player.TouchTestRequested);
     }
@@ -349,14 +349,14 @@ public sealed class RuntimePlayerPropsMutationTests
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
             [
-                new IncomingPlayerPropertyUpdate(PlayerPropertyId.SwordPower, GCharValue: 35, StringValue: longSword),
-                new IncomingPlayerPropertyUpdate(PlayerPropertyId.ShieldPower, GCharValue: 12, StringValue: longShield)
+                new(PlayerPropertyId.SwordPower, GCharValue: 35, StringValue: longSword),
+                new(PlayerPropertyId.ShieldPower, GCharValue: 12, StringValue: longShield)
             ]);
 
         Assert.Equal(3, player.SwordPower);
-        Assert.Equal(new string('s', 223), player.SwordImage);
+        Assert.Equal(new('s', 223), player.SwordImage);
         Assert.Equal(2, player.ShieldPower);
-        Assert.Equal(new string('h', 223), player.ShieldImage);
+        Assert.Equal(new('h', 223), player.ShieldImage);
     }
 
     [Fact]
@@ -406,7 +406,7 @@ public sealed class RuntimePlayerPropsMutationTests
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
-            [new IncomingPlayerPropertyUpdate(PlayerPropertyId.Gani, GCharValue: 10, StringValue: "bow1.gif")],
+            [new(PlayerPropertyId.Gani, GCharValue: 10, StringValue: "bow1.gif")],
             options);
 
         Assert.Equal(10, player.BowPower);

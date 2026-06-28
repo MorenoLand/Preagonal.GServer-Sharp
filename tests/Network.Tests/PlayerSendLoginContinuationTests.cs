@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Persistence;
 using Preagonal.GServer.Protocol;
@@ -27,7 +28,7 @@ public sealed class PlayerSendLoginContinuationTests
             session,
             filesystem,
             AccountLoadSettings.Empty,
-            new AccountLoginOptions(
+            new(
                 OnlyStaff: false,
                 ServerName: "Graal Reborn",
                 ActiveSessions: [],
@@ -62,7 +63,7 @@ public sealed class PlayerSendLoginContinuationTests
             session,
             filesystem,
             settings,
-            new AccountLoginOptions(
+            new(
                 OnlyStaff: false,
                 ServerName: "Graal Reborn",
                 ActiveSessions: [],
@@ -82,7 +83,7 @@ public sealed class PlayerSendLoginContinuationTests
     {
         var session = AuthenticatedClient3Session("guest");
         session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("guest", session.Id, PlayerSessionType.Client3, "SUCCESS"));
+            new("guest", session.Id, PlayerSessionType.Client3, "SUCCESS"));
         var filesystem = new MemoryAccountFileSystem(@"C:\GServer\");
         filesystem.AddExisting(
             @"C:\GServer\accounts\guest.txt",
@@ -93,7 +94,7 @@ public sealed class PlayerSendLoginContinuationTests
             session,
             filesystem,
             AccountLoadSettings.Empty,
-            new AccountLoginOptions(
+            new(
                 OnlyStaff: false,
                 ServerName: "Graal Reborn",
                 ActiveSessions: [],
@@ -111,7 +112,7 @@ public sealed class PlayerSendLoginContinuationTests
     {
         var session = AuthenticatedClient3Session("guest");
         session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("guest", session.Id, PlayerSessionType.Client3, "SUCCESS"));
+            new("guest", session.Id, PlayerSessionType.Client3, "SUCCESS"));
         var filesystem = new MemoryAccountFileSystem(@"C:\GServer\");
         filesystem.AddExisting(
             @"C:\GServer\accounts\guest.txt",
@@ -122,12 +123,12 @@ public sealed class PlayerSendLoginContinuationTests
             session,
             filesystem,
             AccountLoadSettings.Empty,
-            new AccountLoginOptions(
+            new(
                 OnlyStaff: false,
                 ServerName: "Graal Reborn",
                 ActiveSessions:
                 [
-                    new ActivePlayerSession(12, "PC:123456", PlayerSessionType.Client3, TimeSpan.FromSeconds(1))
+                    new(12, "PC:123456", PlayerSessionType.Client3, TimeSpan.FromSeconds(1))
                 ],
                 StaffAccounts: [],
                 RemoteIp: "127.0.0.1",
@@ -265,7 +266,7 @@ public sealed class PlayerSendLoginContinuationTests
         {
             ActiveSessions =
             [
-                new ActivePlayerSession(12, "PC:RUAN", PlayerSessionType.Client3, TimeSpan.FromSeconds(5))
+                new(12, "PC:RUAN", PlayerSessionType.Client3, TimeSpan.FromSeconds(5))
             ]
         };
 
@@ -291,7 +292,7 @@ public sealed class PlayerSendLoginContinuationTests
         {
             ActiveSessions =
             [
-                new ActivePlayerSession(12, "pc:Ruan", PlayerSessionType.Client3, TimeSpan.FromSeconds(31))
+                new(12, "pc:Ruan", PlayerSessionType.Client3, TimeSpan.FromSeconds(31))
             ]
         };
 
@@ -337,7 +338,7 @@ public sealed class PlayerSendLoginContinuationTests
         if (!string.Equals(accountName, "guest", StringComparison.OrdinalIgnoreCase))
         {
             Assert.True(session.ReceiveServerListAuthResponse(
-                new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+                new("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
         }
         return session;
     }
@@ -356,7 +357,7 @@ public sealed class PlayerSendLoginContinuationTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("pc:Ruan", 8, PlayerSessionType.RemoteControl, "SUCCESS")));
+            new("pc:Ruan", 8, PlayerSessionType.RemoteControl, "SUCCESS")));
         return session;
     }
 

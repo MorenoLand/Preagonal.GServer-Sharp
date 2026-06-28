@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Game;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Protocol;
@@ -257,7 +258,7 @@ public sealed class LiveWorldSessionForwardingTests
         var sender = Add(server, 7, RuntimePlayerKind.Client, level);
         Add(server, 8, RuntimePlayerKind.Client, level);
         Add(server, 9, RuntimePlayerKind.RemoteControl, level);
-        Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        Add(server, 10, RuntimePlayerKind.Client, new("other.nw"));
         var sinks = CreateSinks(7, 8, 9, 10);
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -288,7 +289,7 @@ public sealed class LiveWorldSessionForwardingTests
         var level = new RuntimeLevel("start.nw");
         var sender = Add(server, 7, RuntimePlayerKind.Client, level);
         Add(server, 8, RuntimePlayerKind.Client, level);
-        Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        Add(server, 10, RuntimePlayerKind.Client, new("other.nw"));
         var sinks = CreateSinks(7, 8, 10);
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -320,7 +321,7 @@ public sealed class LiveWorldSessionForwardingTests
         Add(server, 8, RuntimePlayerKind.Client, level);
         Add(server, 9, RuntimePlayerKind.RemoteControl, level);
         Add(server, 10, RuntimePlayerKind.NpcServer, level);
-        Add(server, 11, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        Add(server, 11, RuntimePlayerKind.Client, new("other.nw"));
         var sinks = CreateSinks(7, 8, 9, 10, 11);
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -359,7 +360,7 @@ public sealed class LiveWorldSessionForwardingTests
         Add(server, 8, RuntimePlayerKind.Client, level);
         Add(server, 9, RuntimePlayerKind.RemoteControl, level);
         Add(server, 10, RuntimePlayerKind.NpcServer, level);
-        Add(server, 11, RuntimePlayerKind.Client, new RuntimeLevel("other.nw"));
+        Add(server, 11, RuntimePlayerKind.Client, new("other.nw"));
         var sinks = CreateSinks(7, 8, 9, 10, 11);
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -426,18 +427,18 @@ public sealed class LiveWorldSessionForwardingTests
     public void ForwardConfirmedLevelAreaPacketFiltersByGmapGroupAndDistance()
     {
         var server = new RuntimeServer();
-        var map = new RuntimeMap("world.gmap", RuntimeMapType.Gmap, IsGroupMap: true);
-        var sender = Add(server, 7, RuntimePlayerKind.Client, new RuntimeLevel("inside.nw") { Map = map });
+        var map    = new RuntimeMap("world.gmap", RuntimeMapType.Gmap, IsGroupMap: true);
+        var sender = Add(server, 7, RuntimePlayerKind.Client, new("inside.nw") { Map = map });
         sender.Group = "red";
         sender.MapX = 4;
         sender.MapY = 4;
 
-        var nearby = Add(server, 8, RuntimePlayerKind.Client, new RuntimeLevel("near.nw") { Map = map });
+        var nearby = Add(server, 8, RuntimePlayerKind.Client, new("near.nw") { Map = map });
         nearby.Group = "red";
         nearby.MapX = 5;
         nearby.MapY = 4;
 
-        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new RuntimeLevel("group.nw") { Map = map });
+        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new("group.nw") { Map = map });
         wrongGroup.Group = "blue";
         wrongGroup.MapX = 5;
         wrongGroup.MapY = 4;
@@ -474,7 +475,7 @@ public sealed class LiveWorldSessionForwardingTests
 
         Add(server, 9, RuntimePlayerKind.RemoteControl, level);
         Add(server, 10, RuntimePlayerKind.Client, level);
-        Add(server, 11, RuntimePlayerKind.Client, new RuntimeLevel("other.nw") { Map = map });
+        Add(server, 11, RuntimePlayerKind.Client, new("other.nw") { Map = map });
         var sinks = CreateSinks(7, 8, 9, 10, 11);
 
         var deliveries = LiveWorldSessionForwarder.ForwardConfirmedOneLevelPacket(

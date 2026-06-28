@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Game;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Protocol;

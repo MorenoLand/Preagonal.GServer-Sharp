@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
 
@@ -13,7 +14,7 @@ public sealed class LoginSocketFrameHandlerTests
         var handler = new LoginSocketFrameHandler(bridge);
 
         var result = await handler.HandleFrameAsync(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             Client3LoginPacket(),
             CancellationToken.None);
 
@@ -32,7 +33,7 @@ public sealed class LoginSocketFrameHandlerTests
         var handler = new LoginSocketFrameHandler(bridge);
 
         var result = await handler.HandleFrameAsync(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             Client3LoginPacket(),
             CancellationToken.None);
 

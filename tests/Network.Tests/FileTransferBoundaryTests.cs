@@ -1,4 +1,5 @@
 using System.Text;
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
@@ -158,8 +159,8 @@ public sealed class FileTransferBoundaryTests
         var package = new UpdatePackageSnapshot(
             "pkg",
             [
-                new UpdatePackageFileEntry("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
-                new UpdatePackageFileEntry("b.txt", Size: 2, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("BC")))
+                new("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
+                new("b.txt", Size: 2, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("BC")))
             ]);
         var session = new ClientSessionSkeleton(7);
 
@@ -191,8 +192,8 @@ public sealed class FileTransferBoundaryTests
         var package = new UpdatePackageSnapshot(
             "pkg",
             [
-                new UpdatePackageFileEntry("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
-                new UpdatePackageFileEntry("b.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("B")))
+                new("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
+                new("b.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("B")))
             ]);
         var session = new ClientSessionSkeleton(7);
 
@@ -213,7 +214,7 @@ public sealed class FileTransferBoundaryTests
         private readonly Dictionary<string, ResourceFile> _files = new(StringComparer.Ordinal);
 
         public void Add(string name, byte[] data, long modTime) =>
-            _files[name] = new ResourceFile(name, data, modTime);
+            _files[name] = new(name, data, modTime);
 
         public ResourceFile? Find(string file) =>
             _files.GetValueOrDefault(file);

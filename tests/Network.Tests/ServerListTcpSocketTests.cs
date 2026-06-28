@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.IO.Compression;
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
 

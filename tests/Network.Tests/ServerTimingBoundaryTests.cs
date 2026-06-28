@@ -1,3 +1,4 @@
+using Preagonal.GameServer.Network;
 using Preagonal.GServer.Network;
 using Preagonal.GServer.Protocol;
 using Xunit;
@@ -190,7 +191,7 @@ public sealed class ServerTimingBoundaryTests
 
         public SequenceJitterSource(params int[] values)
         {
-            _values = new Queue<int>(values);
+            _values = new(values);
         }
 
         public int NextJitterSeconds()

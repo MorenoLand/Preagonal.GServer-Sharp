@@ -12,7 +12,7 @@ public sealed class LevelEntryVisibilitySelectionTests
         var joining = Add(server, 7, RuntimePlayerKind.Client, level);
         Add(server, 8, RuntimePlayerKind.Client, level);
         Add(server, 9, RuntimePlayerKind.RemoteControl, level);
-        Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("elsewhere.nw"));
+        Add(server, 10, RuntimePlayerKind.Client, new("elsewhere.nw"));
 
         var selection = LevelEntryVisibilitySelector.Select(server, joining);
 
@@ -45,27 +45,27 @@ public sealed class LevelEntryVisibilitySelectionTests
         joining.MapX = 4;
         joining.MapY = 4;
 
-        var nearby = Add(server, 8, RuntimePlayerKind.Client, new RuntimeLevel("near.nw") { Map = map });
+        var nearby = Add(server, 8, RuntimePlayerKind.Client, new("near.nw") { Map = map });
         nearby.Group = "red";
         nearby.MapX = 5;
         nearby.MapY = 4;
 
-        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new RuntimeLevel("group.nw") { Map = map });
+        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new("group.nw") { Map = map });
         wrongGroup.Group = "blue";
         wrongGroup.MapX = 5;
         wrongGroup.MapY = 4;
 
-        var tooFar = Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("far.nw") { Map = map });
+        var tooFar = Add(server, 10, RuntimePlayerKind.Client, new("far.nw") { Map = map });
         tooFar.Group = "red";
         tooFar.MapX = 6;
         tooFar.MapY = 4;
 
-        var otherMap = Add(server, 11, RuntimePlayerKind.Client, new RuntimeLevel("other.nw") { Map = new RuntimeMap("other.gmap", RuntimeMapType.Gmap) });
+        var otherMap = Add(server, 11, RuntimePlayerKind.Client, new("other.nw") { Map = new("other.gmap", RuntimeMapType.Gmap) });
         otherMap.Group = "red";
         otherMap.MapX = 4;
         otherMap.MapY = 4;
 
-        var nonClient = Add(server, 12, RuntimePlayerKind.RemoteControl, new RuntimeLevel("rc.nw") { Map = map });
+        var nonClient = Add(server, 12, RuntimePlayerKind.RemoteControl, new("rc.nw") { Map = map });
         nonClient.Group = "red";
         nonClient.MapX = 4;
         nonClient.MapY = 4;
@@ -98,23 +98,23 @@ public sealed class LevelEntryVisibilitySelectionTests
     public void SelectLevelAreaRecipientsFiltersBySameMapGroupAndDistance()
     {
         var server = new RuntimeServer();
-        var map = new RuntimeMap("world.gmap", RuntimeMapType.Gmap, IsGroupMap: true);
-        var sender = Add(server, 7, RuntimePlayerKind.Client, new RuntimeLevel("inside.nw") { Map = map });
+        var map    = new RuntimeMap("world.gmap", RuntimeMapType.Gmap, IsGroupMap: true);
+        var sender = Add(server, 7, RuntimePlayerKind.Client, new("inside.nw") { Map = map });
         sender.Group = "red";
         sender.MapX = 4;
         sender.MapY = 4;
 
-        var nearby = Add(server, 8, RuntimePlayerKind.Client, new RuntimeLevel("near.nw") { Map = map });
+        var nearby = Add(server, 8, RuntimePlayerKind.Client, new("near.nw") { Map = map });
         nearby.Group = "red";
         nearby.MapX = 5;
         nearby.MapY = 4;
 
-        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new RuntimeLevel("group.nw") { Map = map });
+        var wrongGroup = Add(server, 9, RuntimePlayerKind.Client, new("group.nw") { Map = map });
         wrongGroup.Group = "blue";
         wrongGroup.MapX = 5;
         wrongGroup.MapY = 4;
 
-        var tooFar = Add(server, 10, RuntimePlayerKind.Client, new RuntimeLevel("far.nw") { Map = map });
+        var tooFar = Add(server, 10, RuntimePlayerKind.Client, new("far.nw") { Map = map });
         tooFar.Group = "red";
         tooFar.MapX = 6;
         tooFar.MapY = 4;
