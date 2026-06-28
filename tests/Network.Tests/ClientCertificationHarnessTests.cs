@@ -54,14 +54,14 @@ public sealed class ClientCertificationHarnessTests
                 new[]
                 {
                     new ClientCaptureStep("signature", new byte[] { 0x39 }),
-                    new ClientCaptureStep("unknown168", new byte[] { 0x68 })
+                    new ClientCaptureStep("unknown168", new byte[] { 0x68 }),
                 }),
             new(
                 "csharp-login",
                 new[]
                 {
                     new ClientCaptureStep("signature", new byte[] { 0x39 }),
-                    new ClientCaptureStep("unknown168", new byte[] { 0x69 })
+                    new ClientCaptureStep("unknown168", new byte[] { 0x69 }),
                 }));
 
         Assert.False(result.Certified);

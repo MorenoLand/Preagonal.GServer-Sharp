@@ -8,7 +8,7 @@ public enum RuntimePlayerKind
     RemoteControl,
     NpcServer,
     NpcControl,
-    External
+    External,
 }
 
 public sealed class RuntimePlayer
@@ -490,7 +490,7 @@ public static class RuntimePlayerPropsApplier
             >= 37 and <= 41 => raw - 37,
             >= 46 and <= 49 => raw - 41,
             >= 54 and <= 74 => raw - 45,
-            _ => -1
+            _ => -1,
         };
 
         return index >= 0;
@@ -509,7 +509,7 @@ public sealed record RuntimePlayerPropsOptions(
 public enum RuntimeNicknameUpdatePolicy
 {
     Blocked,
-    WordFilterAllowedNoGuild
+    WordFilterAllowedNoGuild,
 }
 
 public sealed record RuntimeLevelBaddyTimedPacket(ushort RecipientId, byte[] Packet);
@@ -736,7 +736,7 @@ public sealed class RuntimeLevel
 public enum RuntimeMapType
 {
     BigMap = 0,
-    Gmap = 1
+    Gmap = 1,
 }
 
 public sealed record RuntimeMap(string Name, RuntimeMapType Type, bool IsGroupMap = false);

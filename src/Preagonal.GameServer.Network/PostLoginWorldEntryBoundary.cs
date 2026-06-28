@@ -9,7 +9,7 @@ public sealed record LoginFlag(string Name, string Value);
 public enum LoginMapType
 {
     BigMap,
-    GMap
+    GMap,
 }
 
 public sealed record LoginMapFile(string MapName, LoginMapType Type);
@@ -49,7 +49,7 @@ public sealed record PostLoginPlayerSnapshot(
 
 public enum PostLoginClientStopPoint
 {
-    BeforeWarp
+    BeforeWarp,
 }
 
 public sealed record PostLoginClientBoundaryResult(

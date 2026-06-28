@@ -11,7 +11,7 @@ public sealed class ServerListLifecycleTests
     {
         var socket = new RecordingServerListSocket
         {
-            LocalIp = "10.0.0.5"
+            LocalIp = "10.0.0.5",
         };
         var lifecycle = new ServerListLifecycle(socket);
 
@@ -45,7 +45,7 @@ public sealed class ServerListLifecycleTests
                 "send:6'Classic$Desc'English*3.0.9-beta4http://example.test/$AUTO%14900(10.0.0.5\n",
                 "sendNow:8#\n",
                 "sendNow:?Listserver,settings,allowedversions,G3D0311C\n",
-                "sendNow:'\n"
+                "sendNow:'\n",
             ],
             socket.Events);
     }
@@ -61,13 +61,13 @@ public sealed class ServerListLifecycleTests
     {
         var socket = new RecordingServerListSocket
         {
-            LocalIp = socketLocalIp
+            LocalIp = socketLocalIp,
         };
         var lifecycle = new ServerListLifecycle(socket);
 
         _ = lifecycle.ConnectServer(DefaultOptions() with
         {
-            LocalIp = configuredLocalIp
+            LocalIp = configuredLocalIp,
         });
 
         Assert.Contains(
@@ -80,7 +80,7 @@ public sealed class ServerListLifecycleTests
     {
         var socket = new RecordingServerListSocket
         {
-            InitializeResult = false
+            InitializeResult = false,
         };
         var lifecycle = new ServerListLifecycle(socket);
 

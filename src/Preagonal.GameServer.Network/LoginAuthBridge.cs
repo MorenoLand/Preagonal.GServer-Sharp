@@ -148,8 +148,8 @@ public sealed class LoginAuthBridge(
                 AccountLoginOptions = worldEntryOptions.AccountLoginOptions with
                 {
                     ActiveSessions = BuildActiveSessions(),
-                    RemoteIp = _remoteAddresses.GetValueOrDefault(key, worldEntryOptions.AccountLoginOptions.RemoteIp)
-                }
+                    RemoteIp = _remoteAddresses.GetValueOrDefault(key, worldEntryOptions.AccountLoginOptions.RemoteIp),
+                },
             }, out var playerAdd, out var snapshot, out var duplicateDisconnects))
         {
             snapshot = ApplyPendingLoginProps(session, snapshot);
@@ -296,7 +296,7 @@ public sealed class LoginAuthBridge(
             $"frame={frame.Length}",
             $"comp=0x{(frame.Length == 0 ? 0 : frame[0]):X2}",
             $"decoded={decoded.DecodedPayload.Length}",
-            $"hex={HexPreview(decoded.DecodedPayload, 24)}"
+            $"hex={HexPreview(decoded.DecodedPayload, 24)}",
         };
         foreach (var packet in framer.Parse(decoded.DecodedPayload))
         {
@@ -740,7 +740,7 @@ public sealed class LoginAuthBridge(
             player,
             [
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, (byte)(x * 2)),
-                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2))
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2)),
             ]);
         QueueSelfPacket(player.Id, PlayerPropertySerializer.BuildPlayerPropsPacket(PositionProps(x, y), appendNewline: true), touched);
     }
@@ -752,7 +752,7 @@ public sealed class LoginAuthBridge(
             [
                 IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentLevel, level),
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, (byte)(x * 2)),
-                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2))
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2)),
             ]);
         player.JoinLevel(GetOrCreateLevel(level));
         QueueSelfPacket(player.Id, AppendNewline(WarpPackets.BuildPlayerWarp(x, y, level)), touched);
@@ -1014,7 +1014,7 @@ public sealed class LoginAuthBridge(
         if (message.Length == 0)
             return;
 
-        if (!message.StartsWith("/", StringComparison.Ordinal))
+        if (!message.StartsWith('/'))
         {
             BroadcastToRemoteControls(RcNcPackets.RcChat($"{accountName}: {message}"), touched);
             return;
@@ -1797,7 +1797,7 @@ public sealed class LoginAuthBridge(
                 "SCRIPT",
                 weapon.Source.Replace("\r", "", StringComparison.Ordinal),
                 "SCRIPTEND",
-                ""
+                "",
             ]);
         File.WriteAllText(path, text);
     }
@@ -1920,7 +1920,7 @@ public sealed class LoginAuthBridge(
             $"STARTLEVEL {npc.LevelName}",
             $"STARTX {npc.X}",
             $"STARTY {npc.Y}",
-            "NPCSCRIPT"
+            "NPCSCRIPT",
         };
         if (npc.Script.Length != 0)
             lines.AddRange(npc.Script.Replace("\r", "", StringComparison.Ordinal).Split('\n'));
@@ -1956,7 +1956,7 @@ public sealed class LoginAuthBridge(
     private static string WeaponFileName(string weaponName)
     {
         var safe = Path.GetFileName(weaponName.Replace('\\', '/'));
-        return safe.StartsWith("-", StringComparison.Ordinal) ? "weapon" + safe + ".txt" : "weapon-" + safe + ".txt";
+        return safe.StartsWith('-') ? "weapon" + safe + ".txt" : "weapon-" + safe + ".txt";
     }
 
     private static bool IsDefaultWeaponName(string weaponName) =>
@@ -2009,7 +2009,7 @@ public sealed class LoginAuthBridge(
             CommunityName = accountName,
             Email = email,
             IsBanned = banned,
-            IsLoadOnly = loadOnly
+            IsLoadOnly = loadOnly,
         };
         SaveAccount(account);
         BroadcastToRemoteControls(RcNcPackets.RcChat($"{GetAccountName(playerId)} has created a new account: {accountName}"), touched);
@@ -2181,7 +2181,7 @@ public sealed class LoginAuthBridge(
                 BuildSinks(),
                 RuntimePlayerPropsOptions.Default with
                 {
-                    NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+                    NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
                 });
 
             foreach (var delivery in result.Deliveries)
@@ -2196,7 +2196,7 @@ public sealed class LoginAuthBridge(
                 parsed.Updates,
                 RuntimePlayerPropsOptions.Default with
                 {
-                    NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+                    NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
                 });
             CopyRuntimeToAccount(activePlayer, account);
         }
@@ -2356,7 +2356,7 @@ public sealed class LoginAuthBridge(
             [
                 IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentLevel, level),
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, (byte)(x * 2)),
-                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2))
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, (byte)(y * 2)),
             ]);
         player.JoinLevel(GetOrCreateLevel(level));
         QueueSelfPacket(targetId, AppendNewline(WarpPackets.BuildPlayerWarp(x, y, level)), touched);
@@ -2567,7 +2567,7 @@ public sealed class LoginAuthBridge(
             foreach (var file in Directory.EnumerateFiles(path))
             {
                 var info = new FileInfo(file);
-                if (info.Name.StartsWith(".", StringComparison.Ordinal))
+                if (info.Name.StartsWith('.'))
                     continue;
 
                 entries.Add(new(
@@ -2893,10 +2893,10 @@ public sealed class LoginAuthBridge(
             {
                 Nickname = player.Nickname,
                 CurrentLevel = currentLevel,
-                StatusMessage = player.StatusMessage
+                StatusMessage = player.StatusMessage,
             },
             NicknameProperty = GCharString(player.Nickname),
-            CurrentLevelProperty = GCharString(currentLevel)
+            CurrentLevelProperty = GCharString(currentLevel),
         };
         _activeSnapshots[player.Id] = updated;
         foreach (var (rcId, session) in _activeSessions)
@@ -3085,7 +3085,7 @@ public sealed class LoginAuthBridge(
     private static string NormalizeFolder(string folder)
     {
         var normalized = folder.Replace('\\', '/').Trim();
-        if (normalized.Length != 0 && !normalized.EndsWith("/", StringComparison.Ordinal))
+        if (normalized.Length != 0 && !normalized.EndsWith('/'))
             normalized += "/";
         return normalized;
     }
@@ -3103,7 +3103,7 @@ public sealed class LoginAuthBridge(
         folder = folder.Replace('\\', '/');
 
         var wildcard = "*";
-        if (!folder.EndsWith("/", StringComparison.Ordinal))
+        if (!folder.EndsWith('/'))
         {
             var lastSlash = folder.LastIndexOf('/');
             if (lastSlash >= 0)
@@ -3149,7 +3149,7 @@ public sealed class LoginAuthBridge(
         PlayerPropertyId.GAttrib2,
         PlayerPropertyId.GAttrib3,
         PlayerPropertyId.GAttrib4,
-        PlayerPropertyId.GAttrib5
+        PlayerPropertyId.GAttrib5,
     ];
 
     private static PlayerPropertySource BuildPropertySource(AccountFileData account) =>
@@ -3436,12 +3436,12 @@ public sealed class LoginAuthBridge(
         var source = snapshot.LoginPropertySource with
         {
             Nickname = BuildNpcServerNickname(settings),
-            HeadImage = settings.GetString("staffhead", "head25.png")
+            HeadImage = settings.GetString("staffhead", "head25.png"),
         };
         var updated = snapshot with
         {
             NicknameProperty = GCharString(source.Nickname),
-            LoginPropertySource = source
+            LoginPropertySource = source,
         };
         _activeSnapshots[npcServerPlayerId] = updated;
         BroadcastToRemoteControls(BuildRcAddPlayer(updated), touched);
@@ -3465,7 +3465,7 @@ public sealed class LoginAuthBridge(
                 {
                     RuntimePlayerKind.RemoteControl => PlayerSessionType.RemoteControl2,
                     RuntimePlayerKind.NpcControl => PlayerSessionType.NpcControl,
-                    _ => PlayerSessionType.Client3
+                    _ => PlayerSessionType.Client3,
                 },
                 TimeSpan.Zero))
             .ToArray();
@@ -3480,7 +3480,7 @@ public sealed class LoginAuthBridge(
             PlayerSessionType.RemoteControl or PlayerSessionType.RemoteControl2 => RuntimePlayerKind.RemoteControl,
             PlayerSessionType.NpcServer => RuntimePlayerKind.NpcServer,
             PlayerSessionType.NpcControl => RuntimePlayerKind.NpcControl,
-            _ => RuntimePlayerKind.Client
+            _ => RuntimePlayerKind.Client,
         };
         var player = new RuntimePlayer(session.Id, snapshot.LoginPropertySource.AccountName, kind);
         player.ClientVersion = session.LoginPacket?.VersionId ?? ClientVersionId.Client21;
@@ -3541,7 +3541,7 @@ public sealed class LoginAuthBridge(
             props.Where(static update => update.PropertyId is PlayerPropertyId.Nickname or PlayerPropertyId.PlayerStatusMessage),
             RuntimePlayerPropsOptions.Default with
             {
-                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
             });
 
         return snapshot with
@@ -3549,9 +3549,9 @@ public sealed class LoginAuthBridge(
             LoginPropertySource = snapshot.LoginPropertySource with
             {
                 Nickname = player.Nickname,
-                StatusMessage = player.StatusMessage
+                StatusMessage = player.StatusMessage,
             },
-            NicknameProperty = GCharString(player.Nickname)
+            NicknameProperty = GCharString(player.Nickname),
         };
     }
 

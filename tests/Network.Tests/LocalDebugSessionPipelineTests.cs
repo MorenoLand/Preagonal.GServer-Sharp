@@ -222,14 +222,14 @@ public sealed class LocalDebugSessionPipelineTests
     [
         (byte)(packet.Length >> 8),
         (byte)packet.Length,
-        ..packet
+        ..packet,
     ];
 
     private static byte[] LevelNamePacket(string levelName) =>
     [
         (byte)((byte)ServerToPlayerPacketId.LevelName + 32),
         ..System.Text.Encoding.ASCII.GetBytes(levelName),
-        (byte)'\n'
+        (byte)'\n',
     ];
 
     private static byte[] RawDataHeader(int length)

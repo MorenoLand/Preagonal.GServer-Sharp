@@ -5,7 +5,7 @@ namespace Preagonal.GameServer.Network;
 public enum LevelMapType
 {
     BigMap = 0,
-    Gmap = 1
+    Gmap = 1,
 }
 
 public sealed record LevelMapSnapshot(LevelMapType Type, string MapName);
@@ -45,7 +45,7 @@ public interface ILevelLookup
 public enum LevelEntryStopPoint
 {
     MissingLevel,
-    BeforeSendLevelRuntime
+    BeforeSendLevelRuntime,
 }
 
 public sealed record LevelEntryBoundaryResult(
@@ -59,7 +59,7 @@ public enum PlayerWarpStopPoint
     TargetReadyForSendLevelRuntime,
     FallbackPreviousReadyForSendLevelRuntime,
     FallbackUnstickReadyForSendLevelRuntime,
-    Failed
+    Failed,
 }
 
 public sealed record PlayerWarpBoundaryResult(
@@ -137,7 +137,7 @@ public static class WarpWorldEntryBoundary
                     LevelName = state.CurrentLevel.LevelName,
                     X = state.CurrentX,
                     Y = state.CurrentY,
-                    ModTime = 0
+                    ModTime = 0,
                 });
             if (previousResult.Accepted)
             {
@@ -160,7 +160,7 @@ public static class WarpWorldEntryBoundary
                 LevelName = unstickLevel.LevelName,
                 X = settings.UnstickX,
                 Y = settings.UnstickY,
-                ModTime = 0
+                ModTime = 0,
             });
 
         return unstickResult.Accepted

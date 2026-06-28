@@ -100,7 +100,7 @@ public static class CombatDropRuntime
             4 => LevelItemType.Darts,
             5 => LevelItemType.Heart,
             6 or 7 or 8 or 9 => LevelItemType.GreenRupee,
-            _ => LevelItemType.Invalid
+            _ => LevelItemType.Invalid,
         };
 
         return itemType != LevelItemType.Invalid;

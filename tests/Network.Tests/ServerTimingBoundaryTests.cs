@@ -19,7 +19,7 @@ public sealed class ServerTimingBoundaryTests
                 ServerTimingAction.ServerListTimedEvents,
                 ServerTimingAction.PlayerTimedEvents,
                 ServerTimingAction.LevelTimedEvents,
-                ServerTimingAction.GroupLevelTimedEvents
+                ServerTimingAction.GroupLevelTimedEvents,
             },
             actions);
     }
@@ -58,7 +58,7 @@ public sealed class ServerTimingBoundaryTests
                 ServerTimingAction.LoadServerMessage,
                 ServerTimingAction.LoadIpBans,
                 ServerTimingAction.SaveWeapons,
-                ServerTimingAction.CleanupEmptyInstancedGroupLevels
+                ServerTimingAction.CleanupEmptyInstancedGroupLevels,
             },
             actions);
     }
@@ -117,7 +117,7 @@ public sealed class ServerTimingBoundaryTests
             LastInvalidPacketReset: TimeSpan.Zero)
         {
             SocketConnected = false,
-            IsClient = true
+            IsClient = true,
         };
 
         var actions = state.Tick(TimeSpan.FromSeconds(1));
@@ -137,7 +137,7 @@ public sealed class ServerTimingBoundaryTests
         {
             DisconnectIfNotMoved = true,
             IsLoaded = true,
-            IsLoadOnly = false
+            IsLoadOnly = false,
         };
 
         var atThreshold = state.Tick(TimeSpan.FromSeconds(300));
@@ -160,7 +160,7 @@ public sealed class ServerTimingBoundaryTests
         {
             IsLoaded = true,
             IsLoadOnly = false,
-            InvalidPackets = 5
+            InvalidPackets = 5,
         };
 
         var actions = state.Tick(TimeSpan.FromSeconds(301));

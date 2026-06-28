@@ -120,7 +120,7 @@ public sealed class AccountFileSerializerTests
             Email = "ruan@example.test",
             AdminRights = 16384,
             AdminIp = "127.0.0.*",
-            LastFolder = "levels/"
+            LastFolder = "levels/",
         };
 
         account.Colors[0] = 1;

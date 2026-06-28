@@ -37,7 +37,7 @@ public sealed class FileTransferPacketTests
                 132, 32, 32, 51, 10,
                 134, 32, 32, 32, 32, 33, 40,
                 (byte)'t', (byte)'e', (byte)'s', (byte)'t', (byte)'.', (byte)'t', (byte)'x', (byte)'t',
-                (byte)'a', (byte)'b', (byte)'c', 10
+                (byte)'a', (byte)'b', (byte)'c', 10,
             },
             packet);
     }
@@ -57,7 +57,7 @@ public sealed class FileTransferPacketTests
                 132, 32, 32, 45, 10,
                 134, 40,
                 (byte)'t', (byte)'e', (byte)'s', (byte)'t', (byte)'.', (byte)'t', (byte)'x', (byte)'t',
-                (byte)'a', (byte)'b', (byte)'c'
+                (byte)'a', (byte)'b', (byte)'c',
             },
             packet);
     }

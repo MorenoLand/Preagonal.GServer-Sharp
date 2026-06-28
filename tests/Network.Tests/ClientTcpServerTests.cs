@@ -261,13 +261,13 @@ public sealed class ClientTcpServerTests
     private static byte[] WithNewline(byte[] packet) =>
     [
         ..packet,
-        (byte)'\n'
+        (byte)'\n',
     ];
 
     private static byte[] LengthFrame(byte[] packet) =>
     [
         (byte)(packet.Length >> 8),
         (byte)packet.Length,
-        ..packet
+        ..packet,
     ];
 }

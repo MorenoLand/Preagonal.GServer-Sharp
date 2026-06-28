@@ -12,7 +12,7 @@ public sealed class LevelInteractionBoundaryTests
             "GLEVNW01",
             [
                 new("first.nw", 1, 2, 3, 4, "5", "6"),
-                new("second.nw", 4, 6, 2, 2, "7", "8")
+                new("second.nw", 4, 6, 2, 2, "7", "8"),
             ],
             [],
             [],
@@ -110,7 +110,7 @@ public sealed class LevelInteractionBoundaryTests
         Assert.Equal(
             [
                 185, 70, 105, 114, 115, 116, 35, 98, 76, 105, 110, 101, 35, 98, 10,
-                185, 83, 101, 99, 111, 110, 100, 10
+                185, 83, 101, 99, 111, 110, 100, 10,
             ],
             packets);
     }
@@ -124,7 +124,7 @@ public sealed class LevelInteractionBoundaryTests
             player,
             [
                 IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 320),
-                IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 352)
+                IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 352),
             ]);
 
         var packets = LevelInteraction.BuildMovementTriggeredSignPackets(level, player, serverside: true);

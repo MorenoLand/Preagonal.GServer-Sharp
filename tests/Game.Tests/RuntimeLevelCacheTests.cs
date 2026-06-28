@@ -58,7 +58,7 @@ public sealed class RuntimeLevelCacheTests
                 LEVELNAMES
                 start.nw
                 LEVELNAMESEND
-                """).Map)
+                """).Map),
         };
 
         var cache = new RuntimeLevelCache(maps);
@@ -136,7 +136,7 @@ public sealed class RuntimeLevelCacheTests
                 LEVELNAMES
                 missing.nw, START.NW
                 LEVELNAMESEND
-                """).Map)
+                """).Map),
         ]);
 
         Assert.Same(newMap, start.Map);

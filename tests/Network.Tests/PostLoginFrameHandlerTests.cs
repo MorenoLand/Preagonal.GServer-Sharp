@@ -101,6 +101,6 @@ public sealed class PostLoginFrameHandlerTests
     private static byte[] WithNewline(byte[] packet) =>
     [
         ..packet,
-        (byte)'\n'
+        (byte)'\n',
     ];
 }

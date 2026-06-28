@@ -78,7 +78,7 @@ public sealed class ServerListTcpSocketTests
     [
         (byte)(payload.Length >> 8),
         (byte)payload.Length,
-        ..payload
+        ..payload,
     ];
 
     private static byte[] Zlib(byte[] payload)

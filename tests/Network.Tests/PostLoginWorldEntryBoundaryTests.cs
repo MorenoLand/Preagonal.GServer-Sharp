@@ -23,7 +23,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 47, 70,
                 48, 71,
                 64, 72,
-                62, 32, 32, 32, 32, 33
+                62, 32, 32, 32, 32, 33,
             },
             packet);
     }
@@ -38,12 +38,12 @@ public sealed class PostLoginWorldEntryBoundaryTests
             PlayerFlags =
             [
                 new("client.flag", "yes"),
-                new("empty.flag", "")
+                new("empty.flag", ""),
             ],
             ServerFlags =
             [
-                new("server.flag", "1")
-            ]
+                new("server.flag", "1"),
+            ],
         };
 
         var result = PostLoginWorldEntryBoundary.BeginClient(session, snapshot);
@@ -61,7 +61,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 60, (byte)'s', (byte)'e', (byte)'r', (byte)'v', (byte)'e', (byte)'r', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'1', 10,
                 66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
                 66, (byte)'B', (byte)'o', (byte)'w', 10,
-                222, 10
+                222, 10,
             },
             session.TakeOutboundBytes());
         Assert.Equal(
@@ -86,7 +86,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 Maps:
                 [
                     new("worldmap.txt", LoginMapType.BigMap),
-                    new("ignored.gmap", LoginMapType.GMap)
+                    new("ignored.gmap", LoginMapType.GMap),
                 ]));
 
         Assert.Equal(
@@ -101,7 +101,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                     226, 10,
                     66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
                     66, (byte)'B', (byte)'o', (byte)'w', 10,
-                    222, 10
+                    222, 10,
                 })
                 .ToArray(),
             session.TakeOutboundBytes());
@@ -114,7 +114,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var snapshot = BaseSnapshot() with
         {
             LoginPropertyIds = [PlayerPropertyId.Gani, PlayerPropertyId.CommunityName],
-            LoginPropertySource = BasePropertySource() with { Gani = "idle", BowPower = 3, BowImage = "" }
+            LoginPropertySource = BasePropertySource() with { Gani = "idle", BowPower = 3, BowImage = "" },
         };
 
         _ = PostLoginWorldEntryBoundary.BeginClient(session, snapshot);
@@ -126,7 +126,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 226, 10,
                 66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
                 66, (byte)'B', (byte)'o', (byte)'w', 10,
-                222, 10
+                222, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -150,7 +150,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 ProtectedWeaponNames: ["Tool", "bow"],
                 ProtectedWeaponPackets: new Dictionary<string, byte[]>
                 {
-                    ["bow"] = protectedWeapon
+                    ["bow"] = protectedWeapon,
                 },
                 OrderedClassPackets: [classPacket]));
 
@@ -160,7 +160,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 {
                     226, 10,
                     66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
-                    66, (byte)'B', (byte)'o', (byte)'w', 10
+                    66, (byte)'B', (byte)'o', (byte)'w', 10,
                 })
                 .Concat(playerWeapon)
                 .Concat(protectedWeapon)
@@ -181,7 +181,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         {
             LoginPropertyIds = [PlayerPropertyId.MaxPower, PlayerPropertyId.CurrentPower],
             PlayerFlags = [new("client.flag", "yes")],
-            ServerFlags = [new("server.flag", "1")]
+            ServerFlags = [new("server.flag", "1")],
         };
 
         _ = PostLoginWorldEntryBoundary.BeginClient(
@@ -194,7 +194,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 ProtectedWeaponNames: ["Tool", "bow"],
                 ProtectedWeaponPackets: new Dictionary<string, byte[]>
                 {
-                    ["bow"] = protectedWeapon
+                    ["bow"] = protectedWeapon,
                 },
                 OrderedClassPackets: [classPacket]));
 
@@ -206,7 +206,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                 60, (byte)'c', (byte)'l', (byte)'i', (byte)'e', (byte)'n', (byte)'t', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'y', (byte)'e', (byte)'s', 10,
                 60, (byte)'s', (byte)'e', (byte)'r', (byte)'v', (byte)'e', (byte)'r', (byte)'.', (byte)'f', (byte)'l', (byte)'a', (byte)'g', (byte)'=', (byte)'1', 10,
                 66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
-                66, (byte)'B', (byte)'o', (byte)'w', 10
+                66, (byte)'B', (byte)'o', (byte)'w', 10,
             }
                 .Concat(playerWeapon)
                 .Concat(protectedWeapon)
@@ -225,7 +225,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var snapshot = BaseSnapshot() with
         {
             LoginPropertyIds = [PlayerPropertyId.Gani, PlayerPropertyId.CommunityName],
-            LoginPropertySource = BasePropertySource() with { BowPower = 3, BowImage = "" }
+            LoginPropertySource = BasePropertySource() with { BowPower = 3, BowImage = "" },
         };
 
         _ = PostLoginWorldEntryBoundary.BeginClient(
@@ -247,7 +247,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
                     226, 10,
                     66, (byte)'B', (byte)'o', (byte)'m', (byte)'b', 10,
                     66, (byte)'B', (byte)'o', (byte)'w', 10,
-                    222, 10
+                    222, 10,
                 })
                 .ToArray(),
             session.TakeOutboundBytes());

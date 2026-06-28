@@ -20,7 +20,7 @@ public static class RcFolderRights
         folder = folder.Replace('\\', '/');
 
         var wildcard = "*";
-        if (!folder.EndsWith("/", StringComparison.Ordinal))
+        if (!folder.EndsWith('/'))
         {
             var lastSlash = folder.LastIndexOf('/');
             if (lastSlash >= 0)

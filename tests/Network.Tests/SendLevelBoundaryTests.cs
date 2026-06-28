@@ -34,7 +34,7 @@ public sealed class SendLevelBoundaryTests
                 71, 32, 32, 32, 32, 33, 10,
                 (byte)'l', (byte)'i', (byte)'n', (byte)'k', (byte)'s', 10,
                 (byte)'s', (byte)'i', (byte)'g', (byte)'n', (byte)'s', 10,
-                32, 10
+                32, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -126,7 +126,7 @@ public sealed class SendLevelBoundaryTests
                     X: (byte)chest.X,
                     Y: (byte)chest.Y,
                     ItemIndex: (byte)chest.ItemType,
-                    SignIndex: (byte)chest.SignIndex))
+                    SignIndex: (byte)chest.SignIndex)),
             ]);
 
         SendLevelBoundary.BeginModern(
@@ -144,7 +144,7 @@ public sealed class SendLevelBoundaryTests
                 (byte)' ', (byte)'5', (byte)' ', (byte)'6', 10,
                 37, 36, 37, 32, 128, 10,
                 32, 10,
-                36, 32, 42, 43, 34, 35, 10
+                36, 32, 42, 43, 34, 35, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -194,7 +194,7 @@ public sealed class SendLevelBoundaryTests
                 (byte)' ', (byte)'5', (byte)' ', (byte)'6', 10,
                 37, 36, 37, 32, 128, 10,
                 32, 10,
-                36, 32, 42, 43, 34, 35, 10
+                36, 32, 42, 43, 34, 35, 10,
             }).ToArray(),
             session.TakeOutboundBytes());
     }
@@ -221,7 +221,7 @@ public sealed class SendLevelBoundaryTests
             {
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
                 71, 32, 32, 32, 32, 33, 10,
-                32, 10
+                32, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -269,7 +269,7 @@ public sealed class SendLevelBoundaryTests
             [
                 new(9, [1]),
                 new(10, BoardChangePayload(1, 2, 3, 4, [80, 81])),
-                new(11, BoardChangePayload(5, 6, 7, 8, [82]))
+                new(11, BoardChangePayload(5, 6, 7, 8, [82])),
             ]);
 
         SendLevelBoundary.BeginModern(
@@ -281,7 +281,7 @@ public sealed class SendLevelBoundaryTests
             new byte[]
             {
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
-                32, 33, 34, 35, 36, 80, 81, 37, 38, 39, 40, 82, 10
+                32, 33, 34, 35, 36, 80, 81, 37, 38, 39, 40, 82, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -300,7 +300,7 @@ public sealed class SendLevelBoundaryTests
             Chests:
             [
                 new(false, 10, 11, 2, 3),
-                new(true, 12, 13, 4, 5)
+                new(true, 12, 13, 4, 5),
             ]);
 
         SendLevelBoundary.BeginModern(
@@ -314,7 +314,7 @@ public sealed class SendLevelBoundaryTests
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
                 32, 10,
                 36, 32, 42, 43, 34, 35, 10,
-                36, 33, 44, 45, 10
+                36, 33, 44, 45, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -344,7 +344,7 @@ public sealed class SendLevelBoundaryTests
                 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
                 32, 10,
                 49, (byte)'h', (byte)'o', (byte)'r', (byte)'s', (byte)'e', 10,
-                34, 37, 70, 71, 10
+                34, 37, 70, 71, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -384,7 +384,7 @@ public sealed class SendLevelBoundaryTests
                 206, 32, 10,
                 74, 32, 32, 32, 33, 10,
                 188, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
-                70, 10
+                70, 10,
             },
             session.TakeOutboundBytes());
     }
@@ -421,7 +421,7 @@ public sealed class SendLevelBoundaryTests
                 206, 32, 10,
                 42, 10,
                 74, 32, 32, 32, 33, 10,
-                188, (byte)'w', (byte)'o', (byte)'r', (byte)'l', (byte)'d', (byte)'.', (byte)'g', (byte)'m', (byte)'a', (byte)'p', 10
+                188, (byte)'w', (byte)'o', (byte)'r', (byte)'l', (byte)'d', (byte)'.', (byte)'g', (byte)'m', (byte)'a', (byte)'p', 10,
             },
             session.TakeOutboundBytes());
     }
@@ -452,7 +452,7 @@ public sealed class SendLevelBoundaryTests
                     new(7, true, true, null, null, 0, 0, [99]),
                     new(8, true, true, null, null, 0, 0, [65]),
                     new(9, false, true, null, null, 0, 0, [66]),
-                    new(10, true, false, null, null, 0, 0, [67])
+                    new(10, true, false, null, null, 0, 0, [67]),
                 ]));
 
         var result = SendLevelBoundary.BeginModern(
@@ -494,7 +494,7 @@ public sealed class SendLevelBoundaryTests
                     new(8, true, false, "world.gmap", "red", 5, 4, [65]),
                     new(9, true, false, "world.gmap", "blue", 5, 4, [66]),
                     new(10, true, false, "world.gmap", "red", 6, 4, [67]),
-                    new(11, true, false, "other.gmap", "red", 4, 4, [68])
+                    new(11, true, false, "other.gmap", "red", 4, 4, [68]),
                 ]));
 
         var result = SendLevelBoundary.BeginModern(

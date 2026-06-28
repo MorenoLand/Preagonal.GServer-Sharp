@@ -71,7 +71,7 @@ public sealed class CombatPlayerGameplayTests
     {
         var state = new CombatPlayerState(maxPower: 3, hitpoints: 3, alignment: 19, arrows: 0, bombs: 0)
         {
-            ApCounter = 1
+            ApCounter = 1,
         };
         var timers = new AlignmentTimerSettings(30, 90, 300, 600, 1200);
 

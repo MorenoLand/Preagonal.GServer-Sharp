@@ -136,7 +136,7 @@ public sealed class LoginAuthBridgeTests
                 new AccountLoadSettings(new Dictionary<string, string>
                 {
                     ["staffguilds"] = "Server,Manager",
-                    ["statuslist"] = "Online,Away"
+                    ["statuslist"] = "Online,Away",
                 }),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
@@ -224,7 +224,7 @@ public sealed class LoginAuthBridgeTests
             new AccountLoadSettings(new Dictionary<string, string>
             {
                 ["staffguilds"] = "Server",
-                ["statuslist"] = "Online"
+                ["statuslist"] = "Online",
             }));
         var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var clientQueue = new GraalFileQueue();

@@ -55,7 +55,7 @@ public sealed class PlayerSendLoginContinuationTests
             "GRACC001\nLEVEL ignored.nw\nLOADONLY 0");
         var settings = new AccountLoadSettings(new Dictionary<string, string>
         {
-            ["startlevel"] = "onlinestartlocal.nw"
+            ["startlevel"] = "onlinestartlocal.nw",
         });
 
         var result = AccountLoginBoundary.Begin(
@@ -127,7 +127,7 @@ public sealed class PlayerSendLoginContinuationTests
                 ServerName: "Graal Reborn",
                 ActiveSessions:
                 [
-                    new(12, "PC:123456", PlayerSessionType.Client3, TimeSpan.FromSeconds(1))
+                    new(12, "PC:123456", PlayerSessionType.Client3, TimeSpan.FromSeconds(1)),
                 ],
                 StaffAccounts: [],
                 RemoteIp: "127.0.0.1",
@@ -151,7 +151,7 @@ public sealed class PlayerSendLoginContinuationTests
         {
             AccountName = "pc:Ruan",
             AdminRights = 0x04000,
-            AdminIp = "10.0.0.?,127.0.0.*"
+            AdminIp = "10.0.0.?,127.0.0.*",
         };
 
         var snapshot = AccountLoginBoundary.ToPlayerSendLoginAccount(
@@ -265,8 +265,8 @@ public sealed class PlayerSendLoginContinuationTests
         {
             ActiveSessions =
             [
-                new(12, "PC:RUAN", PlayerSessionType.Client3, TimeSpan.FromSeconds(5))
-            ]
+                new(12, "PC:RUAN", PlayerSessionType.Client3, TimeSpan.FromSeconds(5)),
+            ],
         };
 
         var result = PlayerSendLoginContinuation.Begin(session, BaseAccount(), options);
@@ -291,8 +291,8 @@ public sealed class PlayerSendLoginContinuationTests
         {
             ActiveSessions =
             [
-                new(12, "pc:Ruan", PlayerSessionType.Client3, TimeSpan.FromSeconds(31))
-            ]
+                new(12, "pc:Ruan", PlayerSessionType.Client3, TimeSpan.FromSeconds(31)),
+            ],
         };
 
         var result = PlayerSendLoginContinuation.Begin(session, BaseAccount(), options);

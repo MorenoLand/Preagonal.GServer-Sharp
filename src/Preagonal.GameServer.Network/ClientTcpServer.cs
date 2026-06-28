@@ -26,7 +26,7 @@ public enum ClientTcpSessionStopReason
 {
     ClientDisconnected,
     HandlerStopped,
-    Crashed
+    Crashed,
 }
 
 public sealed record ClientTcpSessionResult(

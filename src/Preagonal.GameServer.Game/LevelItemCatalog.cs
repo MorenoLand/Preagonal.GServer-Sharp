@@ -27,7 +27,7 @@ public enum LevelItemType
     Fireblast = 21,
     Nukeshot = 22,
     JoltBomb = 23,
-    SpinAttack = 24
+    SpinAttack = 24,
 }
 
 public static class LevelItemCatalog
@@ -58,7 +58,7 @@ public static class LevelItemCatalog
         "fireblast",
         "nukeshot",
         "joltbomb",
-        "spinattack"
+        "spinattack",
     ];
 
     public static LevelItemType GetItemId(string itemName)
@@ -96,6 +96,6 @@ public static class LevelItemCatalog
             LevelItemType.BlueRupee => 5,
             LevelItemType.RedRupee => 30,
             LevelItemType.GoldRupee => 100,
-            _ => 0
+            _ => 0,
         };
 }

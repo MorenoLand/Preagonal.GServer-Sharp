@@ -53,7 +53,7 @@ public sealed class Gs2PlayerProperties : ScriptProperties<Gs2PlayerContext>
                 { "addWeapon", "", AddWeapon },
                 { "removeweapon", "", RemoveWeapon },
                 { "removeWeapon", "", RemoveWeapon },
-                { "hasrightflag", "", HasRightFlag }
+                { "hasrightflag", "", HasRightFlag },
             });
         AddProperties(
             this,
@@ -62,7 +62,7 @@ public sealed class Gs2PlayerProperties : ScriptProperties<Gs2PlayerContext>
                 { "account", "", player => player.Account },
                 { "nick", "", player => player.Nick, (player, value) => player.Nick = value },
                 { "nickname", "", player => player.Nick, (player, value) => player.Nick = value },
-                { "level", "", player => player.Level, (player, value) => player.Level = value }
+                { "level", "", player => player.Level, (player, value) => player.Level = value },
             });
         Compile();
     }
@@ -151,7 +151,7 @@ public sealed class Gs2ServerScriptHost
         {
             Account = account,
             Nick = nick.Length == 0 ? account : nick,
-            Level = level
+            Level = level,
         };
     }
 
@@ -258,7 +258,7 @@ public sealed class Gs2ServerScriptHost
                     { "addWeapon", "", AddWeapon },
                     { "removeweapon", "", RemoveWeapon },
                     { "removeWeapon", "", RemoveWeapon },
-                    { "triggerclient", "", TriggerClient }
+                    { "triggerclient", "", TriggerClient },
                 });
             Preagonal.Scripting.GS2Engine.Models.ScriptProperties<Script>.AddProperties(
                 null,
@@ -270,7 +270,7 @@ public sealed class Gs2ServerScriptHost
                     { "TAB", "", _ => "\t" },
                     { "NL", "", _ => "\n" },
                     { "NULL", "", _ => "" },
-                    { "nil", "", _ => "" }
+                    { "nil", "", _ => "" },
                 });
 
             foreach (var property in Script.GlobalProperties.Where(entry => !entry.Value.Compiled))
@@ -366,7 +366,7 @@ public sealed class Gs2ServerScriptHost
         {
             IEnumerable<string> strings => string.Join(",", strings),
             IEnumerable<object?> objects => string.Join(",", objects.Select(static item => item?.ToString() ?? "")),
-            _ => value?.ToString() ?? ""
+            _ => value?.ToString() ?? "",
         };
     }
 

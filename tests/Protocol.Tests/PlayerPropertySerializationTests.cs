@@ -14,7 +14,7 @@ public sealed class PlayerPropertySerializationTests
                 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 13, 17, 18, 21, 22, 23,
                 25, 26, 32, 34, 35, 36, 37, 38, 39, 40, 41, 46, 47, 48,
                 49, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66,
-                67, 68, 69, 70, 71, 72, 73, 74, 82
+                67, 68, 69, 70, 71, 72, 73, 74, 82,
             },
             SendLoginPropertySet.All.Select(id => (byte)id).ToArray());
     }
@@ -26,7 +26,7 @@ public sealed class PlayerPropertySerializationTests
             new byte[]
             {
                 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 13, 17, 18, 21, 22, 23,
-                25, 26, 32, 34, 35, 36
+                25, 26, 32, 34, 35, 36,
             },
             SendLoginPropertySet.ForClient(preClient21: true).Select(id => (byte)id).ToArray());
     }
@@ -47,7 +47,7 @@ public sealed class PlayerPropertySerializationTests
                 24, 30, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 43,
                 44, 45, 46, 47, 48, 49, 50, 53, 54, 55, 56, 57, 58,
                 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
-                72, 73, 74, 78, 79, 80, 82
+                72, 73, 74, 78, 79, 80, 82,
             },
             GetLoginPropertySet.All.Select(id => (byte)id).ToArray());
     }
@@ -72,7 +72,7 @@ public sealed class PlayerPropertySerializationTests
             [
                 PlayerPropertyId.AccountName,
                 PlayerPropertyId.CurrentPower,
-                PlayerPropertyId.MaxPower
+                PlayerPropertyId.MaxPower,
             ]);
 
         Assert.Equal(
@@ -80,7 +80,7 @@ public sealed class PlayerPropertySerializationTests
             {
                 33, 35,
                 34, 40,
-                66, 39, (byte)'p', (byte)'c', (byte)':', (byte)'R', (byte)'u', (byte)'a', (byte)'n'
+                66, 39, (byte)'p', (byte)'c', (byte)':', (byte)'R', (byte)'u', (byte)'a', (byte)'n',
             },
             bytes);
     }
@@ -95,7 +95,7 @@ public sealed class PlayerPropertySerializationTests
                 PlayerPropertyId.RupeesCount,
                 PlayerPropertyId.SwordPower,
                 PlayerPropertyId.CurrentLevel,
-                PlayerPropertyId.IpAddress
+                PlayerPropertyId.IpAddress,
             ]);
 
         Assert.Equal(
@@ -104,7 +104,7 @@ public sealed class PlayerPropertySerializationTests
                 35, 32, 41, 114,
                 40, 64, 41, (byte)'s', (byte)'w', (byte)'o', (byte)'r', (byte)'d', (byte)'.', (byte)'p', (byte)'n', (byte)'g',
                 52, 40, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w',
-                62, 32, 32, 32, 32, 33
+                62, 32, 32, 32, 32, 33,
             },
             bytes);
     }
@@ -161,7 +161,7 @@ public sealed class PlayerPropertySerializationTests
             {
                 110, 40, 129,
                 111, 40, 128,
-                112, 32, 111
+                112, 32, 111,
             },
             bytes);
     }
@@ -193,7 +193,7 @@ public sealed class PlayerPropertySerializationTests
                 82, 33,
                 32, 36, (byte)'R', (byte)'u', (byte)'a', (byte)'n',
                 47, 102,
-                10
+                10,
             },
             PlayerPropertySerializer.BuildOtherPlayerPropsPacket(7, payload, appendNewline: true));
     }
@@ -240,7 +240,7 @@ public sealed class PlayerPropertySerializationTests
             GaniAttributes: new Dictionary<int, string>
             {
                 [37] = "attr1",
-                [38] = "attr2"
+                [38] = "attr2",
             },
             Os: "win",
             TextCodePage: 1252,

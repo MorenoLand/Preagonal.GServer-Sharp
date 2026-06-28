@@ -29,7 +29,7 @@ public sealed class CombatDropRuntimeTests
                 LevelItemType.GreenRupee,
                 LevelItemType.GreenRupee,
                 LevelItemType.GreenRupee,
-                LevelItemType.GreenRupee
+                LevelItemType.GreenRupee,
             ],
             drops);
     }
@@ -51,7 +51,7 @@ public sealed class CombatDropRuntimeTests
             Arrows = 9,
             Bombs = 9,
             MaxPower = 20,
-            Hitpoints = 6.0f
+            Hitpoints = 6.0f,
         };
 
         var rng = new SequenceCombatRandom(75, 4, 0, 7, 1, 5, 0, 3, 2, 6, 7);
@@ -106,7 +106,7 @@ public sealed class CombatDropRuntimeTests
             LevelItemType.GreenRupee,
             LevelItemType.GreenRupee,
             LevelItemType.Invalid,
-            LevelItemType.Invalid
+            LevelItemType.Invalid,
         };
 
         for (var i = 0; i < 11; i++)
@@ -114,7 +114,7 @@ public sealed class CombatDropRuntimeTests
             var expectedItem = i switch
             {
                 10 or 11 => LevelItemType.Invalid,
-                _ => expected[i]
+                _ => expected[i],
             };
 
             var hasDrop = CombatDropRuntime.TryRollBaddyDrop(rng, out var itemType);
@@ -134,7 +134,7 @@ public sealed class CombatDropRuntimeTests
                 (byte)(1.25f * 2 + 32),
                 (byte)(4.75f * 2 + 32),
                 (byte)(LevelItemType.RedRupee + 32),
-            (byte)'\n'
+            (byte)'\n',
             ],
             packet);
     }
@@ -154,7 +154,7 @@ public sealed class CombatDropRuntimeTests
         {
             Rupees = 40,
             Arrows = 25,
-            Bombs = 11
+            Bombs = 11,
         };
 
         var result = CombatDropRuntime.ApplyPlayerDeathDrops(
@@ -179,7 +179,7 @@ public sealed class CombatDropRuntimeTests
         {
             Rupees = 30,
             Arrows = 25,
-            Bombs = 15
+            Bombs = 15,
         };
 
         // drop_gralats uses 6 -> blue rupee + green rupee
@@ -208,8 +208,8 @@ public sealed class CombatDropRuntimeTests
                     (byte)(12.5f * 2 + 32),
                     (byte)(23.0f * 2 + 32),
                     (byte)(LevelItemType.GreenRupee + 32),
-                    10
-            ],
+                    10,
+                ],
             result.DropPackets.SelectMany(x => x).ToArray());
     }
 

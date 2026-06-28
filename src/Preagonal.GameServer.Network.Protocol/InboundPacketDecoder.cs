@@ -43,7 +43,7 @@ public sealed class InboundPacketDecoder
                 EncryptionGeneration.Gen3 => ZlibDecompress(framePayload),
                 EncryptionGeneration.Gen4 => DecodeGen4(framePayload),
                 EncryptionGeneration.Gen5 => DecodeGen5(framePayload, warnings),
-                _ => throw new NotSupportedException($"Inbound generation {_generation} is not source-confirmed.")
+                _ => throw new NotSupportedException($"Inbound generation {_generation} is not source-confirmed."),
             };
         }
         catch (InvalidDataException ex)
@@ -88,7 +88,7 @@ public sealed class InboundPacketDecoder
             CompressionType.Uncompressed => decrypted,
             CompressionType.Zlib => ZlibDecompress(decrypted),
             CompressionType.Bz2 => Bzip2Decompress(decrypted),
-            _ => throw new NotSupportedException($"Inbound gen5 compression type 0x{framePayload[0]:X2} is not source-confirmed.")
+            _ => throw new NotSupportedException($"Inbound gen5 compression type 0x{framePayload[0]:X2} is not source-confirmed."),
         };
     }
 

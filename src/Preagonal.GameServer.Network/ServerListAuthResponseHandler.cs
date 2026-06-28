@@ -6,7 +6,7 @@ public enum ServerListAuthResponseStatus
 {
     SessionNotFound,
     AcceptedPreWorld,
-    Rejected
+    Rejected,
 }
 
 public sealed record ServerListAuthResponseResult(

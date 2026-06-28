@@ -85,7 +85,7 @@ public enum PlayerPropertyId : byte
     Y2 = 79,
     Z2 = 80,
     Unknown81 = 81,
-    CommunityName = 82
+    CommunityName = 82,
 }
 
 public sealed record PlayerPropertySource(
@@ -195,7 +195,7 @@ public static class SendLoginPropertySet
         PlayerPropertyId.GAttrib28,
         PlayerPropertyId.GAttrib29,
         PlayerPropertyId.GAttrib30,
-        PlayerPropertyId.CommunityName
+        PlayerPropertyId.CommunityName,
     ];
 
     private static readonly IReadOnlyList<PlayerPropertyId> PreClient21 =
@@ -268,7 +268,7 @@ public static class GetLoginPropertySet
         PlayerPropertyId.X2,
         PlayerPropertyId.Y2,
         PlayerPropertyId.Z2,
-        PlayerPropertyId.CommunityName
+        PlayerPropertyId.CommunityName,
     ];
 
     private static readonly IReadOnlyList<PlayerPropertyId> PreClient21 =
@@ -290,7 +290,7 @@ public static class GetRcLoginPropertySet
         PlayerPropertyId.UdpPort,
         PlayerPropertyId.AccountName,
         PlayerPropertyId.PlayerStatusMessage,
-        PlayerPropertyId.CommunityName
+        PlayerPropertyId.CommunityName,
     ];
 }
 
@@ -300,7 +300,7 @@ public static class PlayerPropertySerializer
     [
         37, 38, 39, 40, 41, 46, 47, 48, 49, 54,
         55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74
+        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
     ];
 
     public static byte[] SerializeConfirmedLoginSubset(

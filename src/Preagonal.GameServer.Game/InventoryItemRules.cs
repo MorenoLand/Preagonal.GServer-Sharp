@@ -210,7 +210,7 @@ public static class InventoryItemRules
         {
             LevelItemType.LizardShield => 3,
             LevelItemType.MirrorShield => 2,
-            _ => 1
+            _ => 1,
         };
 
         return (byte)Math.Max(current, candidate);
@@ -223,7 +223,7 @@ public static class InventoryItemRules
             LevelItemType.GoldenSword => 4,
             LevelItemType.LizardSword => 3,
             LevelItemType.BattleAxe => 2,
-            _ => 1
+            _ => 1,
         };
 
         return (byte)Math.Max(current, candidate);
