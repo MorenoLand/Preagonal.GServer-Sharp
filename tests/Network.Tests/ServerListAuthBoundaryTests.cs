@@ -1,8 +1,8 @@
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class ServerListAuthBoundaryTests
 {
@@ -11,7 +11,7 @@ public sealed class ServerListAuthBoundaryTests
     {
         var session = Client3Session();
         var gateway = new CapturingGateway(isConnected: true);
-        var boundary = new ServerListAuthBoundary(gateway, new PreWorldAuthOptions(
+        var boundary = new ServerListAuthBoundary(gateway, new(
             MaxPlayers: 128,
             CurrentPlayerCount: 0,
             IsIpBanned: false,
@@ -34,7 +34,7 @@ public sealed class ServerListAuthBoundaryTests
     {
         var session = Client3Session();
         var gateway = new CapturingGateway(isConnected: false);
-        var boundary = new ServerListAuthBoundary(gateway, new PreWorldAuthOptions(
+        var boundary = new ServerListAuthBoundary(gateway, new(
             MaxPlayers: 128,
             CurrentPlayerCount: 0,
             IsIpBanned: false,
@@ -127,7 +127,7 @@ public sealed class ServerListAuthBoundaryTests
     {
         var session = Client3Session();
         var gateway = new CapturingGateway(isConnected: true);
-        var boundary = new ServerListAuthBoundary(gateway, new PreWorldAuthOptions(
+        var boundary = new ServerListAuthBoundary(gateway, new(
             MaxPlayers: 128,
             CurrentPlayerCount: 0,
             IsIpBanned: false,

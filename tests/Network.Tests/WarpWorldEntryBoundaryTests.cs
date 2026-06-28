@@ -1,8 +1,8 @@
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class WarpWorldEntryBoundaryTests
 {
@@ -11,13 +11,13 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
+        levels.Add(new("start.nw"));
 
         var result = WarpWorldEntryBoundary.BeginWarp(
             session,
             levels,
-            new PlayerWarpState(new LevelEntrySnapshot("start.nw"), CurrentX: 30.0f, CurrentY: 30.5f),
-            new LevelWarpRequest("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0),
+            new(new("start.nw"), CurrentX: 30.0f, CurrentY: 30.5f),
+            new("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0),
             PlayerWarpSettings.Default);
 
         Assert.True(result.CppReturnValue);
@@ -32,14 +32,14 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
-        levels.Add(new LevelEntrySnapshot("onlinestartlocal.nw"));
+        levels.Add(new("start.nw"));
+        levels.Add(new("onlinestartlocal.nw"));
 
         var result = WarpWorldEntryBoundary.BeginWarp(
             session,
             levels,
-            new PlayerWarpState(new LevelEntrySnapshot("start.nw"), CurrentX: 30.5f, CurrentY: 31.25f),
-            new LevelWarpRequest("missing.nw", X: 40.0f, Y: 41.0f, Z: 0, ClientVersionId.Client21, ModTime: 0),
+            new(new("start.nw"), CurrentX: 30.5f, CurrentY: 31.25f),
+            new("missing.nw", X: 40.0f, Y: 41.0f, Z: 0, ClientVersionId.Client21, ModTime: 0),
             PlayerWarpSettings.Default);
 
         Assert.False(result.CppReturnValue);
@@ -60,13 +60,13 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("onlinestartlocal.nw"));
+        levels.Add(new("onlinestartlocal.nw"));
 
         var result = WarpWorldEntryBoundary.BeginWarp(
             session,
             levels,
-            new PlayerWarpState(null, CurrentX: 30.5f, CurrentY: 31.25f),
-            new LevelWarpRequest("missing.nw", X: 40.0f, Y: 41.0f, Z: 0, ClientVersionId.Client21, ModTime: 0),
+            new(null, CurrentX: 30.5f, CurrentY: 31.25f),
+            new("missing.nw", X: 40.0f, Y: 41.0f, Z: 0, ClientVersionId.Client21, ModTime: 0),
             PlayerWarpSettings.Default);
 
         Assert.False(result.CppReturnValue);
@@ -90,7 +90,7 @@ public sealed class WarpWorldEntryBoundaryTests
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("missing.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0));
+            new("missing.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0));
 
         Assert.False(result.Accepted);
         Assert.Equal(LevelEntryStopPoint.MissingLevel, result.StopPoint);
@@ -103,12 +103,12 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
+        levels.Add(new("start.nw"));
 
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0));
+            new("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 0));
 
         Assert.True(result.Accepted);
         Assert.Equal(LevelEntryStopPoint.BeforeSendLevelRuntime, result.StopPoint);
@@ -121,16 +121,16 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot(
+        levels.Add(new(
             "world_a01.nw",
-            new LevelMapSnapshot(LevelMapType.Gmap, "world.gmap"),
+            new(LevelMapType.Gmap, "world.gmap"),
             MapX: 4,
             MapY: 5));
 
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("world_a01.nw", X: 30.5f, Y: 31.25f, Z: 1.5f, ClientVersionId.Client21, ModTime: 0));
+            new("world_a01.nw", X: 30.5f, Y: 31.25f, Z: 1.5f, ClientVersionId.Client21, ModTime: 0));
 
         Assert.True(result.Accepted);
         Assert.Equal(LevelEntryStopPoint.BeforeSendLevelRuntime, result.StopPoint);
@@ -142,12 +142,12 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
+        levels.Add(new("start.nw"));
 
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 123));
+            new("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client21, ModTime: 123));
 
         Assert.True(result.Accepted);
         Assert.Equal(LevelEntryStopPoint.BeforeSendLevelRuntime, result.StopPoint);
@@ -159,12 +159,12 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
+        levels.Add(new("start.nw"));
 
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client1411, ModTime: 123));
+            new("start.nw", X: 30.5f, Y: 31.25f, Z: 0, ClientVersionId.Client1411, ModTime: 123));
 
         Assert.True(result.Accepted);
         Assert.Equal(LevelEntryStopPoint.BeforeSendLevelRuntime, result.StopPoint);
@@ -176,9 +176,9 @@ public sealed class WarpWorldEntryBoundaryTests
     {
         var session = ReadyForLevelWarpSession();
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot(
+        levels.Add(new(
             "world_a01.nw",
-            new LevelMapSnapshot(LevelMapType.Gmap, "world.gmap"),
+            new(LevelMapType.Gmap, "world.gmap"),
             MapX: 4,
             MapY: 5));
         var packet = new GraalBinaryWriter();
@@ -190,7 +190,7 @@ public sealed class WarpWorldEntryBoundaryTests
         var result = WarpWorldEntryBoundary.BeginClientLevelWarpPacket(
             session,
             levels,
-            new PlayerWarpState(new LevelEntrySnapshot("start.nw"), CurrentX: 12.0f, CurrentY: 13.0f),
+            new(new("start.nw"), CurrentX: 12.0f, CurrentY: 13.0f),
             packet.ToArray(),
             ClientVersionId.Client21,
             currentZ: 1.5f,
@@ -217,11 +217,11 @@ public sealed class WarpWorldEntryBoundaryTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+            new("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
         Assert.True(PlayerSendLoginContinuation.Begin(
             session,
-            new PlayerSendLoginAccount("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
-            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+            new("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
+            new(false, "Graal Reborn", [])).Accepted);
         _ = session.TakeOutboundBytes();
 
         PostLoginWorldEntryBoundary.BeginClient(session, BaseSnapshot());
@@ -234,7 +234,7 @@ public sealed class WarpWorldEntryBoundaryTests
         var prop = new GraalBinaryWriter();
         prop.WriteGChar(0);
 
-        return new PostLoginPlayerSnapshot(
+        return new(
             PlayerId: 7,
             Type: PlayerSessionType.Client3,
             AccountNameProperty: prop.ToArray(),
@@ -244,7 +244,7 @@ public sealed class WarpWorldEntryBoundaryTests
             YProperty: [65],
             AlignmentProperty: [66],
             IpAddressProperty: [32, 32, 32, 32, 33],
-            LoginPropertySource: new PlayerPropertySource(
+            LoginPropertySource: new(
                 Nickname: "Ruan",
                 MaxPower: 3,
                 Hitpoints: 4,

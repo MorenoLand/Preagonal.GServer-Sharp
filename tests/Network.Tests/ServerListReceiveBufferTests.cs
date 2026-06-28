@@ -1,8 +1,8 @@
 using System.IO.Compression;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class ServerListReceiveBufferTests
 {

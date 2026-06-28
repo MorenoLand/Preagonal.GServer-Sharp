@@ -1,10 +1,11 @@
-using Preagonal.GServer.Game;
-using Preagonal.GServer.Persistence;
-using Preagonal.GServer.Protocol;
-using Preagonal.GServer.Scripting;
+using Preagonal.GameServer.Game;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
+using Preagonal.GameServer.Persistence;
+using Preagonal.GameServer.Scripting;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class LoginAuthBridgeTests
 {
@@ -14,7 +15,7 @@ public sealed class LoginAuthBridgeTests
         var gateway = new RecordingGateway { IsConnected = true };
         var bridge = new LoginAuthBridge(gateway, AuthOptions());
 
-        var result = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket());
+        var result = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         Assert.True(result.Accepted);
         Assert.Empty(result.OutboundBytes);
@@ -29,10 +30,10 @@ public sealed class LoginAuthBridgeTests
     {
         var gateway = new RecordingGateway { IsConnected = true };
         var bridge = new LoginAuthBridge(gateway, AuthOptions());
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket());
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.BeginClientLogin(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             [0x04, 0x6F, 0x76, 0x4E]);
 
         Assert.True(result.Accepted);
@@ -46,7 +47,7 @@ public sealed class LoginAuthBridgeTests
     {
         var gateway = new RecordingGateway { IsConnected = true };
         var bridge = new LoginAuthBridge(gateway, AuthOptions());
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket());
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "Bad password."));
 
@@ -69,13 +70,13 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")));
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket());
+                new(false, "My Server", [], ["YOURACCOUNT"], "")));
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
@@ -99,13 +100,13 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")));
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket());
+                new(false, "My Server", [], ["YOURACCOUNT"], "")));
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
         var decoded = DecodeSocketPayload(result.OutboundBytes, key: 42);
@@ -130,7 +131,7 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 new AccountLoadSettings(new Dictionary<string, string>
                 {
@@ -139,9 +140,9 @@ public sealed class LoginAuthBridgeTests
                 }),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")));
+                new(false, "My Server", [], ["YOURACCOUNT"], "")));
 
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Rc2LoginPacket("YOURACCOUNT", key: 42));
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Rc2LoginPacket("YOURACCOUNT", key: 42));
         var result = bridge.HandleVerifyAccount2(VerifyAccount2Payload("YOURACCOUNT", 7, PlayerSessionType.RemoteControl2, "SUCCESS"));
         var decoded = DecodeSocketPayload(result.OutboundBytes, key: 42);
 
@@ -164,13 +165,13 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT2.txt"),
             overwrite: true);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var firstLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var secondLogin = LoginRc(bridge, "YOURACCOUNT2", 8, 43);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcChatPacket("hello"), 42));
 
         Assert.True(result.ContinueSession);
@@ -185,7 +186,7 @@ public sealed class LoginAuthBridgeTests
     public void RcLogoffFreesAccount()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         _ = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         _ = bridge.EndClientSession(7);
@@ -199,7 +200,7 @@ public sealed class LoginAuthBridgeTests
     public void DuplicateRcKicksOldSession()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var firstLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var secondLogin = LoginRc(bridge, "YOURACCOUNT", 8, 43);
@@ -219,7 +220,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt"), "level *.nw\nlevel levels/*.graal\n");
         var bridge = CreateBridge(
             serverRoot,
-            new RuntimeServer(),
+            new(),
             new AccountLoadSettings(new Dictionary<string, string>
             {
                 ["staffguilds"] = "Server",
@@ -229,9 +230,9 @@ public sealed class LoginAuthBridgeTests
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
-        var options = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerOptionsGet)));
-        var folders = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcFolderConfigGet)));
-        var flags = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerFlagsGet)));
+        var options = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerOptionsGet)));
+        var folders = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcFolderConfigGet)));
+        var flags   = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerFlagsGet)));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, options.OutboundBytes), RcNcPackets.ServerOptionsGet("name = GSharp\nserverport = 14899\n")) >= 0);
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, options.OutboundBytes, folders.OutboundBytes), RcNcPackets.FolderConfigGet("level *.nw\nlevel levels/*.graal\n")) >= 0);
@@ -241,23 +242,23 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcSavesServerOps()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var optionsPath = Path.Combine(serverRoot.Path, "config", "serveroptions.txt");
-        var foldersPath = Path.Combine(serverRoot.Path, "config", "foldersconfig.txt");
-        var flagsPath = Path.Combine(serverRoot.Path, "serverflags.txt");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
-        var clientQueue = new GraalFileQueue();
+        using var serverRoot  = TestDefaultServerRoot();
+        var       optionsPath = Path.Combine(serverRoot.Path, "config", "serveroptions.txt");
+        var       foldersPath = Path.Combine(serverRoot.Path, "config", "foldersconfig.txt");
+        var       flagsPath   = Path.Combine(serverRoot.Path, "serverflags.txt");
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var setOptions = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerOptionsSet, GTokenize("name = Changed\nserverport = 14901\n"))));
         var setFolders = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcFolderConfigSet, GTokenize("level world/*.nw\nfile accounts/*.txt\n"))));
         var setFlags = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcFlagsSetPacket("event=on", "motd=hello")));
 
         Assert.Contains("name = Changed", File.ReadAllText(optionsPath));
@@ -271,7 +272,7 @@ public sealed class LoginAuthBridgeTests
     {
         using var serverRoot = TestDefaultServerRoot();
         File.WriteAllText(Path.Combine(serverRoot.Path, "config", "npcserver.txt"), "enabled = true\nid = 44\nhost = 127.0.0.1\nport = 14950\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var decoded = DecodeSocketPayload(login.OutboundBytes, key: 42);
@@ -284,7 +285,7 @@ public sealed class LoginAuthBridgeTests
     {
         using var serverRoot = TestDefaultServerRoot();
         var gateway = new RecordingGateway { IsConnected = true };
-        var bridge = CreateBridge(serverRoot, new RuntimeServer(), gateway);
+        var bridge = CreateBridge(serverRoot, new(), gateway);
 
         _ = LoginRc(bridge, "YOURACCOUNT", 8, 42);
         _ = LoginNc(bridge, "YOURACCOUNT", 9);
@@ -301,7 +302,7 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n");
         var gateway = new RecordingGateway { IsConnected = true };
-        var bridge = CreateBridge(serverRoot, new RuntimeServer(), gateway);
+        var bridge = CreateBridge(serverRoot, new(), gateway);
 
         var login = LoginRc(bridge, "YOURACCOUNT", 8, 42);
         var decoded = DecodeSocketPayload(login.OutboundBytes, 42);
@@ -320,7 +321,7 @@ public sealed class LoginAuthBridgeTests
     public void RcRelogShowsOnlyNewConnection()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         _ = LoginRc(bridge, "YOURACCOUNT", 2, 42);
         var relog = LoginRc(bridge, "YOURACCOUNT", 3, 43);
@@ -339,13 +340,13 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             File.ReadAllText(Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"))
                 .Replace("NICK unknown", "NICK guest", StringComparison.Ordinal));
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var queue = new GraalFileQueue();
+        var bridge = CreateBridge(serverRoot, new());
+        var queue  = new GraalFileQueue();
         queue.SetCodec(EncryptionGeneration.Gen5, 42);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(2, "127.0.0.1"), Rc2LoginPacket("YOURACCOUNT", 42));
+        _ = bridge.HandleClientFrame(new(2, "127.0.0.1"), Rc2LoginPacket("YOURACCOUNT", 42));
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(2, "127.0.0.1"),
+            new(2, "127.0.0.1"),
             SocketPayload(queue, NicknamePacket("Denveous")));
         var login = bridge.HandleVerifyAccount2(VerifyAccount2Payload("YOURACCOUNT", 2, PlayerSessionType.RemoteControl2, "SUCCESS"));
         var decoded = DecodeSocketPayload(login.OutboundBytes, 42);
@@ -358,7 +359,7 @@ public sealed class LoginAuthBridgeTests
     public void ClientLoginReplacesSameAccountRc()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         _ = LoginRc(bridge, "moondeath", 2, 42);
         var login = LoginClient(bridge, "moondeath", 3, 43);
@@ -371,7 +372,7 @@ public sealed class LoginAuthBridgeTests
     public void RcDoesNotShowNpcControlAsPlayer()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         _ = LoginNc(bridge, "YOURACCOUNT", 2);
         var login = LoginRc(bridge, "YOURACCOUNT", 3, 42);
@@ -388,11 +389,11 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcListRemoteControls), 42));
 
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
@@ -403,11 +404,11 @@ public sealed class LoginAuthBridgeTests
     public void RcListRefreshDeletesRowsBeforeReadding()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       login      = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcListRemoteControls), 42));
 
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
@@ -421,11 +422,11 @@ public sealed class LoginAuthBridgeTests
     public void RcNicknamePropRefreshesPlayerListRows()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       login      = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(NicknamePacket("Denveous"), 42));
 
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
@@ -442,7 +443,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var decoded = DecodeSocketPayload(login.OutboundBytes, 42);
@@ -460,7 +461,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "npcserver.txt"),
             "enabled = true\nid = 44\nhost = 127.0.0.1\nport = 14899\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var decoded = DecodeSocketPayload(login.OutboundBytes, 42);
@@ -475,13 +476,13 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nserverside = false\nnickname = Testbed\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var bridge      = CreateBridge(serverRoot, new());
+        var login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcServerOptionsSet, GTokenize("name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n"))));
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
 
@@ -492,7 +493,7 @@ public sealed class LoginAuthBridgeTests
     public void ClientLoginReceivesExistingRc()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
@@ -510,7 +511,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nserverside = true\nnickname = Testbed\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
         var decoded = DecodeSocketPayload(clientLogin.OutboundBytes, 43);
@@ -523,9 +524,9 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void ExistingClientReceivesJoiningRc()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       clientLogin = LoginClient(bridge, "Ruan", 8, 43);
 
         var rcLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var broadcast = Assert.Single(rcLogin.Broadcasts, packet => packet.PlayerId == 8);
@@ -539,11 +540,11 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcSeesDeleteWhenClientLeaves()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var rcLogin = LoginRc(bridge, "YOURACCOUNT", 2, 42);
-        var clientLogin = LoginClient(bridge, "Ruan", 3, 43);
-        var clientLoginRcBroadcast = Assert.Single(clientLogin.Broadcasts, packet => packet.PlayerId == 2);
+        using var serverRoot             = TestDefaultServerRoot();
+        var       bridge                 = CreateBridge(serverRoot, new());
+        var       rcLogin                = LoginRc(bridge, "YOURACCOUNT", 2, 42);
+        var       clientLogin            = LoginClient(bridge, "Ruan", 3, 43);
+        var       clientLoginRcBroadcast = Assert.Single(clientLogin.Broadcasts, packet => packet.PlayerId == 2);
 
         var end = bridge.EndClientSession(3);
 
@@ -556,7 +557,7 @@ public sealed class LoginAuthBridgeTests
     public void ControlDisconnectDoesNotSavePlayerState()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginRc(bridge, "YOURACCOUNT", 2, 42);
 
         var end = bridge.EndClientSession(2);
@@ -571,12 +572,12 @@ public sealed class LoginAuthBridgeTests
     public void NcNpcAddCreatesDatabaseNpcRow()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcNpcAddPacket("Control-NPC", 10000, "CONTROL", "moondeath", "onlinestartlocal.nw", "30", "30")));
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, result.OutboundBytes);
@@ -593,7 +594,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             npcPath,
             "GRNPC001\nNAME Control-NPC\nID 10000\nTYPE CONTROL\nSCRIPTER moondeath\nSTARTLEVEL \nSTARTX 30.00\nSTARTY 30.00\nNPCSCRIPT\nNPCSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginNc(bridge, "YOURACCOUNT", 7);
 
@@ -610,12 +611,12 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             npcPath,
             "GRNPC001\nNAME Control-NPC\nID 10000\nTYPE CONTROL\nSCRIPTER moondeath\nSTARTLEVEL \nSTARTX 30.00\nSTARTY 30.00\nNPCSCRIPT\nfunction onCreated() {\n  echo(\"hi\");\n}\nNPCSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginNc(bridge, "YOURACCOUNT", 7);
+        var bridge      = CreateBridge(serverRoot, new());
+        var login       = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcNpcScriptGetPacket(10000)));
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, login.OutboundBytes, result.OutboundBytes);
 
@@ -631,12 +632,12 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             npcPath,
             "GRNPC001\nNAME Control-NPC\nID 10000\nTYPE CONTROL\nSCRIPTER moondeath\nSTARTLEVEL \nSTARTX 30.00\nSTARTY 30.00\nNPCSCRIPT\nNPCSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginNc(bridge, "YOURACCOUNT", 7);
+        var bridge      = CreateBridge(serverRoot, new());
+        var login       = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcNpcScriptSetPacket(10000, "function onCreated() {\n  echo(\"saved\");\n}")));
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, login.OutboundBytes, result.OutboundBytes);
         var saved = File.ReadAllText(npcPath).Replace("\r", "", StringComparison.Ordinal);
@@ -649,7 +650,7 @@ public sealed class LoginAuthBridgeTests
     public void NcLoginSendsWelcome()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginNc(bridge, "YOURACCOUNT", 7);
 
@@ -666,11 +667,11 @@ public sealed class LoginAuthBridgeTests
         Directory.CreateDirectory(Path.Combine(serverRoot.Path, "accounts"));
         File.WriteAllText(Path.Combine(serverRoot.Path, "accounts", "sample.txt"), "data");
         File.WriteAllText(Path.Combine(serverRoot.Path, "accounts", ".empty"), "");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcFileBrowserStart), 42));
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
 
@@ -686,11 +687,11 @@ public sealed class LoginAuthBridgeTests
         using var serverRoot = TestDefaultServerRoot();
         var filePath = Path.Combine(serverRoot.Path, "accounts", "sample.txt");
         File.WriteAllText(filePath, "data");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcFileBrowserDownload, "sample.txt"), 42));
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
 
@@ -702,17 +703,17 @@ public sealed class LoginAuthBridgeTests
     public void NcOpensWeaponScripts()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginNc(bridge, "YOURACCOUNT", 7);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       login      = LoginNc(bridge, "YOURACCOUNT", 7);
         Assert.Equal(ServerListAuthResponseStatus.AcceptedPreWorld, login.Status);
         Assert.NotEmpty(login.OutboundBytes);
         var clientQueue = Gen3Queue();
 
         var list = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcPacket(PlayerToServerPacketId.NcWeaponListGet)));
         var get = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcPacket(PlayerToServerPacketId.NcWeaponGet, "-gr_movement")));
 
         var listed = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, list.OutboundBytes);
@@ -741,7 +742,7 @@ public sealed class LoginAuthBridgeTests
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket("-gr_movement", "tool.png", "//#CLIENTSIDE\nplayer.chat = 1;")));
 
         var saved = File.ReadAllText(Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt"));
@@ -766,7 +767,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt"),
             "GRAWP001\nREALNAME -gr_movement\nIMAGE wbomb1.png\nSCRIPT\n//#CLIENTSIDE\nplayer.chat = 1;\nSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var login = LoginClient(bridge, "YOURACCOUNT", 8, 43);
         var decoded = DecodeSocketPayload(login.OutboundBytes, 43);
@@ -782,7 +783,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt"),
             "GRAWP001\nREALNAME -gr_movement\nIMAGE wbomb1.png\nSCRIPT\n" + source + "\nSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         var expectedCompile = new Gs2CompilerAdapter().Compile(
             SourceCodeSlices.Parse(source, gs2Default: true, serverSideVm: true).ClientGs2,
             "weapon",
@@ -805,12 +806,12 @@ public sealed class LoginAuthBridgeTests
         var weaponPath = Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt");
         var original = "GRAWP001\nREALNAME -gr_movement\nIMAGE wbomb1.png\nSCRIPT\n//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  player.chat = \"ok\";\n}\nSCRIPTEND\n";
         File.WriteAllText(weaponPath, original);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket("-gr_movement", "wbomb1.png", "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  player.chat = application::version SPC graalversion \n}")));
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, result.OutboundBytes);
@@ -824,12 +825,12 @@ public sealed class LoginAuthBridgeTests
     public void NcReportsClientGs2Errors()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket("badclient", "tool.png", "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  player.chat = \"unterminated;\n}")));
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, result.OutboundBytes);
@@ -843,12 +844,12 @@ public sealed class LoginAuthBridgeTests
     public void NcRejectsGs1ClientScriptBeforeCompile()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket("badgs1", "tool.png", "function onCreated() echo(1);\n//#CLIENTSIDE\nsetplayerprop #c,hi;")));
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, result.OutboundBytes);
@@ -862,12 +863,12 @@ public sealed class LoginAuthBridgeTests
     public void NcReportsServerGs2Errors()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket("badserver", "tool.png", "function onCreated() {\n  player.chat = \"unterminated;\n}\n//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n}")));
 
         var decoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, result.OutboundBytes);
@@ -880,15 +881,15 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void NcWeaponEchoes()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var rcLogin = LoginRc(bridge, "YOURACCOUNT", 8, 42);
-        var ncLogin = LoginNc(bridge, "YOURACCOUNT", 7);
-        var ncLoginRcBroadcast = Assert.Single(ncLogin.Broadcasts, packet => packet.PlayerId == 8);
-        var clientQueue = Gen3Queue();
+        using var serverRoot         = TestDefaultServerRoot();
+        var       bridge             = CreateBridge(serverRoot, new());
+        var       rcLogin            = LoginRc(bridge, "YOURACCOUNT", 8, 42);
+        var       ncLogin            = LoginNc(bridge, "YOURACCOUNT", 7);
+        var       ncLoginRcBroadcast = Assert.Single(ncLogin.Broadcasts, packet => packet.PlayerId == 8);
+        var       clientQueue        = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket(
                 "-gr_movement",
                 "tool.png",
@@ -905,14 +906,14 @@ public sealed class LoginAuthBridgeTests
     {
         using var serverRoot = TestDefaultServerRoot();
         File.AppendAllText(Path.Combine(serverRoot.Path, "config", "serveroptions.txt"), "\nscriptcall = debug\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var rcLogin = LoginRc(bridge, "YOURACCOUNT", 8, 42);
-        var ncLogin = LoginNc(bridge, "YOURACCOUNT", 7);
+        var bridge             = CreateBridge(serverRoot, new());
+        var rcLogin            = LoginRc(bridge, "YOURACCOUNT", 8, 42);
+        var ncLogin            = LoginNc(bridge, "YOURACCOUNT", 7);
         var ncLoginRcBroadcast = Assert.Single(ncLogin.Broadcasts, packet => packet.PlayerId == 8);
-        var clientQueue = Gen3Queue();
+        var clientQueue        = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket(
                 "-gr_movement",
                 "tool.png",
@@ -928,13 +929,13 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void TriggerServerSendsTriggerClient()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var clientLogin = LoginClient(bridge, "YOURACCOUNT", 8, 43);
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       clientLogin = LoginClient(bridge, "YOURACCOUNT", 8, 43);
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var ncQueue = Gen3Queue();
         var add = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(ncQueue, NcWeaponAddPacket(
                 "-gr_movement",
                 "tool.png",
@@ -944,7 +945,7 @@ public sealed class LoginAuthBridgeTests
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 43);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(clientQueue, TriggerActionPacket("serverside,-gr_movement,from clientside,1")));
         var decoded = DecodeLastSocketPayload(43, clientLogin.OutboundBytes, clientBroadcast.OutboundBytes, result.OutboundBytes);
 
@@ -959,13 +960,13 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt"),
             "GRAWP001\nREALNAME -gr_movement\nIMAGE wbomb1.png\nSCRIPT\n" + source + "\nSCRIPTEND\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge      = CreateBridge(serverRoot, new());
         var clientLogin = LoginClient(bridge, "YOURACCOUNT", 8, 43);
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 43);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(clientQueue, TriggerActionPacket("serverside,-gr_movement,from clientside,1")));
         var decoded = DecodeLastSocketPayload(43, clientLogin.OutboundBytes, result.OutboundBytes);
 
@@ -975,19 +976,19 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void ServerOptionsSetReloadsScriptCall()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var rcLogin = LoginRc(bridge, "YOURACCOUNT", 8, 42);
-        var ncLogin = LoginNc(bridge, "YOURACCOUNT", 7);
-        var ncLoginRcBroadcast = Assert.Single(ncLogin.Broadcasts, packet => packet.PlayerId == 8);
+        using var serverRoot         = TestDefaultServerRoot();
+        var       bridge             = CreateBridge(serverRoot, new());
+        var       rcLogin            = LoginRc(bridge, "YOURACCOUNT", 8, 42);
+        var       ncLogin            = LoginNc(bridge, "YOURACCOUNT", 7);
+        var       ncLoginRcBroadcast = Assert.Single(ncLogin.Broadcasts, packet => packet.PlayerId == 8);
         var setOptions = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcServerOptionsSet, GTokenize("name = GSharp\nserverport = 14899\nscriptcall = debug\n")), 42));
         Assert.Contains("scriptcall = debug", File.ReadAllText(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")));
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcWeaponAddPacket(
                 "-gr_movement",
                 "tool.png",
@@ -1008,7 +1009,7 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT2.txt"),
             overwrite: true);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var firstRc = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var secondRc = LoginRc(bridge, "YOURACCOUNT2", 8, 43);
@@ -1029,12 +1030,12 @@ public sealed class LoginAuthBridgeTests
     public void NcUpdatesClasses()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, NcClassAddPacket("sample", "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n}")));
 
         Assert.Contains("function onCreated", File.ReadAllText(Path.Combine(serverRoot.Path, "classes", "sample.txt")));
@@ -1045,16 +1046,16 @@ public sealed class LoginAuthBridgeTests
     public void NcHandlesDatabaseNpcPackets()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginNc(bridge, "YOURACCOUNT", 7);
         var clientQueue = Gen3Queue();
 
-        var add = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcAddPacket("n0", 10000, "OBJECT", "moondeath", "onlinestartlocal.nw", "1.5", "2.5")));
-        var get = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcGet, 10000)));
-        var flagsSet = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcFlagsSetPacket(10000, "foo=bar\n")));
-        var flagsGet = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcFlagsGet, 10000)));
-        var warp = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcWarpPacket(10000, 8, 10, "onlinestartlocal.nw")));
-        var delete = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcDelete, 10000)));
+        var add      = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcAddPacket("n0", 10000, "OBJECT", "moondeath", "onlinestartlocal.nw", "1.5", "2.5")));
+        var get      = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcGet, 10000)));
+        var flagsSet = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcFlagsSetPacket(10000, "foo=bar\n")));
+        var flagsGet = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcFlagsGet, 10000)));
+        var warp     = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcWarpPacket(10000, 8, 10, "onlinestartlocal.nw")));
+        var delete   = bridge.HandleClientFrame(new(7, "127.0.0.1"), SocketPayload(clientQueue, NcNpcIdPacket(PlayerToServerPacketId.NcNpcDelete, 10000)));
 
         var getDecoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, get.OutboundBytes);
         var flagsDecoded = DecodeLastSocketPayload(EncryptionGeneration.Gen3, 0, flagsGet.OutboundBytes);
@@ -1077,7 +1078,7 @@ public sealed class LoginAuthBridgeTests
         var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacket(PlayerToServerPacketId.RcAdminMessage, "maintenance"), 42));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1089,7 +1090,7 @@ public sealed class LoginAuthBridgeTests
     public void RcLoginReceivesExistingPlayers()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginClient(bridge, "Ruan", 8, 43);
 
         var rcLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
@@ -1105,7 +1106,7 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "accounts", "moondeath.txt"),
             "GRACC001\nNAME moondeath\nNICK moondeath\nCOMMUNITYNAME moondeath\nLEVEL onlinestartlocal.nw\nX 30\nY 30.5\nIPRANGE *.*.*.*\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginClient(bridge, "moondeath", 8, 43);
 
         var rcLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
@@ -1122,7 +1123,7 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             File.ReadAllText(Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"))
                 .Replace("NICK unknown", "NICK Not Denveous", StringComparison.Ordinal));
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
 
         var rcLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var decoded = DecodeSocketPayload(rcLogin.OutboundBytes, 42);
@@ -1134,8 +1135,8 @@ public sealed class LoginAuthBridgeTests
     public void ExistingRcReceivesJoiningClientAddPlayer()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var rcLogin = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       rcLogin    = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
 
@@ -1147,26 +1148,26 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcAccountButtonsReturnDiskAccountPackets()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
-        var clientQueue = new GraalFileQueue();
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var list = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacketWithGCharStrings(PlayerToServerPacketId.RcAccountListGet, "YOUR%", "")));
         var account = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcAccountGet, "YOURACCOUNT")));
         var rights = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcPlayerRightsGet, "YOURACCOUNT")));
         var comments = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcPlayerCommentsGet, "YOURACCOUNT")));
         var ban = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcPacket(PlayerToServerPacketId.RcPlayerBanGet, "YOURACCOUNT")));
 
         Assert.DoesNotContain("pending", list.Diagnostic, StringComparison.OrdinalIgnoreCase);
@@ -1194,11 +1195,11 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             Path.Combine(serverRoot.Path, "accounts", "OTHERACCOUNT.txt"),
             overwrite: true);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginRc(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcPacketWithGCharStrings(PlayerToServerPacketId.RcPlayerPropsGetByAccount, "OTHERACCOUNT"), 42));
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
 
@@ -1208,26 +1209,26 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcSlashOpenCommandsDispatchToPanels()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
-        var clientQueue = new GraalFileQueue();
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var props = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/open YOURACCOUNT")));
         var account = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/openacc YOURACCOUNT")));
         var comments = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/opencomments YOURACCOUNT")));
         var ban = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/openban YOURACCOUNT")));
         var rights = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/openrights YOURACCOUNT")));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, props.OutboundBytes), RcPlayerPropsPrefix(7, "YOURACCOUNT")) >= 0);
@@ -1240,14 +1241,14 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcSlashOpenCommandsDefaultToSelf()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
-        var clientQueue = new GraalFileQueue();
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var rights = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcChatPacket("/openrights")));
 
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, rights.OutboundBytes);
@@ -1263,16 +1264,16 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             Path.Combine(serverRoot.Path, "accounts", "OTHERACCOUNT.txt"),
             overwrite: true);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
+        var bridge = CreateBridge(serverRoot, new());
         _ = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcSetCommentsPacket("OTHERACCOUNT", "note")));
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcSetBanPacket("OTHERACCOUNT", true, "reason")));
 
         var saved = File.ReadAllText(Path.Combine(serverRoot.Path, "accounts", "OTHERACCOUNT.txt"));
@@ -1284,14 +1285,14 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void RcPlayerPropsSetSavesNickname()
     {
-        using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginRc(bridge, "YOURACCOUNT", 7, 42);
-        var clientQueue = new GraalFileQueue();
+        using var serverRoot  = TestDefaultServerRoot();
+        var       bridge      = CreateBridge(serverRoot, new());
+        var       login       = LoginRc(bridge, "YOURACCOUNT", 7, 42);
+        var       clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, RcSetPlayerPropsPacket("YOURACCOUNT", "NewNick")));
 
         var saved = File.ReadAllText(Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"));
@@ -1311,18 +1312,18 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
-            new RuntimeServer());
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
+            new());
         _ = LoginRc(bridge, "YOURACCOUNT", 7, 42);
         var clientLogin = LoginClient(bridge, "Ruan", 8, 43);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(RcDisconnectPacket(8, "testing"), 42));
 
         var clientBroadcast = result.Broadcasts.Single(outbound => outbound.PlayerId == 8);
@@ -1347,16 +1348,16 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")));
+                new(false, "My Server", [], ["YOURACCOUNT"], "")));
 
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         var first = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.BeginClientLogin(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.BeginClientLogin(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var second = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         Assert.Empty(first.Broadcasts);
@@ -1380,21 +1381,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(PlayerPropsPacket(PlayerPropertyId.X, 70, PlayerPropertyId.Y, 71), 42));
 
         Assert.True(result.ContinueSession);
@@ -1410,11 +1411,11 @@ public sealed class LoginAuthBridgeTests
         File.WriteAllText(
             Path.Combine(serverRoot.Path, "config", "serveroptions.txt"),
             "name = GSharp\nserverport = 14899\nunstickmelevel = onlinestartlocal.nw\nunstickmex = 30\nunstickmey = 31\nunstickmetime = 0\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginClient(bridge, "YOURACCOUNT", 8, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginClient(bridge, "YOURACCOUNT", 8, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(PlayerChatPacket("unstick me"), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes), ExpectedPlayerWarp(30, 31, "onlinestartlocal.nw")) >= 0);
@@ -1424,11 +1425,11 @@ public sealed class LoginAuthBridgeTests
     public void ClientWarptoXyUpdatesPosition()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginClient(bridge, "YOURACCOUNT", 8, 42);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       login      = LoginClient(bridge, "YOURACCOUNT", 8, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(PlayerChatPacket("warpto 10 11"), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes), PlayerXYProps(10, 11)) >= 0);
@@ -1438,11 +1439,11 @@ public sealed class LoginAuthBridgeTests
     public void ClientWarptoXyLevelWarps()
     {
         using var serverRoot = TestDefaultServerRoot();
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginClient(bridge, "YOURACCOUNT", 8, 42);
+        var       bridge     = CreateBridge(serverRoot, new());
+        var       login      = LoginClient(bridge, "YOURACCOUNT", 8, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(PlayerChatPacket("warpto 12 13 onlinestartlocal.nw"), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes), ExpectedPlayerWarp(12, 13, "onlinestartlocal.nw")) >= 0);
@@ -1456,13 +1457,13 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT.txt"),
             Path.Combine(serverRoot.Path, "accounts", "YOURACCOUNT2.txt"),
             overwrite: true);
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var first = LoginClient(bridge, "YOURACCOUNT", 8, 42);
-        var second = LoginClient(bridge, "YOURACCOUNT2", 9, 43);
+        var bridge          = CreateBridge(serverRoot, new());
+        var first           = LoginClient(bridge, "YOURACCOUNT", 8, 42);
+        var second          = LoginClient(bridge, "YOURACCOUNT2", 9, 43);
         var secondBroadcast = Assert.Single(second.Broadcasts, packet => packet.PlayerId == 8);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(8, "127.0.0.1"),
+            new(8, "127.0.0.1"),
             SocketPayload(PlayerChatPacket("warpto YOURACCOUNT2"), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, first.OutboundBytes, secondBroadcast.OutboundBytes, result.OutboundBytes), ExpectedPlayerWarp(30, 30.5f, "onlinestartlocal.nw")) >= 0);
@@ -1481,21 +1482,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(ShowImgPacket([0x21, 0x22, (byte)'i', (byte)'m', (byte)'g']), 42));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1518,21 +1519,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(PrivateMessagePacket([8], "\"hi\""), 42));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1555,21 +1556,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(PrivateMessagePacket([7, 8], "\"yo\""), 42));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1584,11 +1585,11 @@ public sealed class LoginAuthBridgeTests
     {
         using var serverRoot = TestDefaultServerRoot();
         File.WriteAllText(Path.Combine(serverRoot.Path, "config", "npcserver.txt"), "enabled = true\nid = 44\nhost = 127.0.0.1\nport = 14950\n");
-        var bridge = CreateBridge(serverRoot, new RuntimeServer());
-        var login = LoginClient(bridge, "YOURACCOUNT", 7, 42);
+        var bridge = CreateBridge(serverRoot, new());
+        var login  = LoginClient(bridge, "YOURACCOUNT", 7, 42);
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(PrivateMessagePacket([44], "\"hello\""), 42));
 
         Assert.Empty(result.Broadcasts);
@@ -1610,19 +1611,19 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(WeaponAddPacket(LevelItemType.Bow), 42));
         var end = bridge.EndClientSession(7);
 
@@ -1644,21 +1645,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(NicknamePacket("Ruan"), 42));
 
         Assert.True(result.ContinueSession);
@@ -1678,26 +1679,26 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
         var clientQueue = new GraalFileQueue();
         clientQueue.SetCodec(EncryptionGeneration.Gen5, 42);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, PlayerPropsPacket(PlayerPropertyId.X, 69, PlayerPropertyId.Y, 70)));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(clientQueue, PlayerPropsPacket(PlayerPropertyId.X, 70, PlayerPropertyId.Y, 71)));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1717,21 +1718,21 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(BundlePacket(ItemAddPacket(20, 22, (byte)LevelItemType.Bombs)), 42));
 
         var broadcast = Assert.Single(result.Broadcasts);
@@ -1754,19 +1755,19 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         var login = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(BundlePacket(OpenChestPacket(20, 24)), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes), OpenedChestPacket(20, 24)) >= 0);
@@ -1790,23 +1791,23 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         var firstLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
         var secondLoginBroadcast = Assert.Single(secondLogin.Broadcasts);
 
         var payload = BoardModifyPayload((byte)tileX, (byte)tileY, 1, 1, 0);
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(BundlePacket(BoardModifyPacket(payload)), 42));
 
         Assert.True(IndexOf(DecodeLastSocketPayload(42, firstLogin.OutboundBytes, secondLoginBroadcast.OutboundBytes, result.OutboundBytes), BoardChangeRuntime.BuildBoardModifyPacket(payload)) >= 0);
@@ -1840,21 +1841,21 @@ public sealed class LoginAuthBridgeTests
         var gateway = new RecordingGateway { IsConnected = true };
         var bridge = new LoginAuthBridge(
             gateway,
-            new PreWorldAuthOptions(128, 0, false, true, ["G3D03014"], "3.0.9"),
-            new LoginWorldEntryOptions(
+            new(128, 0, false, true, ["G3D03014"], "3.0.9"),
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(optionsPath),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42, versionToken: "G3D03014"));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42, versionToken: "G3D03014"));
         var login = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
         var payload = BoardModifyPayload((byte)tileX, (byte)tileY, 1, 1, 0);
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(BundlePacket(BoardModifyPacket(payload)), 42));
 
         var decoded = DecodeLastSocketPayload(42, login.OutboundBytes, result.OutboundBytes);
@@ -1874,19 +1875,19 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
         var result = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(ServerWarpPacket("Login"), 42));
 
         Assert.True(result.ContinueSession);
@@ -1909,15 +1910,15 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         var login = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
 
         var response = bridge.HandleServerInfo(ServerListAuthPackets.ServerInfoForPlayer(7, "Login,127.0.0.1,14899")[1..]);
@@ -1939,18 +1940,18 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
         _ = bridge.HandleClientFrame(
-            new ClientSocketSessionContext(7, "127.0.0.1"),
+            new(7, "127.0.0.1"),
             SocketPayload(PlayerPropsPacket(PlayerPropertyId.X, 70, PlayerPropertyId.Y, 71), 42));
 
         var end = bridge.EndClientSession(7);
@@ -1977,17 +1978,17 @@ public sealed class LoginAuthBridgeTests
         var bridge = new LoginAuthBridge(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT"], "")),
             runtimeServer);
 
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
+        _ = bridge.HandleClientFrame(new(7, "127.0.0.1"), Client3LoginPacket("Ruan", key: 42));
         _ = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS"));
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
+        _ = bridge.HandleClientFrame(new(8, "127.0.0.1"), Client3LoginPacket("Z", key: 43));
         var secondLogin = bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:Z", 8, PlayerSessionType.Client3, "SUCCESS"));
 
         var end = bridge.EndClientSession(7);
@@ -2024,33 +2025,33 @@ public sealed class LoginAuthBridgeTests
             serverRoot.Path,
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
-        return new LoginAuthBridge(
+        return new(
             gateway,
             AuthOptions(),
-            new LoginWorldEntryOptions(
+            new(
                 new DiskAccountFileSystem(serverRoot.Path),
                 settings ?? Gs2Settings.LoadFile(Path.Combine(serverRoot.Path, "config", "serveroptions.txt")),
                 levelLoader,
                 new FileLevelLookup(levelLoader),
-                new AccountLoginOptions(false, "My Server", [], ["YOURACCOUNT", "YOURACCOUNT2"], "")),
+                new(false, "My Server", [], ["YOURACCOUNT", "YOURACCOUNT2"], "")),
             runtimeServer);
     }
 
     private static ServerListLoginResponseResult LoginRc(LoginAuthBridge bridge, string account, ushort id, byte key)
     {
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(id, "127.0.0.1"), Rc2LoginPacket(account, key));
+        _ = bridge.HandleClientFrame(new(id, "127.0.0.1"), Rc2LoginPacket(account, key));
         return bridge.HandleVerifyAccount2(VerifyAccount2Payload(account, id, PlayerSessionType.RemoteControl2, "SUCCESS"));
     }
 
     private static ServerListLoginResponseResult LoginNc(LoginAuthBridge bridge, string account, ushort id)
     {
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(id, "127.0.0.1"), NcLoginPacket(account));
+        _ = bridge.HandleClientFrame(new(id, "127.0.0.1"), NcLoginPacket(account));
         return bridge.HandleVerifyAccount2(VerifyAccount2Payload(account, id, PlayerSessionType.NpcControl, "SUCCESS"));
     }
 
     private static ServerListLoginResponseResult LoginClient(LoginAuthBridge bridge, string account, ushort id, byte key)
     {
-        _ = bridge.HandleClientFrame(new ClientSocketSessionContext(id, "127.0.0.1"), Client3LoginPacket(account, key));
+        _ = bridge.HandleClientFrame(new(id, "127.0.0.1"), Client3LoginPacket(account, key));
         return bridge.HandleVerifyAccount2(VerifyAccount2Payload("pc:" + account, id, PlayerSessionType.Client3, "SUCCESS"));
     }
 
@@ -2751,7 +2752,7 @@ public sealed class LoginAuthBridgeTests
         var source = FindRepoRoot();
         var destination = Path.Combine(Path.GetTempPath(), "preagonal-gserver-test-" + Guid.NewGuid().ToString("N"));
         CopyDirectory(Path.Combine(source, "servers", "default"), destination);
-        return new TempServerRoot(destination);
+        return new(destination);
     }
 
     private static string FindRepoRoot()
@@ -2759,7 +2760,7 @@ public sealed class LoginAuthBridgeTests
         var current = AppContext.BaseDirectory;
         while (!string.IsNullOrEmpty(current))
         {
-            if (File.Exists(Path.Combine(current, "GServerSharp.sln")))
+            if (File.Exists(Path.Combine(current, "GameServer.sln")))
                 return current;
 
             current = Directory.GetParent(current)?.FullName ?? "";

@@ -1,7 +1,7 @@
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Protocol.Tests;
+namespace Protocol.Tests;
 
 public sealed class IncomingPlayerPropsParserTests
 {
@@ -436,7 +436,7 @@ public sealed class IncomingPlayerPropsParserTests
 
         Assert.True(result.Success);
         Assert.Equal([PlayerPropertyId.HorseGif, PlayerPropertyId.X], result.Updates.Select(update => update.PropertyId));
-        Assert.Equal(new string('h', 219), result.Updates[0].StringValue);
+        Assert.Equal(new('h', 219), result.Updates[0].StringValue);
         Assert.Equal((byte)70, result.Updates[1].GCharValue);
     }
 
@@ -470,7 +470,7 @@ public sealed class IncomingPlayerPropsParserTests
 
         Assert.True(result.Success);
         Assert.Equal([PlayerPropertyId.CurrentChat, PlayerPropertyId.X], result.Updates.Select(update => update.PropertyId));
-        Assert.Equal(new string('c', 223), result.Updates[0].StringValue);
+        Assert.Equal(new('c', 223), result.Updates[0].StringValue);
         Assert.Equal((byte)70, result.Updates[1].GCharValue);
     }
 
@@ -1349,7 +1349,7 @@ public sealed class IncomingPlayerPropsParserTests
             pixelX: 0,
             pixelY: 0,
             pixelZ: 0,
-            [new IncomingPlayerPropertyUpdate(PlayerPropertyId.AttachNpc, GCharValue: 99, GIntValue: 123)],
+            [new(PlayerPropertyId.AttachNpc, GCharValue: 99, GIntValue: 123)],
             senderSupportsPreciseMovement: true,
             appendNewline: true);
 
@@ -1365,8 +1365,8 @@ public sealed class IncomingPlayerPropsParserTests
             pixelY: 0,
             pixelZ: 0,
             [
-                new IncomingPlayerPropertyUpdate(PlayerPropertyId.SwordPower, GCharValue: 2, StringValue: "sword2.png"),
-                new IncomingPlayerPropertyUpdate(PlayerPropertyId.ShieldPower, GCharValue: 1, StringValue: "shield1.png")
+                new(PlayerPropertyId.SwordPower, GCharValue: 2, StringValue: "sword2.png"),
+                new(PlayerPropertyId.ShieldPower, GCharValue: 1, StringValue: "shield1.png")
             ],
             senderSupportsPreciseMovement: true,
             appendNewline: true);
@@ -1457,7 +1457,7 @@ public sealed class IncomingPlayerPropsParserTests
             pixelX: 0,
             pixelY: 0,
             pixelZ: 0,
-            [new IncomingPlayerPropertyUpdate(PlayerPropertyId.Gani, GCharValue: 10, StringValue: "bow1.gif")],
+            [new(PlayerPropertyId.Gani, GCharValue: 10, StringValue: "bow1.gif")],
             senderSupportsPreciseMovement: true,
             appendNewline: true,
             senderClientVersion: ClientVersionId.Client1411);

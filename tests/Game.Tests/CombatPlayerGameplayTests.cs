@@ -1,6 +1,6 @@
-using Preagonal.GServer.Game;
+using Preagonal.GameServer.Game;
 
-namespace Preagonal.GServer.Game.Tests;
+namespace Game.Tests;
 
 public sealed class CombatPlayerGameplayTests
 {
@@ -101,7 +101,7 @@ public sealed class CombatPlayerGameplayTests
         var result = CombatPlayerGameplay.ApplyNonSparKillClaimAlignmentPenalty(
             killerAlignment,
             loserAlignment,
-            new AlignmentTimerSettings(30, 90, 300, 600, 1200));
+            new(30, 90, 300, 600, 1200));
 
         Assert.Equal(expectedAlignment, result.Alignment);
         Assert.Equal(expectedCounter, result.ApCounter);

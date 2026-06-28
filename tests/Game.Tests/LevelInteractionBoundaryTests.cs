@@ -1,6 +1,7 @@
-using Preagonal.GServer.Game;
+using Preagonal.GameServer.Game;
+using Preagonal.GameServer.Network.Protocol;
 
-namespace Preagonal.GServer.Game.Tests;
+namespace Game.Tests;
 
 public sealed class LevelInteractionBoundaryTests
 {
@@ -10,8 +11,8 @@ public sealed class LevelInteractionBoundaryTests
         var level = new NwLevelSnapshot(
             "GLEVNW01",
             [
-                new NwLevelLink("first.nw", 1, 2, 3, 4, "5", "6"),
-                new NwLevelLink("second.nw", 4, 6, 2, 2, "7", "8")
+                new("first.nw", 1, 2, 3, 4, "5", "6"),
+                new("second.nw", 4, 6, 2, 2, "7", "8")
             ],
             [],
             [],
@@ -42,7 +43,7 @@ public sealed class LevelInteractionBoundaryTests
             [],
             [],
             [],
-            [new NwLevelChest(10, 11, LevelItemType.RedRupee, 3)]);
+            [new(10, 11, LevelItemType.RedRupee, 3)]);
         var opened = new HashSet<string>(StringComparer.Ordinal);
 
         var result = LevelInteraction.TryOpenChest(level, "start.nw", 10, 11, opened);
@@ -63,7 +64,7 @@ public sealed class LevelInteractionBoundaryTests
             [],
             [],
             [],
-            [new NwLevelChest(10, 11, LevelItemType.RedRupee, 3)]);
+            [new(10, 11, LevelItemType.RedRupee, 3)]);
         var opened = new HashSet<string>(["10:11:start.nw"], StringComparer.Ordinal);
 
         var alreadyOpened = LevelInteraction.TryOpenChest(level, "start.nw", 10, 11, opened);
@@ -122,8 +123,8 @@ public sealed class LevelInteractionBoundaryTests
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
             [
-                Preagonal.GServer.Protocol.IncomingPlayerPropertyUpdate.GShort(Preagonal.GServer.Protocol.PlayerPropertyId.X2, 320),
-                Preagonal.GServer.Protocol.IncomingPlayerPropertyUpdate.GShort(Preagonal.GServer.Protocol.PlayerPropertyId.Y2, 352)
+                IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 320),
+                IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 352)
             ]);
 
         var packets = LevelInteraction.BuildMovementTriggeredSignPackets(level, player, serverside: true);
@@ -138,7 +139,7 @@ public sealed class LevelInteractionBoundaryTests
         var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client);
         RuntimePlayerPropsApplier.ApplyConfirmed(
             player,
-            [Preagonal.GServer.Protocol.IncomingPlayerPropertyUpdate.GChar(Preagonal.GServer.Protocol.PlayerPropertyId.Sprite, 0)]);
+            [IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Sprite, 0)]);
 
         Assert.Empty(LevelInteraction.BuildMovementTriggeredSignPackets(level, player, serverside: true));
     }

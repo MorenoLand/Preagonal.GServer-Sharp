@@ -1,7 +1,7 @@
-using Preagonal.GServer.Network;
+using Preagonal.GameServer.Network;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class LocalDebugCommandLineTests
 {

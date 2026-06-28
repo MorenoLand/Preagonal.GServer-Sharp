@@ -1,8 +1,8 @@
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class PostLoginWorldEntryBoundaryTests
 {
@@ -37,12 +37,12 @@ public sealed class PostLoginWorldEntryBoundaryTests
             LoginPropertyIds = [PlayerPropertyId.MaxPower, PlayerPropertyId.CurrentPower],
             PlayerFlags =
             [
-                new LoginFlag("client.flag", "yes"),
-                new LoginFlag("empty.flag", "")
+                new("client.flag", "yes"),
+                new("empty.flag", "")
             ],
             ServerFlags =
             [
-                new LoginFlag("server.flag", "1")
+                new("server.flag", "1")
             ]
         };
 
@@ -81,12 +81,12 @@ public sealed class PostLoginWorldEntryBoundaryTests
         _ = PostLoginWorldEntryBoundary.BeginClient(
             session,
             snapshot,
-            new PostLoginClientOptions(
+            new(
                 ResourceFileSystem: files,
                 Maps:
                 [
-                    new LoginMapFile("worldmap.txt", LoginMapType.BigMap),
-                    new LoginMapFile("ignored.gmap", LoginMapType.GMap)
+                    new("worldmap.txt", LoginMapType.BigMap),
+                    new("ignored.gmap", LoginMapType.GMap)
                 ]));
 
         Assert.Equal(
@@ -143,10 +143,10 @@ public sealed class PostLoginWorldEntryBoundaryTests
         _ = PostLoginWorldEntryBoundary.BeginClient(
             session,
             snapshot,
-            new PostLoginClientOptions(
+            new(
                 ResourceFileSystem: null,
                 Maps: [],
-                PlayerWeapons: [new LoginWeaponPacket("Tool", playerWeapon)],
+                PlayerWeapons: [new("Tool", playerWeapon)],
                 ProtectedWeaponNames: ["Tool", "bow"],
                 ProtectedWeaponPackets: new Dictionary<string, byte[]>
                 {
@@ -180,17 +180,17 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var snapshot = BaseSnapshot() with
         {
             LoginPropertyIds = [PlayerPropertyId.MaxPower, PlayerPropertyId.CurrentPower],
-            PlayerFlags = [new LoginFlag("client.flag", "yes")],
-            ServerFlags = [new LoginFlag("server.flag", "1")]
+            PlayerFlags = [new("client.flag", "yes")],
+            ServerFlags = [new("server.flag", "1")]
         };
 
         _ = PostLoginWorldEntryBoundary.BeginClient(
             session,
             snapshot,
-            new PostLoginClientOptions(
+            new(
                 ResourceFileSystem: null,
                 Maps: [],
-                PlayerWeapons: [new LoginWeaponPacket("Tool", playerWeapon)],
+                PlayerWeapons: [new("Tool", playerWeapon)],
                 ProtectedWeaponNames: ["Tool", "bow"],
                 ProtectedWeaponPackets: new Dictionary<string, byte[]>
                 {
@@ -231,9 +231,9 @@ public sealed class PostLoginWorldEntryBoundaryTests
         _ = PostLoginWorldEntryBoundary.BeginClient(
             session,
             snapshot,
-            new PostLoginClientOptions(
+            new(
                 ResourceFileSystem: files,
-                Maps: [new LoginMapFile("worldmap.txt", LoginMapType.BigMap)]));
+                Maps: [new("worldmap.txt", LoginMapType.BigMap)]));
 
         Assert.Equal(
             new byte[] { 41, 42, 35, 10 }
@@ -264,7 +264,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         var result = PostLoginWorldEntryBoundary.BeginRemoteControl(
             session,
             BaseSnapshot() with { Type = PlayerSessionType.RemoteControl2 },
-            new PostLoginRemoteControlOptions(
+            new(
                 root.Path,
                 "GSharp",
                 "Server,Manager",
@@ -300,7 +300,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         level.WriteGChar(8);
         level.WriteBytes("start.nw"u8);
 
-        return new PostLoginPlayerSnapshot(
+        return new(
             PlayerId: 7,
             Type: PlayerSessionType.Client3,
             AccountNameProperty: account.ToArray(),
@@ -374,11 +374,11 @@ public sealed class PostLoginWorldEntryBoundaryTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+            new("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
         Assert.True(PlayerSendLoginContinuation.Begin(
             session,
-            new PlayerSendLoginAccount("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
-            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+            new("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
+            new(false, "Graal Reborn", [])).Accepted);
         _ = session.TakeOutboundBytes();
         return session;
     }
@@ -397,11 +397,11 @@ public sealed class PostLoginWorldEntryBoundaryTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.RemoteControl2, "SUCCESS")));
+            new("pc:Ruan", 7, PlayerSessionType.RemoteControl2, "SUCCESS")));
         Assert.True(PlayerSendLoginContinuation.Begin(
             session,
-            new PlayerSendLoginAccount("pc:Ruan", false, "", true, true, true, ["0.0.0.0"], false),
-            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+            new("pc:Ruan", false, "", true, true, true, ["0.0.0.0"], false),
+            new(false, "Graal Reborn", [])).Accepted);
         _ = session.TakeOutboundBytes();
         return session;
     }
@@ -411,7 +411,7 @@ public sealed class PostLoginWorldEntryBoundaryTests
         private readonly Dictionary<string, ResourceFile> _files = new(StringComparer.Ordinal);
 
         public void Add(string name, byte[] data, long modTime) =>
-            _files[name] = new ResourceFile(name, data, modTime);
+            _files[name] = new(name, data, modTime);
 
         public ResourceFile? Find(string file) =>
             _files.GetValueOrDefault(file);

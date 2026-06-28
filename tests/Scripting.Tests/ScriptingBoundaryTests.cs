@@ -1,7 +1,7 @@
-using Preagonal.GServer.Scripting;
+using Preagonal.GameServer.Scripting;
 using Xunit;
 
-namespace Preagonal.GServer.Scripting.Tests;
+namespace Scripting.Tests;
 
 public sealed class ScriptingBoundaryTests
 {
@@ -256,8 +256,8 @@ public sealed class ScriptingBoundaryTests
         var run = await host.Call("-gr_movement", "onCreated");
 
         Assert.True(run.Success, run.Error);
-        Assert.Equal([new Gs2PlayerMessage("moondeath", "kek")], run.PlayerMessages);
-        Assert.Equal([new Gs2WeaponAction("moondeath", "-Core", true), new Gs2WeaponAction("moondeath", "-Old", false)], run.WeaponActions);
+        Assert.Equal([new("moondeath", "kek")], run.PlayerMessages);
+        Assert.Equal([new("moondeath", "-Core", true), new("moondeath", "-Old", false)], run.WeaponActions);
     }
 
     [Fact]

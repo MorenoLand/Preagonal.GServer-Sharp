@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Game;
+using Preagonal.GameServer.Game;
+using Preagonal.GameServer.Network;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
     public sealed class ServerHostLoopTests
     {

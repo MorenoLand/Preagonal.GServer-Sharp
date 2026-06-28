@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Preagonal.GameServer.Core\Preagonal.GameServer.Core.csproj" />
+    <ProjectReference Include="..\Preagonal.GameServer.Network.Protocol\Preagonal.GameServer.Network.Protocol.csproj" />
+  </ItemGroup>
+</Project>

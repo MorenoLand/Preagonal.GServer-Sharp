@@ -1,8 +1,8 @@
 using System.Text;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Protocol.Tests;
+namespace Protocol.Tests;
 
 public sealed class RcNcPacketTests
 {
@@ -63,7 +63,7 @@ public sealed class RcNcPacketTests
             RcNcPackets.FolderConfigGet("level *.nw\nlevel levels/*.graal\n"));
         Assert.Equal(
             new byte[] { 93, 32, 33, 41, 116, 101, 115, 116, 61, 116, 114, 117, 101, 10 },
-            RcNcPackets.ServerFlagsGet([new KeyValuePair<string, string>("test", "true")]));
+            RcNcPackets.ServerFlagsGet([new("test", "true")]));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class RcNcPacketTests
     {
         var bytes = RcNcPackets.FileBrowserDir(
             "levels/",
-            [new RcFileBrowserEntry("start.nw", "rw", Size: 100, ModifiedTime: 1)]);
+            [new("start.nw", "rw", Size: 100, ModifiedTime: 1)]);
 
         Assert.Equal(
             new byte[]

@@ -1,8 +1,8 @@
 using System.Text;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Protocol.Tests;
+namespace Protocol.Tests;
 
 public sealed class InboundPacketDecoderTests
 {
@@ -28,7 +28,7 @@ public sealed class InboundPacketDecoderTests
         ]);
 
         var packet = Assert.Single(result.Packets);
-        Assert.Equal(new string('a', 55), Encoding.ASCII.GetString(packet));
+        Assert.Equal(new('a', 55), Encoding.ASCII.GetString(packet));
     }
 
     [Fact]
@@ -119,6 +119,6 @@ public sealed class InboundPacketDecoderTests
         ]);
 
         var packet = Assert.Single(result.Packets);
-        Assert.Equal(new string('a', 8192), Encoding.ASCII.GetString(packet));
+        Assert.Equal(new('a', 8192), Encoding.ASCII.GetString(packet));
     }
 }

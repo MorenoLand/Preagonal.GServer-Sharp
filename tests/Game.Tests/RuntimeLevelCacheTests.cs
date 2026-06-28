@@ -1,6 +1,6 @@
-using Preagonal.GServer.Game;
+using Preagonal.GameServer.Game;
 
-namespace Preagonal.GServer.Game.Tests;
+namespace Game.Tests;
 
 public sealed class RuntimeLevelCacheTests
 {
@@ -15,7 +15,7 @@ public sealed class RuntimeLevelCacheTests
         var found = cache.FindOrLoad("START.NW", _ =>
         {
             loadCalls++;
-            return new RuntimeLevel("loaded.nw");
+            return new("loaded.nw");
         });
 
         Assert.Same(first, found);
@@ -84,7 +84,7 @@ public sealed class RuntimeLevelCacheTests
             levelName =>
             {
                 calls.Add($"load:{levelName}");
-            return new RuntimeLevel(levelName);
+            return new(levelName);
         },
         loadAbsolute: true,
         isLoadAbsoluteIndexed: _ => false,
@@ -105,7 +105,7 @@ public sealed class RuntimeLevelCacheTests
             levelName =>
             {
                 calls.Add($"load:{levelName}");
-                return new RuntimeLevel(levelName);
+                return new(levelName);
             },
             loadAbsolute: true,
             isLoadAbsoluteIndexed: _ => true,

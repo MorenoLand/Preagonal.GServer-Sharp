@@ -1,9 +1,9 @@
-using Preagonal.GServer.Game;
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Protocol;
+using Preagonal.GameServer.Game;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class SendLevelBoundaryTests
 {
@@ -22,7 +22,7 @@ public sealed class SendLevelBoundaryTests
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 1, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: 1, CachedLevelModTime: 0, FromAdjacent: false));
 
         Assert.True(result.Accepted);
         Assert.Equal(SendLevelStopPoint.BeforeGmapCorrection, result.StopPoint);
@@ -49,14 +49,14 @@ public sealed class SendLevelBoundaryTests
             LevelName: "start.nw",
             LevelModTime: 1,
             BoardPacket: board,
-            Layers: [new LevelLayerPayload(1, layer)],
+            Layers: [new(1, layer)],
             LinksPacket: [],
             SignsPacket: []);
 
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 0, FromAdjacent: false));
 
         Assert.True(result.Accepted);
         var bytes = session.TakeOutboundBytes();
@@ -90,7 +90,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 0, FromAdjacent: false));
 
         var bytes = session.TakeOutboundBytes();
         Assert.Equal(new byte[] { 132, 32, 96, 34, 10 }, bytes[10..15]);
@@ -132,7 +132,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 1, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: 1, CachedLevelModTime: 0, FromAdjacent: false));
 
         Assert.Equal(
             new byte[]
@@ -176,7 +176,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: loaded.ModTime, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: loaded.ModTime, CachedLevelModTime: 0, FromAdjacent: false));
 
         var modTime = new GraalBinaryWriter();
         modTime.WriteGChar((byte)ServerToPlayerPacketId.LevelModTime);
@@ -214,7 +214,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: -1, CachedLevelModTime: 0, FromAdjacent: false));
+            new(RequestedModTime: -1, CachedLevelModTime: 0, FromAdjacent: false));
 
         Assert.Equal(
             new byte[]
@@ -237,15 +237,15 @@ public sealed class SendLevelBoundaryTests
             Layers: [],
             LinksPacket: [],
             SignsPacket: [],
-            BoardChanges: [new LevelBoardChangePayload(1, [1, 2, 3])],
-            Chests: [new LevelChestPayload(false, 10, 11, 2, 3)],
-            Horses: [new LevelHorsePayload("horse"u8.ToArray())],
-            Baddies: [new LevelBaddyPayload(5, [70, 71])]);
+            BoardChanges: [new(1, [1, 2, 3])],
+            Chests: [new(false, 10, 11, 2, 3)],
+            Horses: [new("horse"u8.ToArray())],
+            Baddies: [new(5, [70, 71])]);
 
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
 
         Assert.True(result.Accepted);
         Assert.Equal(SendLevelStopPoint.BeforeGmapCorrection, result.StopPoint);
@@ -267,15 +267,15 @@ public sealed class SendLevelBoundaryTests
             SignsPacket: [],
             BoardChanges:
             [
-                new LevelBoardChangePayload(9, [1]),
-                new LevelBoardChangePayload(10, BoardChangePayload(1, 2, 3, 4, [80, 81])),
-                new LevelBoardChangePayload(11, BoardChangePayload(5, 6, 7, 8, [82]))
+                new(9, [1]),
+                new(10, BoardChangePayload(1, 2, 3, 4, [80, 81])),
+                new(11, BoardChangePayload(5, 6, 7, 8, [82]))
             ]);
 
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 10, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 10, FromAdjacent: false));
 
         Assert.Equal(
             new byte[]
@@ -299,14 +299,14 @@ public sealed class SendLevelBoundaryTests
             SignsPacket: [],
             Chests:
             [
-                new LevelChestPayload(false, 10, 11, 2, 3),
-                new LevelChestPayload(true, 12, 13, 4, 5)
+                new(false, 10, 11, 2, 3),
+                new(true, 12, 13, 4, 5)
             ]);
 
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Equal(
             new byte[]
@@ -330,13 +330,13 @@ public sealed class SendLevelBoundaryTests
             Layers: [],
             LinksPacket: [],
             SignsPacket: [],
-            Horses: [new LevelHorsePayload("horse"u8.ToArray())],
-            Baddies: [new LevelBaddyPayload(5, [70, 71])]);
+            Horses: [new("horse"u8.ToArray())],
+            Baddies: [new(5, [70, 71])]);
 
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Equal(
             new byte[]
@@ -360,7 +360,7 @@ public sealed class SendLevelBoundaryTests
             Layers: [],
             LinksPacket: [],
             SignsPacket: [],
-            RuntimeContinuation: new LevelRuntimeContinuationPayload(
+            RuntimeContinuation: new(
                 GmapName: null,
                 HasMapContext: false,
                 IsLevelLeader: false,
@@ -371,7 +371,7 @@ public sealed class SendLevelBoundaryTests
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.True(result.Accepted);
         Assert.Equal(SendLevelStopPoint.BeforeNearbyPlayerProps, result.StopPoint);
@@ -400,7 +400,7 @@ public sealed class SendLevelBoundaryTests
             Layers: [],
             LinksPacket: [],
             SignsPacket: [],
-            RuntimeContinuation: new LevelRuntimeContinuationPayload(
+            RuntimeContinuation: new(
                 GmapName: "world.gmap",
                 HasMapContext: true,
                 IsLevelLeader: true,
@@ -411,7 +411,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: true));
 
         Assert.Equal(
             new byte[]
@@ -438,7 +438,7 @@ public sealed class SendLevelBoundaryTests
             LinksPacket: [],
             SignsPacket: [],
             RuntimeContinuation: RuntimeContinuation(),
-            PlayerSync: new LevelEntryPlayerSyncPayload(
+            PlayerSync: new(
                 IsSingleplayer: false,
                 HasMapContext: false,
                 IsGroupMap: false,
@@ -449,16 +449,16 @@ public sealed class SendLevelBoundaryTests
                 SelfPropsPacket: [1],
                 NearbyPlayers:
                 [
-                    new NearbyLevelPlayerSnapshot(7, true, true, null, null, 0, 0, [99]),
-                    new NearbyLevelPlayerSnapshot(8, true, true, null, null, 0, 0, [65]),
-                    new NearbyLevelPlayerSnapshot(9, false, true, null, null, 0, 0, [66]),
-                    new NearbyLevelPlayerSnapshot(10, true, false, null, null, 0, 0, [67])
+                    new(7, true, true, null, null, 0, 0, [99]),
+                    new(8, true, true, null, null, 0, 0, [65]),
+                    new(9, false, true, null, null, 0, 0, [66]),
+                    new(10, true, false, null, null, 0, 0, [67])
                 ]));
 
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Equal(SendLevelStopPoint.BeforeRuntimeSimulation, result.StopPoint);
         Assert.Equal(SessionLifecycle.LevelEntryPlayerPropsSynchronized, session.Lifecycle);
@@ -480,7 +480,7 @@ public sealed class SendLevelBoundaryTests
             LinksPacket: [],
             SignsPacket: [],
             RuntimeContinuation: RuntimeContinuation("world.gmap"),
-            PlayerSync: new LevelEntryPlayerSyncPayload(
+            PlayerSync: new(
                 IsSingleplayer: false,
                 HasMapContext: true,
                 IsGroupMap: true,
@@ -491,16 +491,16 @@ public sealed class SendLevelBoundaryTests
                 SelfPropsPacket: [1],
                 NearbyPlayers:
                 [
-                    new NearbyLevelPlayerSnapshot(8, true, false, "world.gmap", "red", 5, 4, [65]),
-                    new NearbyLevelPlayerSnapshot(9, true, false, "world.gmap", "blue", 5, 4, [66]),
-                    new NearbyLevelPlayerSnapshot(10, true, false, "world.gmap", "red", 6, 4, [67]),
-                    new NearbyLevelPlayerSnapshot(11, true, false, "other.gmap", "red", 4, 4, [68])
+                    new(8, true, false, "world.gmap", "red", 5, 4, [65]),
+                    new(9, true, false, "world.gmap", "blue", 5, 4, [66]),
+                    new(10, true, false, "world.gmap", "red", 6, 4, [67]),
+                    new(11, true, false, "other.gmap", "red", 4, 4, [68])
                 ]));
 
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         var broadcast = Assert.Single(result.Broadcasts!);
         Assert.Equal(8, broadcast.PlayerId);
@@ -520,7 +520,7 @@ public sealed class SendLevelBoundaryTests
             LinksPacket: [],
             SignsPacket: [],
             RuntimeContinuation: RuntimeContinuation(),
-            PlayerSync: new LevelEntryPlayerSyncPayload(
+            PlayerSync: new(
                 IsSingleplayer: true,
                 HasMapContext: false,
                 IsGroupMap: false,
@@ -529,12 +529,12 @@ public sealed class SendLevelBoundaryTests
                 PlayerMapX: 0,
                 PlayerMapY: 0,
                 SelfPropsPacket: [1],
-                NearbyPlayers: [new NearbyLevelPlayerSnapshot(8, true, true, null, null, 0, 0, [65])]));
+                NearbyPlayers: [new(8, true, true, null, null, 0, 0, [65])]));
 
         var result = SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Empty(result.Broadcasts!);
         Assert.DoesNotContain((byte)65, session.TakeOutboundBytes());
@@ -555,7 +555,7 @@ public sealed class SendLevelBoundaryTests
         SendLevelBoundary.BeginModern(
             session,
             level,
-            new SendLevelRequest(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
+            new(RequestedModTime: 0, CachedLevelModTime: 1, FromAdjacent: false));
 
         Assert.Equal(
             new byte[] { 38, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10, 32, 10 },
@@ -576,22 +576,22 @@ public sealed class SendLevelBoundaryTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new ServerListVerifyAccount2Response("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+            new("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
         Assert.True(PlayerSendLoginContinuation.Begin(
             session,
-            new PlayerSendLoginAccount("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
-            new PlayerSendLoginOptions(false, "Graal Reborn", [])).Accepted);
+            new("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),
+            new(false, "Graal Reborn", [])).Accepted);
         _ = session.TakeOutboundBytes();
 
         PostLoginWorldEntryBoundary.BeginClient(session, BaseSnapshot());
         _ = session.TakeOutboundBytes();
 
         var levels = new MemoryLevelLookup();
-        levels.Add(new LevelEntrySnapshot("start.nw"));
+        levels.Add(new("start.nw"));
         var result = WarpWorldEntryBoundary.BeginSetLevel(
             session,
             levels,
-            new LevelWarpRequest("start.nw", 30, 30, 0, ClientVersionId.Client21, 123));
+            new("start.nw", 30, 30, 0, ClientVersionId.Client21, 123));
         Assert.True(result.Accepted);
         _ = session.TakeOutboundBytes();
         return session;
@@ -636,7 +636,7 @@ public sealed class SendLevelBoundaryTests
         var prop = new GraalBinaryWriter();
         prop.WriteGChar(0);
 
-        return new PostLoginPlayerSnapshot(
+        return new(
             PlayerId: 7,
             Type: PlayerSessionType.Client3,
             AccountNameProperty: prop.ToArray(),
@@ -646,7 +646,7 @@ public sealed class SendLevelBoundaryTests
             YProperty: [65],
             AlignmentProperty: [66],
             IpAddressProperty: [32, 32, 32, 32, 33],
-            LoginPropertySource: new PlayerPropertySource(
+            LoginPropertySource: new(
                 Nickname: "Ruan",
                 MaxPower: 3,
                 Hitpoints: 4,

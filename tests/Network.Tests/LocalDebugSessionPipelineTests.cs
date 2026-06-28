@@ -1,11 +1,11 @@
-using Preagonal.GServer.Game;
-using Preagonal.GServer.Network;
-using Preagonal.GServer.Protocol;
 using System.Net;
 using System.Net.Sockets;
+using Preagonal.GameServer.Game;
+using Preagonal.GameServer.Network;
+using Preagonal.GameServer.Network.Protocol;
 using Xunit;
 
-namespace Preagonal.GServer.Network.Tests;
+namespace Network.Tests;
 
 public sealed class LocalDebugSessionPipelineTests
 {
@@ -14,8 +14,8 @@ public sealed class LocalDebugSessionPipelineTests
     {
         using var temp = new TemporaryDirectory();
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: false, LevelName: "start.nw"),
-            new NwLevelFileLoader(new IndexedServerFileSystem(temp.Path)));
+            new(EnableLocalDebugAuth: false, LevelName: "start.nw"),
+            new(new IndexedServerFileSystem(temp.Path)));
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
             pipeline.ProcessLengthPrefixedInput(LengthFrame(Client3LoginPacket())));
@@ -43,8 +43,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "start.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "start.nw"),
+            new(fileSystem));
 
         var result = pipeline.ProcessLengthPrefixedInput(LengthFrame(Client3LoginPacket()));
 
@@ -68,8 +68,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "missing.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "missing.nw"),
+            new(fileSystem));
 
         var result = pipeline.ProcessLengthPrefixedInput(LengthFrame(Client3LoginPacket()));
 
@@ -92,8 +92,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "start.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "start.nw"),
+            new(fileSystem));
         using var server = new LocalDebugTcpServer(IPAddress.Loopback, port: 0, pipeline);
         server.Start();
 
@@ -125,8 +125,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "start.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "start.nw"),
+            new(fileSystem));
         using var server = new LocalDebugTcpServer(IPAddress.Loopback, port: 0, pipeline);
         server.Start();
 
@@ -157,8 +157,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "start.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "start.nw"),
+            new(fileSystem));
         var connection = pipeline.CreateConnection();
 
         var login = connection.ProcessLengthPrefixedInput(LengthFrame(Client3LoginPacket()));
@@ -189,8 +189,8 @@ public sealed class LocalDebugSessionPipelineTests
         var fileSystem = new IndexedServerFileSystem(temp.Path);
         fileSystem.AddDirectory("world", "*.nw");
         var pipeline = new LocalDebugSessionPipeline(
-            new LocalDebugOptions(EnableLocalDebugAuth: true, LevelName: "start.nw"),
-            new NwLevelFileLoader(fileSystem));
+            new(EnableLocalDebugAuth: true, LevelName: "start.nw"),
+            new(fileSystem));
         var connection = pipeline.CreateConnection();
 
         var login = connection.ProcessLengthPrefixedInput(LengthFrame(Client3LoginPacket()));
