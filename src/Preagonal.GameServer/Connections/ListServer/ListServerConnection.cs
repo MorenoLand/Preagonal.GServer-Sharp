@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Preagonal.Common.Core;
 using Preagonal.Common.Extensions;
@@ -9,6 +10,7 @@ using Preagonal.Common.Registries;
 using Preagonal.Common.Serializers;
 using Preagonal.GameServer.Network;
 using Preagonal.GameServer.Network.Protocol;
+using Preagonal.GameServer.Persistence;
 using Preagonal.GameServer.Services;
 using LS2GS = Preagonal.Common.Models.Connections.Enums.Packets.ListServerToGameServer;
 using LS2GSP = Preagonal.Common.Models.Connections.Packets.ListServerToGameServer;
@@ -16,7 +18,7 @@ using LS2GSP = Preagonal.Common.Models.Connections.Packets.ListServerToGameServe
 namespace Preagonal.GameServer.Connections.ListServer;
 
 [GeneratePacketHandlerInterface(typeof(LS2GS), nameof(IHandleListServerMessages))]
-public class ListServerConnection(ILogger<ListServerConnection> logger) :
+public class ListServerConnection(ILogger<ListServerConnection> logger, IOptions<Gs2Settings> gs2Settings) :
 	AsyncSocket,
 	IListServerConnection,
 	IHandleListServerMessages
@@ -33,6 +35,7 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) :
 		if (_serverListOptions == null)
 			return;
 
+		var test    = gs2Settings.Value;
 		var localIp = ResolveLocalIp(_serverListOptions.LocalIp, GetIp().ToString());
 
 		Codec.Reset(Encrypt.Generation.GEN1, 0);

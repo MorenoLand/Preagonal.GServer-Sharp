@@ -2,11 +2,14 @@ using System.Globalization;
 
 namespace Preagonal.GameServer.Persistence;
 
-public sealed class Gs2Settings : IAccountLoadSettings
+public sealed class Gs2Settings : Dictionary<string, SettingValue>, IAccountLoadSettings
 {
-    private readonly Dictionary<string, SettingValue> _keys = new(StringComparer.Ordinal);
+    public Gs2Settings() : base(StringComparer.Ordinal)
+    {
 
-    private Gs2Settings(bool isOpened)
+    }
+
+    private Gs2Settings(bool isOpened) : base(StringComparer.Ordinal)
     {
         IsOpened = isOpened;
     }
@@ -31,12 +34,12 @@ public sealed class Gs2Settings : IAccountLoadSettings
     }
 
     public bool Exists(string key) =>
-        _keys.ContainsKey(key.ToLowerInvariant());
+        ContainsKey(key.ToLowerInvariant());
 
     public bool GetBool(string key, bool defaultValue = true)
     {
         var value = GetValue(key);
-        return value is null ? defaultValue : value == "true" || value == "1";
+        return value is null ? defaultValue : value is "true" or "1";
     }
 
     public float GetFloat(string key, float defaultValue = 1.0f)
@@ -58,52 +61,42 @@ public sealed class Gs2Settings : IAccountLoadSettings
     }
 
     private string? GetValue(string key) =>
-        _keys.TryGetValue(key.ToLowerInvariant(), out var value) ? value.Value : null;
+        TryGetValue(key.ToLowerInvariant(), out var value) ? value.Value : null;
 
     private void LoadSettings(string settings, string separator, bool fromRc)
     {
         settings = settings.Replace("\r", string.Empty, StringComparison.Ordinal);
         var lines = settings.Split('\n').ToList();
-        if (lines.Count > 0 && TrimCString(lines[^1]).Length == 0)
+        if (lines.Count > 0 && lines[^1].Trim().Length == 0)
             lines.RemoveAt(lines.Count - 1);
 
-        foreach (var originalLine in lines)
+        foreach (var parts in from originalLine in lines where !originalLine.AsSpan().StartsWith(['#'], StringComparison.Ordinal) where originalLine.Length != 0 && originalLine.Contains(separator, StringComparison.Ordinal) select originalLine.Split(separator))
         {
-            var line = originalLine;
-            if (line.IndexOf('#', StringComparison.Ordinal) == 0)
-                continue;
-            if (line.Length == 0 || !line.Contains(separator, StringComparison.Ordinal))
-                continue;
+	        parts[0] = parts[0].ToLowerInvariant();
+	        if (parts.Length == 1)
+		        continue;
 
-            var parts = line.Split(separator);
-            parts[0] = parts[0].ToLowerInvariant();
-            if (parts.Length == 1)
-                continue;
+	        if (parts.Length > 2)
+	        {
+		        for (var i = 2; i < parts.Length; i++)
+			        parts[1] += separator + parts[i];
+	        }
 
-            if (parts.Length > 2)
-            {
-                for (var i = 2; i < parts.Length; i++)
-                    parts[1] += separator + parts[i];
-            }
+	        var name     = parts[0].Trim();
+	        var rawValue = parts[1].Trim();
+	        var incoming = SettingValue.FromRaw(rawValue);
 
-            var name = TrimCString(parts[0]);
-            var rawValue = TrimCString(parts[1]);
-            var incoming = SettingValue.FromRaw(rawValue);
+	        if (!TryGetValue(name, out var existing))
+	        {
+		        Add(name, incoming);
+		        continue;
+	        }
 
-            if (!_keys.TryGetValue(name, out var existing))
-            {
-                _keys.Add(name, incoming);
-                continue;
-            }
-
-            _keys[name] = fromRc
-                ? incoming
-                : existing with { Value = existing.Value + "," + incoming.Value };
+	        this[name] = fromRc
+		        ? incoming
+		        : existing with { Value = existing.Value + "," + incoming.Value };
         }
     }
-
-    private static string TrimCString(string value) =>
-        value.Trim();
 
     private static int Atoi(string value)
     {
@@ -151,18 +144,23 @@ public sealed class Gs2Settings : IAccountLoadSettings
 
     private static bool IsFloatPrefixChar(char value, int index) =>
         char.IsAsciiDigit(value) || value == '.' || value == 'e' || value == 'E' ||
-        ((value == '-' || value == '+') && index == 0);
+        (value is '-' or '+' && index == 0);
 
-    private sealed record SettingValue(string Value, string RawValue)
+    public void Merge(Gs2Settings loadFile)
     {
-        public static SettingValue FromRaw(string raw)
-        {
-            var commentPosition = raw.IndexOf('#', StringComparison.Ordinal);
-            if (commentPosition == -1)
-                return new(raw, string.Empty);
-
-            var value = TrimCString(raw[..commentPosition]);
-            return new(value, raw[value.Length..]);
-        }
+	    foreach (var gs2Setting in loadFile) this[gs2Setting.Key] = gs2Setting.Value;
     }
+}
+
+public sealed record SettingValue(string Value, string RawValue)
+{
+	public static SettingValue FromRaw(string raw)
+	{
+		var commentPosition = raw.IndexOf('#', StringComparison.Ordinal);
+		if (commentPosition == -1)
+			return new(raw, string.Empty);
+
+		var value = raw[..commentPosition].Trim();
+		return new(value, raw[value.Length..]);
+	}
 }

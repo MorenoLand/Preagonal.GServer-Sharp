@@ -74,7 +74,7 @@ public sealed class ScriptingBoundaryTests
     {
         var compiler = new Gs2CompilerAdapter();
 
-        var result = compiler.Compile("//#CLIENTSIDE\nfunction onCreated() {\n}", "weapon", "test");
+        var result = Gs2CompilerAdapter.Compile("//#CLIENTSIDE\nfunction onCreated() {\n}", "weapon", "test");
 
         Assert.True(result.Success, result.Error);
         Assert.NotEmpty(result.Bytecode);
@@ -86,7 +86,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
         var host          = new Gs2ServerScriptHost(scriptManager);
-        var compile = new Gs2CompilerAdapter().Compile(
+        var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  echo(1);\n}",
             "weapon",
             "-gr_movement");
@@ -108,7 +108,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerSide() {\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -129,7 +129,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerside() {\n  echo(\"hit\");\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -151,7 +151,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerSide() {\n  echo(params[0] SPC params[1]);\n}",
             "weapon",
             "-gr_movement");
@@ -173,7 +173,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerside() {\n  echo(\"test\" SPC params[0] SPC player.account);\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -197,7 +197,7 @@ public sealed class ScriptingBoundaryTests
         var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
         var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
         var host          = new Gs2ServerScriptHost(scriptManager);
-        var compile = new Gs2CompilerAdapter().Compile(
+        var compile = Gs2CompilerAdapter.Compile(
             Gs2ServerScriptHost.NormalizeServerSource(SourceCodeSlices.Parse(source, gs2Default: true, serverSideVm: true).ServerSide),
             "weapon",
             "-gr_movement");
@@ -220,7 +220,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  sendtonc(base64decode(base64encode(\"kek\")));\n}",
             "weapon",
             "-gr_movement");
@@ -241,7 +241,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  trace(screenwidth SPC screenheight SPC getimgwidth(\"head0.png\") SPC getimgheight(\"head0.png\"));\n}",
             "weapon",
             "-gr_movement");
@@ -263,7 +263,7 @@ public sealed class ScriptingBoundaryTests
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
 	    host.SetPlayer("moondeath", "*moondeath", "onlinestartlocal.nw");
-        var compile = new Gs2CompilerAdapter().Compile(
+        var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  sendpm(\"moondeath\", \"kek\");\n  addweapon(\"-Core\");\n  removeweapon(\"-Old\");\n}",
             "weapon",
             "-gr_movement");
@@ -288,7 +288,7 @@ public sealed class ScriptingBoundaryTests
 	    host.SetEnvironment(
             new Dictionary<string, string> { ["serverr.poopybutthole"] = "testing" },
             new Dictionary<string, string> { ["staff"] = "cadavre,moondeath" });
-        var compile = new Gs2CompilerAdapter().Compile(
+        var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  echo(serverr.poopybutthole SPC serveroptions.staff[1]);\n}",
             "weapon",
             "-gr_movement");
@@ -310,7 +310,7 @@ public sealed class ScriptingBoundaryTests
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
 	    host.SetEnvironment(new Dictionary<string, string>(), new Dictionary<string, string>());
-        var compile = new Gs2CompilerAdapter().Compile(
+        var compile = Gs2CompilerAdapter.Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  if (serverr.poopybutthole[0] == true) echo(\"bad\");\n  echo(\"ok\");\n}",
             "weapon",
             "-gr_movement");
@@ -331,7 +331,7 @@ public sealed class ScriptingBoundaryTests
 	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
 	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
 	    var host          = new Gs2ServerScriptHost(scriptManager);
-	    var compile = new Gs2CompilerAdapter().Compile(
+	    var compile = Gs2CompilerAdapter.Compile(
             Gs2ServerScriptHost.NormalizeServerSource("function onCreated() echo(1);"),
             "weapon",
             "-gr_movement");

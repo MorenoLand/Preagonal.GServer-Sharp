@@ -295,7 +295,7 @@ public static class LoginWorldEntry
             if (string.IsNullOrWhiteSpace(clientGs2) || LooksLikeGs1ClientScript(clientGs2))
                 return false;
 
-            var result = new Gs2CompilerAdapter().Compile(clientGs2, "weapon", weaponName);
+            var result = Gs2CompilerAdapter.Compile(clientGs2, "weapon", weaponName);
             if (!result.Success || result.Bytecode.Length == 0)
                 return false;
 

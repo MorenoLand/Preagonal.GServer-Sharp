@@ -14,7 +14,7 @@ public sealed record Gs2CompileResult(bool Success, byte[] Bytecode, string Erro
 
 public sealed class Gs2CompilerAdapter
 {
-    public Gs2CompileResult Compile(string source, string type, string name, bool withHeader = true)
+    public static Gs2CompileResult Compile(string source, string type, string name, bool withHeader = true)
     {
         var response = Interface.CompileCode(source, type, name, withHeader);
         return response.Success

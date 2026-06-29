@@ -1325,7 +1325,7 @@ public sealed class LoginAuthBridge(
                     return new(false, []);
                 }
 
-                var serverResult = compiler.Compile(Gs2ServerScriptHost.NormalizeServerSource(slices.ServerSide), type, name);
+                var serverResult = Gs2CompilerAdapter.Compile(Gs2ServerScriptHost.NormalizeServerSource(slices.ServerSide), type, name);
                 if (!serverResult.Success)
                 {
                     SendCompilerOutputToNc($"{origin} server-side", "error", serverResult.Error, touched);
@@ -1364,7 +1364,7 @@ public sealed class LoginAuthBridge(
                 return new(false, []);
             }
 
-            var clientResult = compiler.Compile(slices.ClientGs2, type, name);
+            var clientResult = Gs2CompilerAdapter.Compile(slices.ClientGs2, type, name);
             if (!clientResult.Success || clientResult.Bytecode.Length == 0)
             {
                 SendCompilerOutputToNc(origin, "error", clientResult.Success ? "compiler did not write bytecode" : clientResult.Error, touched);
@@ -1404,7 +1404,7 @@ public sealed class LoginAuthBridge(
                     continue;
                 }
 
-                var result = new Gs2CompilerAdapter().Compile(Gs2ServerScriptHost.NormalizeServerSource(slices.ServerSide), "weapon", weapon.Name);
+                var result = Gs2CompilerAdapter.Compile(Gs2ServerScriptHost.NormalizeServerSource(slices.ServerSide), "weapon", weapon.Name);
                 if (!result.Success)
                 {
                     BroadcastToRemoteControls(RcNcPackets.RcChat($"{origin} server-side error: {result.Error}"), touched);

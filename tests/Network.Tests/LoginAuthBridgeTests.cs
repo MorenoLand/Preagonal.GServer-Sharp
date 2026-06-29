@@ -800,7 +800,7 @@ public sealed class LoginAuthBridgeTests
             Path.Combine(serverRoot.Path, "weapons", "weapon-gr_movement.txt"),
             "GRAWP001\nREALNAME -gr_movement\nIMAGE wbomb1.png\nSCRIPT\n" + source + "\nSCRIPTEND\n");
         var bridge = CreateBridge(serverRoot, new());
-        var expectedCompile = new Gs2CompilerAdapter().Compile(
+        var expectedCompile = Gs2CompilerAdapter.Compile(
             SourceCodeSlices.Parse(source, gs2Default: true, serverSideVm: true).ClientGs2,
             "weapon",
             "-gr_movement");

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Logging.Console;
 using Preagonal.GameServer.Configuration;
 using Preagonal.GameServer.Connections.ListServer;
+using Preagonal.GameServer.Persistence;
 using Preagonal.GameServer.Services;
 using ScriptManager = Preagonal.Common.Scripting.ScriptManager;
 using Preagonal.Scripting.GS2Engine.GS2.Script;
@@ -23,6 +24,7 @@ public class Startup(IConfiguration configuration)
 
 		services.AddOptions();
 		services.AddOptions<GameServerSettings>().Bind(_configuration.GetSection(nameof(GameServerSettings)));
+		services.AddOptions<Gs2Settings>().Bind(_configuration.GetSection(nameof(Gs2Settings)));
 
 		var hubSettings = _configuration
 		                  .GetSection(nameof(GameServerSettings))

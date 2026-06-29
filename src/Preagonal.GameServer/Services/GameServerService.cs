@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.Options;
 using Preagonal.Common.Core;
 using Preagonal.GameServer.Configuration;
 using Preagonal.GameServer.Connections.ListServer;
@@ -10,7 +11,7 @@ using GS2LSP = Preagonal.Common.Models.Connections.Packets.GameServerToListServe
 
 namespace Preagonal.GameServer.Services;
 
-public class GameServerService(ILogger<GameServerService> logger, IScriptManager scriptManager, IListServerConnection listServerConnection, ICommandLineArguments args) : IGameServerService
+public class GameServerService(ILogger<GameServerService> logger, IOptions<Gs2Settings> gs2Settings, IScriptManager scriptManager, IListServerConnection listServerConnection, ICommandLineArguments args) : IGameServerService
 {
 	private CancellationTokenSource?    _cts;
 	private Task?                       _maintenanceLoop;
@@ -30,7 +31,7 @@ public class GameServerService(ILogger<GameServerService> logger, IScriptManager
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
-		_cts           = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+		_cts              = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		//await StartListServerSocket().ConfigureAwait(false);
 		//await StartPlayerSocket().ConfigureAwait(false);
 
@@ -52,6 +53,8 @@ public class GameServerService(ILogger<GameServerService> logger, IScriptManager
 			}
 
 			var snapshot = ServerStartupLoader.Load(Path.GetDirectoryName(AppContext.BaseDirectory) ?? Environment.CurrentDirectory, productionArgs);
+			gs2Settings.Value.Merge(snapshot.ServerOptions);
+
 			if (snapshot.Resolution.Success)
 			{
 				logger.LogInformation(
