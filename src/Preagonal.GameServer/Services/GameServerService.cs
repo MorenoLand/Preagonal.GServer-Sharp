@@ -1,17 +1,16 @@
 using System.Net;
-using System.Text;
 using Preagonal.Common.Core;
 using Preagonal.GameServer.Configuration;
 using Preagonal.GameServer.Connections.ListServer;
 using Preagonal.GameServer.Game;
 using Preagonal.GameServer.Network;
-using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Persistence;
+using Preagonal.Scripting.GS2Engine.GS2.Script;
 using GS2LSP = Preagonal.Common.Models.Connections.Packets.GameServerToListServer;
 
 namespace Preagonal.GameServer.Services;
 
-public class GameServerService(ILogger<GameServerService> logger, IListServerConnection listServerConnection, ICommandLineArguments args) : IGameServerService
+public class GameServerService(ILogger<GameServerService> logger, IScriptManager scriptManager, IListServerConnection listServerConnection, ICommandLineArguments args) : IGameServerService
 {
 	private CancellationTokenSource?    _cts;
 	private Task?                       _maintenanceLoop;
@@ -106,6 +105,7 @@ public class GameServerService(ILogger<GameServerService> logger, IListServerCon
 			var staffAccounts       = SplitCsv(snapshot.ServerOptions.GetString("staff"));
 			var authBridge = new LoginAuthBridge(
 				this,
+				scriptManager,
 				new(
 					snapshot.ServerOptions.GetInt("maxplayers", 128),
 					0,

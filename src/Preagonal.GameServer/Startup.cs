@@ -3,10 +3,11 @@ using System.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Logging.Console;
-using Preagonal.Common.Scripting;
 using Preagonal.GameServer.Configuration;
 using Preagonal.GameServer.Connections.ListServer;
 using Preagonal.GameServer.Services;
+using ScriptManager = Preagonal.Common.Scripting.ScriptManager;
+using Preagonal.Scripting.GS2Engine.GS2.Script;
 
 namespace Preagonal.GameServer;
 
@@ -151,7 +152,7 @@ public class Startup(IConfiguration configuration)
 
 		*/
 
-		services.AddSingleton<IScriptManager, ScriptManager>(ScriptManager.CreateInstance);
+		services.AddSingleton<IScriptManager, ScriptManager>();
 		services.AddSingleton<IServiceProvider, ServiceProvider>();
 
 		services.AddSingleton<IListServerConnection, ListServerConnection>();

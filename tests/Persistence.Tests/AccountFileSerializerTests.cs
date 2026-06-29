@@ -57,7 +57,7 @@ public sealed class AccountFileSerializerTests
         Assert.True(result.CppReturnValue);
         Assert.True(result.WriteAttempted);
         Assert.False(result.WriteSucceeded);
-        Assert.Equal(@"C:\GServer\accounts\pc:Ruan.txt", result.Path);
+        Assert.Equal($@"C:{System.IO.Path.PathSeparator}GServer\accounts\pc:Ruan.txt", result.Path);
     }
 
     [Fact]

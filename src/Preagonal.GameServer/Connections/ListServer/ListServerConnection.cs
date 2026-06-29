@@ -4,6 +4,7 @@ using Preagonal.Common.Core;
 using Preagonal.Common.Extensions;
 using Preagonal.Common.Models.Connections.Packets.GameServerToListServer;
 using Preagonal.Common.Models.Servers.Enums;
+using Preagonal.Common.PacketHandling;
 using Preagonal.Common.Registries;
 using Preagonal.Common.Serializers;
 using Preagonal.GameServer.Network;
@@ -14,7 +15,11 @@ using LS2GSP = Preagonal.Common.Models.Connections.Packets.ListServerToGameServe
 
 namespace Preagonal.GameServer.Connections.ListServer;
 
-public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncSocket, IListServerConnection
+[GeneratePacketHandlerInterface(typeof(LS2GS), nameof(IHandleListServerMessages))]
+public class ListServerConnection(ILogger<ListServerConnection> logger) :
+	AsyncSocket,
+	IListServerConnection,
+	IHandleListServerMessages
 {
 	private ServerListConnectOptions? _serverListOptions;
 	private bool                      _newServerProtocol = false;
@@ -50,7 +55,7 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncS
 		SendPacket(new SetServerLevelPacket(_serverListOptions.OnlyStaff?ServerLevel.Hidden:(ServerLevel)_serverListOptions.HqLevel), sendNow: true);
 		SendPacket(AllowedVersionsText(_serverListOptions.AllowedVersions), sendNow: true);
 		SendPacket(new ResetPlayersPacket(), sendNow: true);
-
+		SendCompress();
 		StartLoops();
 
 		await Task.CompletedTask.ConfigureAwait(false);
@@ -72,7 +77,18 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncS
 		return localIp is "127.0.1.1" or "127.0.0.1" ? string.Empty : localIp;
 	}
 
-	public async Task VerifyAccountV2PacketHandler(LS2GSP.VerifyAccountV2Packet packet)
+	public Task Handle(LS2GSP.AssignPCIdPacket packet)
+	{
+		logger.LogInformation(
+			"Received listserver PC id assignment: id={Id}; type={Type}; pcId={PCId}",
+			packet.Id,
+			packet.Type,
+			packet.PCId
+		);
+		return Task.CompletedTask;
+	}
+
+	public async Task Handle(LS2GSP.VerifyAccountV2Packet packet)
 	{
 		if (_authBridge == null) return;
 
@@ -105,32 +121,32 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncS
 			}
 	}
 
-	public Task SendTextPacketHandler(LS2GSP.SendTextPacket packet)
+	public Task Handle(LS2GSP.SendTextPacket packet)
 	{
 		logger.LogInformation("Received sendtext from listserver: {Text}", packet.Data.Tokenize());
 		return Task.CompletedTask;
 	}
 
-	public Task RequestTextPacketHandler(LS2GSP.RequestTextPacket packet)
+	public Task Handle(LS2GSP.RequestTextPacket packet)
 	{
 		logger.LogInformation("Received requesttext from listserver: {Text}", packet.Data.Tokenize());
 		return Task.CompletedTask;
 	}
 
-	public Task PingPacketHandler(LS2GSP.PingPacket packet)
+	public Task Handle(LS2GSP.PingPacket packet)
 	{
 		logger.LogInformation("Received ping from listserver");
 		SendPacket(ServerListAuthPackets.Ping());
 		return Task.CompletedTask;
 	}
 
-	public Task PingPacketHandler(LS2GSP.ErrorMessagePacket packet)
+	public Task Handle(LS2GSP.ErrorMessagePacket packet)
 	{
 		logger.LogError("Received error from listserver: {Text}", packet.Message);
 		return Task.CompletedTask;
 	}
 
-	public async Task ServerInfoPacketHandler(LS2GSP.ServerInfoPacket packet)
+	public async Task Handle(LS2GSP.ServerInfoPacket packet)
 	{
 		logger.LogInformation("Listserver server info: {SerializeObject}", JsonConvert.SerializeObject(packet.ServerData.Identifier.Detokenize()));
 		var warp = _authBridge?.HandleServerInfo(packet);
@@ -141,6 +157,26 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncS
 		}
 		else if (!string.IsNullOrEmpty(warp?.Diagnostic))
 			Console.WriteLine($"Listserver server info ignored: {warp.Diagnostic}");
+	}
+
+	public Task Handle(LS2GSP.ProfilePacket packet)
+	{
+		logger.LogWarning("Received unimplemented listserver profile packet for account {Account}", packet.Account);
+		return Task.CompletedTask;
+	}
+
+#pragma warning disable CS0618
+	public Task Handle(LS2GSP.VerifyAccountV1Packet packet)
+	{
+		logger.LogWarning("Received deprecated listserver VerifyAccountV1 packet for account {Account}", packet.Account);
+		return Task.CompletedTask;
+	}
+#pragma warning restore CS0618
+
+	public Task Handle(LS2GSP.VerifyGuildPacket packet)
+	{
+		logger.LogWarning("Received unimplemented listserver VerifyGuild packet for player {Id}", packet.Id);
+		return Task.CompletedTask;
 	}
 
 	#region Packet handling
@@ -251,20 +287,29 @@ public class ListServerConnection(ILogger<ListServerConnection> logger) : AsyncS
 				return;
 			}
 
-			if (PacketHandlers.TryGetValue(packetId, out var packetClass) && GetType().GetMethod($"{packetClass.Name}Handler"??"") is {} method)
-			{
-				method.Invoke(this, [curPacket.Deserialize(packetClass)]);
-			}
+			if (PacketHandlers.TryGetValue(packetId, out var packetClass))
+				await DispatchPacket(packetId, packetClass, curPacket).ConfigureAwait(false);
 			else
-			{
-				logger.LogWarning("Received unimplemented packet: {PacketId}", packetId);
-			}
+				logger.LogWarning("Received unregistered packet: {PacketId}", packetId);
 
 			_lastData = DateTime.UtcNow;
 			prevPacket = packetId;
 		}
 	}
 
-	#endregion
+	private async Task DispatchPacket(LS2GS packetId, Type packetClass, GByteBuffer packet)
+	{
+		var handlerInterface = typeof(IHandleMessage<>).MakeGenericType(packetClass);
+		if (!handlerInterface.IsInstanceOfType(this))
+		{
+			logger.LogWarning("Received unimplemented packet: {PacketId}", packetId);
+			return;
+		}
 
+		var handler = handlerInterface.GetMethod(nameof(IHandleMessage<>.Handle));
+		if (handler?.Invoke(this, [packet.Deserialize(packetClass)]) is Task task)
+			await task.ConfigureAwait(false);
+	}
+
+	#endregion
 }

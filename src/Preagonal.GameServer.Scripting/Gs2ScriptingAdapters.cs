@@ -23,7 +23,7 @@ public sealed class Gs2CompilerAdapter
     }
 }
 
-public sealed class Gs2ScriptRuntime
+public sealed class Gs2ScriptRuntime(IScriptManager scriptManager)
 {
     private readonly Dictionary<string, Script> _scripts = new(StringComparer.OrdinalIgnoreCase);
 
@@ -32,7 +32,7 @@ public sealed class Gs2ScriptRuntime
         if (bytecode.Length == 0)
             return false;
 
-        _scripts[name] = new(name, bytecode);
+        _scripts[name] = new(scriptManager, name, bytecode);
         return true;
     }
 
@@ -119,19 +119,22 @@ public sealed record Gs2ScriptRunResult(bool Success, IReadOnlyList<string> Outp
 
 public sealed class Gs2ServerScriptHost
 {
-    private readonly Gs2ScriptRuntime _runtime = new();
-    private readonly List<string> _output = [];
-    private readonly List<string> _clientTriggers = [];
-    private IReadOnlyDictionary<string, string> _serverFlags = new Dictionary<string, string>();
-    private IReadOnlyDictionary<string, string> _serverOptions = new Dictionary<string, string>();
-    private Gs2PlayerContext _player = new();
-    private static readonly AsyncLocal<Gs2PlayerContext?> CurrentPlayer = new();
-    private static readonly ConditionalWeakTable<Script, Gs2ServerScriptHost> Owners = new();
-    private static readonly object GlobalsLock = new();
-    private static bool _globalsRegistered;
+	private readonly Gs2ScriptRuntime _runtime;
+    private readonly        List<string>                                      _output         = [];
+    private readonly        List<string>                                      _clientTriggers = [];
+    private                 IReadOnlyDictionary<string, string>               _serverFlags    = new Dictionary<string, string>();
+    private                 IReadOnlyDictionary<string, string>               _serverOptions  = new Dictionary<string, string>();
+    private                 Gs2PlayerContext                                  _player         = new();
+    private readonly        IScriptManager                                    _scriptManager;
+    private static readonly AsyncLocal<Gs2PlayerContext?>                     CurrentPlayer = new();
+    private static readonly ConditionalWeakTable<Script, Gs2ServerScriptHost> Owners        = new();
+    private static readonly object                                            GlobalsLock   = new();
+    private static          bool                                              _globalsRegistered;
 
-    public Gs2ServerScriptHost()
+    public Gs2ServerScriptHost(IScriptManager scriptManager)
     {
+	    _scriptManager = scriptManager;
+	    _runtime       = new(_scriptManager);
         RegisterGlobals();
     }
 
@@ -206,8 +209,8 @@ public sealed class Gs2ServerScriptHost
         {
             var previousPlayer = CurrentPlayer.Value;
             CurrentPlayer.Value = _player;
-            Script.GlobalVariables.AddOrUpdate("name", scriptName.ToStackEntry());
-            Script.GlobalVariables.AddOrUpdate("params", args.Cast<object?>().ToList().ToStackEntry());
+            _scriptManager.GlobalVariables.AddOrUpdate("name", scriptName.ToStackEntry());
+            _scriptManager.GlobalVariables.AddOrUpdate("params", args.Cast<object?>().ToList().ToStackEntry());
             RegisterGlobalObject("server", BuildFlagObject(_serverFlags, "server."));
             RegisterGlobalObject("serverr", BuildFlagObject(_serverFlags, "serverr."));
             RegisterGlobalObject("serveroptions", BuildObject(_serverOptions));
@@ -228,7 +231,7 @@ public sealed class Gs2ServerScriptHost
         }
     }
 
-    private static void RegisterGlobals()
+    private void RegisterGlobals()
     {
         if (_globalsRegistered)
             return;
@@ -238,7 +241,7 @@ public sealed class Gs2ServerScriptHost
             if (_globalsRegistered)
                 return;
 
-            Preagonal.Scripting.GS2Engine.Models.ScriptProperties<Script>.AddFunctions(
+            ScriptProperties<Script>.AddFunctions(
                 null,
                 new()
                 {
@@ -260,7 +263,7 @@ public sealed class Gs2ServerScriptHost
                     { "removeWeapon", "", RemoveWeapon },
                     { "triggerclient", "", TriggerClient },
                 });
-            Preagonal.Scripting.GS2Engine.Models.ScriptProperties<Script>.AddProperties(
+            ScriptProperties<Script>.AddProperties(
                 null,
                 new()
                 {
@@ -273,7 +276,7 @@ public sealed class Gs2ServerScriptHost
                     { "nil", "", _ => "" },
                 });
 
-            foreach (var property in Script.GlobalProperties.Where(entry => !entry.Value.Compiled))
+            foreach (var property in ScriptManager.GlobalProperties.Where(entry => !entry.Value.Compiled))
                 property.Value.Compile();
 
             _globalsRegistered = true;
@@ -370,10 +373,10 @@ public sealed class Gs2ServerScriptHost
         };
     }
 
-    private static void RegisterGlobalObject(string name, ScriptVariable obj)
+    private void RegisterGlobalObject(string name, ScriptVariable obj)
     {
-        Script.GlobalVariables.AddOrUpdate(name, obj.ToStackEntry());
-        Script.GlobalObjects[name] = obj;
+	    _scriptManager.GlobalVariables.AddOrUpdate(name, obj.ToStackEntry());
+	    _scriptManager.GlobalObjects[name] = obj;
     }
 
     private static ScriptVariable BuildFlagObject(IReadOnlyDictionary<string, string> flags, string prefix)

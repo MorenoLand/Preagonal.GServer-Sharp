@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Testing;
 using Preagonal.GameServer.Scripting;
 using Xunit;
 
@@ -82,7 +83,9 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptRunsCreatedAndCapturesEcho()
     {
-        var host = new Gs2ServerScriptHost();
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+        var host          = new Gs2ServerScriptHost(scriptManager);
         var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  echo(1);\n}",
             "weapon",
@@ -102,8 +105,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptCapturesTriggerClient()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerSide() {\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -121,8 +126,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptEventsAreCaseInsensitive()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerside() {\n  echo(\"hit\");\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -141,8 +148,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptUsesParamsArray()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerSide() {\n  echo(params[0] SPC params[1]);\n}",
             "weapon",
             "-gr_movement");
@@ -161,8 +170,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptActionCanReadPlayer()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onActionServerside() {\n  echo(\"test\" SPC params[0] SPC player.account);\n  triggerclient(\"gui\", name, \"kek\");\n}",
             "weapon",
             "-gr_movement");
@@ -183,7 +194,9 @@ public sealed class ScriptingBoundaryTests
     public async Task MixedWeaponTriggerServerEchoesAndTriggersClient()
     {
         const string source = "function onCreated() {\n echo(\"kek\");\n}\nfunction onActionServerside() {\n   echo(\"test\" SPC params[0] SPC player.account);\n   triggerclient(\"gui\", name, \"kek\");\n}\n//#CLIENTSIDE\n//#GS2\nfunction onActionClientside() {\n  player.chat = \"clientside triggered form server:\" SPC params;\n}\nfunction onCreated() {\n  triggerServer(\"gui\", name, \"from clientside\", 1);\n}";
-        var host = new Gs2ServerScriptHost();
+        var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+        var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+        var host          = new Gs2ServerScriptHost(scriptManager);
         var compile = new Gs2CompilerAdapter().Compile(
             Gs2ServerScriptHost.NormalizeServerSource(SourceCodeSlices.Parse(source, gs2Default: true, serverSideVm: true).ServerSide),
             "weapon",
@@ -204,8 +217,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptUsesNcAndBase64Globals()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  sendtonc(base64decode(base64encode(\"kek\")));\n}",
             "weapon",
             "-gr_movement");
@@ -223,8 +238,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptUsesCommonGoVmGlobals()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  trace(screenwidth SPC screenheight SPC getimgwidth(\"head0.png\") SPC getimgheight(\"head0.png\"));\n}",
             "weapon",
             "-gr_movement");
@@ -242,8 +259,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptUsesPlayerActionGlobals()
     {
-        var host = new Gs2ServerScriptHost();
-        host.SetPlayer("moondeath", "*moondeath", "onlinestartlocal.nw");
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    host.SetPlayer("moondeath", "*moondeath", "onlinestartlocal.nw");
         var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  sendpm(\"moondeath\", \"kek\");\n  addweapon(\"-Core\");\n  removeweapon(\"-Old\");\n}",
             "weapon",
@@ -263,8 +282,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptReadsFlagsAndOptionArrays()
     {
-        var host = new Gs2ServerScriptHost();
-        host.SetEnvironment(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    host.SetEnvironment(
             new Dictionary<string, string> { ["serverr.poopybutthole"] = "testing" },
             new Dictionary<string, string> { ["staff"] = "cadavre,moondeath" });
         var compile = new Gs2CompilerAdapter().Compile(
@@ -285,8 +306,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task MissingFlagIndexSafe()
     {
-        var host = new Gs2ServerScriptHost();
-        host.SetEnvironment(new Dictionary<string, string>(), new Dictionary<string, string>());
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    host.SetEnvironment(new Dictionary<string, string>(), new Dictionary<string, string>());
         var compile = new Gs2CompilerAdapter().Compile(
             "//#CLIENTSIDE\n//#GS2\nfunction onCreated() {\n  if (serverr.poopybutthole[0] == true) echo(\"bad\");\n  echo(\"ok\");\n}",
             "weapon",
@@ -305,8 +328,10 @@ public sealed class ScriptingBoundaryTests
     [Fact]
     public async Task ServerScriptRunsSingleLineFunction()
     {
-        var host = new Gs2ServerScriptHost();
-        var compile = new Gs2CompilerAdapter().Compile(
+	    var fakeLogger    = new FakeLogger<Preagonal.Common.Scripting.ScriptManager>();
+	    var scriptManager = new Preagonal.Common.Scripting.ScriptManager(fakeLogger);
+	    var host          = new Gs2ServerScriptHost(scriptManager);
+	    var compile = new Gs2CompilerAdapter().Compile(
             Gs2ServerScriptHost.NormalizeServerSource("function onCreated() echo(1);"),
             "weapon",
             "-gr_movement");

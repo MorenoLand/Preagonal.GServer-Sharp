@@ -1,15 +1,14 @@
 using Preagonal.Common.Extensions;
 using Preagonal.Common.Models.Connections.Packets.GameServerToClient;
-using Preagonal.Common.Models.Connections.Packets.GameServerToListServer;
 using Preagonal.Common.Models.Connections.Packets.ListServerToGameServer;
 using Preagonal.Common.Serializers;
 using Preagonal.GameServer.Admin;
-using Preagonal.GameServer.Connections.ListServer;
 using Preagonal.GameServer.Game;
 using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Persistence;
 using Preagonal.GameServer.Scripting;
 using Preagonal.GameServer.Services;
+using Preagonal.Scripting.GS2Engine.GS2.Script;
 using VerifyAccountV2Packet = Preagonal.Common.Models.Connections.Packets.ListServerToGameServer.VerifyAccountV2Packet;
 
 namespace Preagonal.GameServer.Network;
@@ -43,6 +42,7 @@ public sealed record ListServerInfoResult(ushort PlayerId, byte[] OutboundBytes,
 
 public sealed class LoginAuthBridge(
     IGameServerService gameServerService,
+    IScriptManager scriptManager,
     PreWorldAuthOptions options,
     LoginWorldEntryOptions? worldEntryOptions = null,
     RuntimeServer? runtimeServer = null)
@@ -61,7 +61,7 @@ public sealed class LoginAuthBridge(
     private readonly Dictionary<ushort, ClientPacketStreamFramer> _activeFramers = [];
     private readonly Dictionary<ushort, List<IncomingPlayerPropertyUpdate>> _pendingPlayerProps = [];
     private readonly Dictionary<ushort, GraalFileQueue> _outboundQueues = [];
-    private readonly Gs2ServerScriptHost _serverScripts = new();
+    private readonly Gs2ServerScriptHost _serverScripts = new(scriptManager);
     private readonly Dictionary<uint, DatabaseNpc> _databaseNpcs = [];
     private Gs2Settings? _serverOptionsOverride;
     private Dictionary<string, string>? _serverFlags;

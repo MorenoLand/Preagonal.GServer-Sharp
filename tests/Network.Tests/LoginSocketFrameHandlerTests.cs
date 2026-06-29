@@ -2,6 +2,7 @@ using NSubstitute;
 using Preagonal.GameServer.Network;
 using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Services;
+using Preagonal.Scripting.GS2Engine.GS2.Script;
 using Xunit;
 
 namespace Network.Tests;
@@ -11,9 +12,10 @@ public sealed class LoginSocketFrameHandlerTests
     [Fact]
     public async Task HandleFrameAsyncSendsLoginVerificationAndKeepsClientConnectedWaitingForListServer()
     {
-	    var gateway = Substitute.For<IGameServerService>();
+	    var gateway       = Substitute.For<IGameServerService>();
+	    var scriptManager = Substitute.For<IScriptManager>();
 
-        var bridge = new LoginAuthBridge(gateway, AuthOptions());
+        var bridge = new LoginAuthBridge(gateway, scriptManager, AuthOptions());
         var handler = new LoginSocketFrameHandler(bridge);
 
         var result = await handler.HandleFrameAsync(
@@ -29,8 +31,10 @@ public sealed class LoginSocketFrameHandlerTests
     [Fact]
     public async Task HandleFrameAsyncWritesImmediateRejectBytesAndStopsWhenServerListIsOffline()
     {
-	    var gateway = Substitute.For<IGameServerService>();
-        var bridge  = new LoginAuthBridge(gateway, AuthOptions());
+	    var gateway       = Substitute.For<IGameServerService>();
+	    var scriptManager = Substitute.For<IScriptManager>();
+
+	    var bridge  = new LoginAuthBridge(gateway, scriptManager, AuthOptions());
         var handler = new LoginSocketFrameHandler(bridge);
 
         var result = await handler.HandleFrameAsync(

@@ -1,5 +1,3 @@
-using Preagonal.GameServer.Network.Protocol;
-
 namespace Preagonal.GameServer.Network;
 
 public sealed record ServerListConnectOptions(

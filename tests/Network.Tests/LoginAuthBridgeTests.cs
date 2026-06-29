@@ -6,6 +6,7 @@ using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Persistence;
 using Preagonal.GameServer.Scripting;
 using Preagonal.GameServer.Services;
+using Preagonal.Scripting.GS2Engine.GS2.Script;
 using Xunit;
 
 namespace Network.Tests;
@@ -15,8 +16,10 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void BeginClientLoginSendsVerifyAccountAndWaitsForServerListResponse()
     {
-        var gateway = Substitute.For<IGameServerService>();
-        var bridge = new LoginAuthBridge(gateway, AuthOptions());
+        var gateway       = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
+
+        var bridge = new LoginAuthBridge(gateway, scriptManager, AuthOptions());
 
         var result = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
@@ -31,8 +34,10 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void ExtraFrameWhileAuthPendingDoesNotStartSecondLogin()
     {
-	    var gateway = Substitute.For<IGameServerService>();
-        var bridge  = new LoginAuthBridge(gateway, AuthOptions());
+	    var gateway       = Substitute.For<IGameServerService>();
+	    var scriptManager = Substitute.For<IScriptManager>();
+
+	    var bridge = new LoginAuthBridge(gateway, scriptManager, AuthOptions());
         _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.BeginClientLogin(
@@ -48,8 +53,10 @@ public sealed class LoginAuthBridgeTests
     [Fact]
     public void HandleVerifyAccount2ResponseReturnsDisconnectBytesForRejectedLogin()
     {
-	    var gateway = Substitute.For<IGameServerService>();
-        var bridge  = new LoginAuthBridge(gateway, AuthOptions());
+	    var gateway       = Substitute.For<IGameServerService>();
+	    var scriptManager = Substitute.For<IScriptManager>();
+
+	    var bridge = new LoginAuthBridge(gateway, scriptManager, AuthOptions());
         _ = bridge.BeginClientLogin(new(7, "127.0.0.1"), Client3LoginPacket());
 
         var result = bridge.HandleVerifyAccount2(new VerifyAccountV2Packet("pc:Ruan", 7, (byte)PlayerSessionType.Client3, "Bad password."));
@@ -70,8 +77,10 @@ public sealed class LoginAuthBridgeTests
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var gateway     = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -100,8 +109,10 @@ public sealed class LoginAuthBridgeTests
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var gateway     = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -131,8 +142,10 @@ public sealed class LoginAuthBridgeTests
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var gateway     = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1312,8 +1325,10 @@ public sealed class LoginAuthBridgeTests
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1348,8 +1363,10 @@ public sealed class LoginAuthBridgeTests
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1381,8 +1398,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1482,8 +1501,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1519,8 +1540,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1556,8 +1579,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1611,8 +1636,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1645,8 +1672,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1679,8 +1708,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1718,8 +1749,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1755,8 +1788,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1791,8 +1826,10 @@ public sealed class LoginAuthBridgeTests
         var (tileX, tileY) = FindRespawningTile(loaded.Level);
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1842,8 +1879,10 @@ public sealed class LoginAuthBridgeTests
         var (tileX, tileY) = FindDropTile(loaded.Level);
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             new(128, 0, false, true, ["G3D03014"], "3.0.9"),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1875,8 +1914,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1912,8 +1953,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1942,8 +1985,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -1980,8 +2025,10 @@ public sealed class LoginAuthBridgeTests
         var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
         var runtimeServer = new RuntimeServer();
         var gateway = Substitute.For<IGameServerService>();
+        var scriptManager = Substitute.For<IScriptManager>();
         var bridge = new LoginAuthBridge(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
@@ -2029,9 +2076,11 @@ public sealed class LoginAuthBridgeTests
         var resources = ServerResourceFileSystems.LoadFolderConfig(
             serverRoot.Path,
             File.ReadAllText(Path.Combine(serverRoot.Path, "config", "foldersconfig.txt")));
-        var levelLoader = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
+        var levelLoader   = new NwLevelFileLoader(resources.Get(ServerFileSystemKind.All));
+        var scriptManager = Substitute.For<IScriptManager>();
         return new(
             gateway,
+            scriptManager,
             AuthOptions(),
             new(
                 new DiskAccountFileSystem(serverRoot.Path),
