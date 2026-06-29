@@ -20,7 +20,7 @@ public enum ServerTimingAction
     LoadIpBans,
     SaveWeapons,
     SaveNpcs,
-    CleanupEmptyInstancedGroupLevels
+    CleanupEmptyInstancedGroupLevels,
 }
 
 public sealed class ServerTimingScheduler(TimeSpan start, bool gs2NpcServerEnabled = false)
@@ -37,7 +37,7 @@ public sealed class ServerTimingScheduler(TimeSpan start, bool gs2NpcServerEnabl
     {
         var actions = new List<ServerTimingAction>
         {
-            ServerTimingAction.SocketManagerUpdate5ms
+            ServerTimingAction.SocketManagerUpdate5ms,
         };
 
         if (Gs2NpcServerEnabled)
@@ -104,7 +104,7 @@ public enum PlayerTimedEventAction
     RunSingleplayerLevelTimedEvents,
     SaveAccount,
     ResetInvalidPackets,
-    SendFileQueueCompress
+    SendFileQueueCompress,
 }
 
 public sealed record PlayerTimedEventState(
@@ -130,14 +130,14 @@ public sealed record PlayerTimedEventState(
     public IReadOnlyList<PlayerTimedEventAction> Tick(TimeSpan currentTime)
     {
         if (!SocketConnected)
-            return new[] { PlayerTimedEventAction.DeleteDisconnectedSocket };
+            return [PlayerTimedEventAction.DeleteDisconnectedSocket];
 
         if (!IsClient)
-            return Array.Empty<PlayerTimedEventAction>();
+            return [];
 
         var actions = new List<PlayerTimedEventAction>
         {
-            PlayerTimedEventAction.IncrementOnlineTime
+            PlayerTimedEventAction.IncrementOnlineTime,
         };
         OnlineTime++;
 

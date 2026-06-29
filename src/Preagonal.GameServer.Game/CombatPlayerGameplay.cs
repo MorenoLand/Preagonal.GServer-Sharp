@@ -9,7 +9,7 @@ public enum PlayerStatus : byte
     Dead = 0x08,
     AllowWeapons = 0x10,
     HideSword = 0x20,
-    HasSpin = 0x40
+    HasSpin = 0x40,
 }
 
 public sealed class CombatPlayerState

@@ -30,7 +30,7 @@ public sealed class GraalEncryption
             CompressionType.Uncompressed => 0x0C,
             CompressionType.Zlib => 0x04,
             CompressionType.Bz2 => 0x04,
-            _ => _limit
+            _ => _limit,
         };
         return type is CompressionType.Uncompressed or CompressionType.Zlib or CompressionType.Bz2;
     }
@@ -44,7 +44,7 @@ public sealed class GraalEncryption
             EncryptionGeneration.Gen1 or EncryptionGeneration.Gen2 or EncryptionGeneration.Gen6 => payload.ToArray(),
             EncryptionGeneration.Gen3 => EncryptGen3(payload),
             EncryptionGeneration.Gen4 or EncryptionGeneration.Gen5 => XorGen45(payload),
-            _ => payload.ToArray()
+            _ => payload.ToArray(),
         };
     }
 
@@ -57,7 +57,7 @@ public sealed class GraalEncryption
             EncryptionGeneration.Gen1 or EncryptionGeneration.Gen2 or EncryptionGeneration.Gen6 => payload.ToArray(),
             EncryptionGeneration.Gen3 => DecryptGen3(payload),
             EncryptionGeneration.Gen4 or EncryptionGeneration.Gen5 => XorGen45(payload),
-            _ => payload.ToArray()
+            _ => payload.ToArray(),
         };
     }
 

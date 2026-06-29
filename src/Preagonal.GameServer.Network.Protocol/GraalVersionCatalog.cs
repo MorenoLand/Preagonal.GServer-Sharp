@@ -51,20 +51,20 @@ public static class GraalVersionCatalog
         ["G3D18010"] = ClientVersionId.ClientIphone15,
         ["G3D29090"] = ClientVersionId.ClientIphone111,
         ["G3D2504D"] = ClientVersionId.ClientIphoneBelote15,
-        ["G3D2204D"] = ClientVersionId.ClientWorlds
+        ["G3D2204D"] = ClientVersionId.ClientWorlds,
     };
 
     private static readonly Dictionary<string, RemoteControlVersionId> RemoteControlVersions = new(StringComparer.Ordinal)
     {
         ["Preagonal.GServer023"] = RemoteControlVersionId.Rc1010,
         ["Preagonal.GServer024"] = RemoteControlVersionId.Rc11,
-        ["Preagonal.GServer025"] = RemoteControlVersionId.Rc2
+        ["Preagonal.GServer025"] = RemoteControlVersionId.Rc2,
     };
 
     private static readonly Dictionary<string, NpcControlVersionId> NpcControlVersions = new(StringComparer.Ordinal)
     {
         ["NCL11012"] = NpcControlVersionId.Nc11,
-        ["NCL21075"] = NpcControlVersionId.Nc21
+        ["NCL21075"] = NpcControlVersionId.Nc21,
     };
 
     public static ClientVersionId GetClientVersionId(string token) =>

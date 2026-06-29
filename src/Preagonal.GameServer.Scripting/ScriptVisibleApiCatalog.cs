@@ -62,7 +62,7 @@ public static class ScriptVisibleApiCatalog
         Blocked("level.link", "GS2Engine"),
         Blocked("level.sign", "GS2Engine"),
         Blocked("level.chest", "GS2Engine"),
-        Blocked("weapon", "GS2Engine")
+        Blocked("weapon", "GS2Engine"),
     ];
 
     private static ScriptVisibleApiStatus Blocked(string name, string sourceFile) =>

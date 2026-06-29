@@ -58,7 +58,7 @@ public sealed class NwLevelPacketBuilderTests
                 (byte)'l', (byte)'e', (byte)'v', (byte)'e', (byte)'l', (byte)'.', (byte)'n', (byte)'w',
                 (byte)' ', (byte)'1', (byte)' ', (byte)'2', (byte)' ', (byte)'3', (byte)' ', (byte)'4',
                 (byte)' ', (byte)'5', (byte)'.', (byte)'5', (byte)' ', (byte)'6', (byte)'.', (byte)'5',
-                10
+                10,
             },
             packet);
     }
@@ -120,7 +120,7 @@ public sealed class NwLevelPacketBuilderTests
             new byte[]
             {
                 36, 32, 42, 43, 34, 35, 10,
-                36, 33, 44, 45, 10
+                36, 33, 44, 45, 10,
             },
             packet);
     }

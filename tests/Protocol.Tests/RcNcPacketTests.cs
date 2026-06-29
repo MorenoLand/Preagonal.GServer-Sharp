@@ -86,7 +86,7 @@ public sealed class RcNcPacketTests
                 85, 32,
                 32, 36, 82, 117, 97, 110,
                 114, 36, 82, 117, 97, 110,
-                10
+                10,
             },
             bytes);
     }
@@ -109,7 +109,7 @@ public sealed class RcNcPacketTests
                 34, 114, 119,
                 32, 32, 32, 32, 132,
                 32, 32, 32, 32, 33,
-                10
+                10,
             },
             bytes);
     }

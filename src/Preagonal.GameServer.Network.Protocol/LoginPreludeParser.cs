@@ -19,7 +19,7 @@ public static class LoginPreludeParser
             PlayerSessionType.Client3        => new(type, EncryptionGeneration.Gen5, false),
             PlayerSessionType.RemoteControl2 => new(type, EncryptionGeneration.Gen5, true),
             PlayerSessionType.Web            => new(type, EncryptionGeneration.Gen1, false),
-            _                                => new(type, EncryptionGeneration.Gen3, false)
+            _                                => new(type, EncryptionGeneration.Gen3, false),
         };
     }
 }

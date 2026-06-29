@@ -57,7 +57,7 @@ public sealed class AccountFileSerializerTests
         Assert.True(result.CppReturnValue);
         Assert.True(result.WriteAttempted);
         Assert.False(result.WriteSucceeded);
-        Assert.Equal(@"C:\GServer\accounts\pc:Ruan.txt", result.Path);
+        Assert.Equal($@"C:{System.IO.Path.PathSeparator}GServer\accounts\pc:Ruan.txt", result.Path);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class AccountFileSerializerTests
             Email = "ruan@example.test",
             AdminRights = 16384,
             AdminIp = "127.0.0.*",
-            LastFolder = "levels/"
+            LastFolder = "levels/",
         };
 
         account.Colors[0] = 1;

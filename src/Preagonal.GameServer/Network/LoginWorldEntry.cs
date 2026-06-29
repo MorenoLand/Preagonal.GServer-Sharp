@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using Preagonal.Common.Core;
 using Preagonal.GameServer.Game;
 using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Persistence;
@@ -19,13 +20,13 @@ public static class LoginWorldEntry
     public static bool Complete(
         ClientSessionSkeleton session,
         LoginWorldEntryOptions options,
-        out byte[] serverListAddPlayerPacket,
+        out GByteBuffer serverListAddPlayerPacket,
         out PostLoginPlayerSnapshot snapshot,
         out IReadOnlyList<DuplicateSessionDisconnect> duplicateDisconnects)
     {
-        serverListAddPlayerPacket = [];
-        snapshot = EmptySnapshot(session);
-        duplicateDisconnects = [];
+        serverListAddPlayerPacket = new();
+        snapshot                  = EmptySnapshot(session);
+        duplicateDisconnects      = [];
         var accountLogin = AccountLoginBoundary.Begin(
             session,
             options.AccountFileSystem,
@@ -48,8 +49,8 @@ public static class LoginWorldEntry
                     HeadImage = options.AccountSettings.GetString("staffhead", "head25.png"),
                     X = 0,
                     Y = 0,
-                    Z = 0
-                }
+                    Z = 0,
+                },
             };
             snapshot = controlSnapshot;
             var rcPostLogin = PostLoginWorldEntryBoundary.BeginRemoteControl(
@@ -78,10 +79,10 @@ public static class LoginWorldEntry
                     HeadImage = options.AccountSettings.GetString("staffhead", "head25.png"),
                     X = 0,
                     Y = 0,
-                    Z = 0
-                }
+                    Z = 0,
+                },
             };
-            serverListAddPlayerPacket = PostLoginWorldEntryBoundary.BuildServerListAddPlayerPacket(snapshot);
+            serverListAddPlayerPacket = PostLoginWorldEntryBoundary.BuildServerListAddPlayerProperties(snapshot);
             return true;
         }
 
@@ -317,7 +318,7 @@ public static class LoginWorldEntry
         image = "";
         source = "";
         var safe = Path.GetFileName(weaponName.Replace('\\', '/'));
-        var fileName = safe.StartsWith("-", StringComparison.Ordinal) ? "weapon" + safe + ".txt" : "weapon-" + safe + ".txt";
+        var fileName = safe.StartsWith('-') ? "weapon" + safe + ".txt" : "weapon-" + safe + ".txt";
         var path = Path.Combine(serverPath, "weapons", fileName);
         if (!File.Exists(path))
             return false;

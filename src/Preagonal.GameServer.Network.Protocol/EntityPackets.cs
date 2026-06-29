@@ -128,7 +128,7 @@ public static class EntityPackets
                 GTokenize(className),
                 GTokenize("1"),
                 GTokenize(GInt5String(0) + GInt5String(0)),
-                GTokenize(GInt5String(0))
+                GTokenize(GInt5String(0)),
             ]);
 
         var writer = NewPacket(ServerToPlayerPacketId.NpcWeaponScript);

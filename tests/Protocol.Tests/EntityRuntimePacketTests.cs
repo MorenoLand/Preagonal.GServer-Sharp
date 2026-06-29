@@ -142,7 +142,7 @@ public sealed class EntityRuntimePacketTests
                 49, 44,
                 34, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 34, 44,
                 34, 32, 32, 32, 32, 32, 34,
-                10
+                10,
             ],
             EntityPackets.MissingClassScriptHeader("foo"));
     }

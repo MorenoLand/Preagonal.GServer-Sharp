@@ -22,7 +22,7 @@ public enum LocalDebugStopPoint
 {
     BeforeRuntimeWorldSimulation,
     MissingLevel,
-    Rejected
+    Rejected,
 }
 
 public sealed record LocalDebugSessionResult(
@@ -134,7 +134,7 @@ public sealed class LocalDebugSessionPipeline(
         session.ReceiveServerListAuthResponse(new(
             accountName,
             session.Id,
-            session.Type,
+            (byte)session.Type,
             "SUCCESS"));
 
         var account = LocalDebugAccount.FromLogin(session, accountName, options);
@@ -199,7 +199,7 @@ public sealed class LocalDebugSessionPipeline(
         {
             SessionLifecycle.DynamicLevelPayloadSent => LocalDebugStopPoint.BeforeRuntimeWorldSimulation,
             SessionLifecycle.ReadyForLevelWarp => LocalDebugStopPoint.MissingLevel,
-            _ => LocalDebugStopPoint.Rejected
+            _ => LocalDebugStopPoint.Rejected,
         };
 
     private static bool TryProcessDecodedPostLoginPacket(
@@ -250,7 +250,7 @@ public sealed class LocalDebugSessionPipeline(
             PlayerPropertyId.GmapLevelX => "PLPROP_GMAPLEVELX",
             PlayerPropertyId.GmapLevelY => "PLPROP_GMAPLEVELY",
             PlayerPropertyId.Status => "PLPROP_STATUS",
-            _ => $"PLPROP_{(byte)propertyId}"
+            _ => $"PLPROP_{(byte)propertyId}",
         };
 
     private static LocalDebugSessionResult Finish(

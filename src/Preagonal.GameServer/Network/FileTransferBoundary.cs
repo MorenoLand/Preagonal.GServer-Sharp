@@ -13,7 +13,7 @@ public enum FileTransferDecision
 {
     SentFile,
     FileMissing,
-    UpToDate
+    UpToDate,
 }
 
 public sealed record FileTransferResult(
@@ -41,7 +41,7 @@ public static class FileTransferBoundary
         "crush.wav", "dead.wav", "extra.wav", "fire.wav", "frog.wav", "frog2.wav", "goal.wav", "horse.wav",
         "horse2.wav", "item.wav", "item2.wav", "jump.wav", "lift.wav", "lift2.wav", "nextpage.wav", "put.wav",
         "sign.wav", "steps.wav", "steps2.wav", "stonemove.wav", "sword.wav", "swordon.wav", "thunder.wav",
-        "water.wav", "pics1.png"
+        "water.wav", "pics1.png",
     ];
 
     public static FileTransferResult HandleWantFile(

@@ -17,5 +17,5 @@ public enum SessionLifecycle
     Authenticated,
     Rejected,
     Disconnecting,
-    Disconnected
+    Disconnected,
 }

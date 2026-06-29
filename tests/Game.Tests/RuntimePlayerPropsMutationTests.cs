@@ -14,7 +14,7 @@ public sealed class RuntimePlayerPropsMutationTests
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, 70),
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, 71),
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Z, 55),
-            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Sprite, 2)
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Sprite, 2),
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
@@ -52,7 +52,7 @@ public sealed class RuntimePlayerPropsMutationTests
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1121),
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79),
             IncomingPlayerPropertyUpdate.String(PlayerPropertyId.CurrentLevel, "start.nw"),
-            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.Gani, "walk")
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.Gani, "walk"),
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
@@ -82,7 +82,7 @@ public sealed class RuntimePlayerPropsMutationTests
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.JoinLeaveLevel),
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.PlayerConnected),
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.Unknown81),
-            IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.CommunityName)
+            IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.CommunityName),
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
@@ -102,7 +102,7 @@ public sealed class RuntimePlayerPropsMutationTests
             Alignment = 35,
             HeartLimit = 20,
             Hitpoints = 4,
-            MaxPower = 10
+            MaxPower = 10,
         };
         var updates = new[]
         {
@@ -121,7 +121,7 @@ public sealed class RuntimePlayerPropsMutationTests
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.CarrySprite, 12),
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.HorseBushes, 6),
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.PlayerStatusMessage, 4),
-            IncomingPlayerPropertyUpdate.GInt(PlayerPropertyId.UdpPort, 14900)
+            IncomingPlayerPropertyUpdate.GInt(PlayerPropertyId.UdpPort, 14900),
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
@@ -167,7 +167,7 @@ public sealed class RuntimePlayerPropsMutationTests
         {
             Alignment = 39,
             Hitpoints = 2,
-            MaxPower = 10
+            MaxPower = 10,
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
@@ -187,7 +187,7 @@ public sealed class RuntimePlayerPropsMutationTests
             IncomingPlayerPropertyUpdate.String(PlayerPropertyId.OsType, "wind"),
             IncomingPlayerPropertyUpdate.GInt(PlayerPropertyId.TextCodePage, 1252),
             IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib1, "sword"),
-            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib30, "tail")
+            IncomingPlayerPropertyUpdate.String(PlayerPropertyId.GAttrib30, "tail"),
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(player, updates);
@@ -328,7 +328,7 @@ public sealed class RuntimePlayerPropsMutationTests
             player,
             [
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.SwordPower, 4),
-                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ShieldPower, 3)
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.ShieldPower, 3),
             ],
             options);
 
@@ -349,7 +349,7 @@ public sealed class RuntimePlayerPropsMutationTests
             player,
             [
                 new(PlayerPropertyId.SwordPower, GCharValue: 35, StringValue: longSword),
-                new(PlayerPropertyId.ShieldPower, GCharValue: 12, StringValue: longShield)
+                new(PlayerPropertyId.ShieldPower, GCharValue: 12, StringValue: longShield),
             ]);
 
         Assert.Equal(3, player.SwordPower);
@@ -364,7 +364,7 @@ public sealed class RuntimePlayerPropsMutationTests
         var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client)
         {
             ShieldPower = 2,
-            ShieldImage = "shield2.png"
+            ShieldImage = "shield2.png",
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
@@ -381,7 +381,7 @@ public sealed class RuntimePlayerPropsMutationTests
         var player = new RuntimePlayer(7, "pc:Ruan", RuntimePlayerKind.Client)
         {
             BowPower = 9,
-            BowImage = "bow9.png"
+            BowImage = "bow9.png",
         };
         var options = new RuntimePlayerPropsOptions(ClientVersion: ClientVersionId.Client1411);
 
@@ -435,7 +435,7 @@ public sealed class RuntimePlayerPropsMutationTests
         var player = new RuntimePlayer(7, "pc:7", RuntimePlayerKind.Client);
         var options = RuntimePlayerPropsOptions.Default with
         {
-            NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+            NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
         };
 
         RuntimePlayerPropsApplier.ApplyConfirmed(
@@ -453,7 +453,7 @@ public sealed class RuntimePlayerPropsMutationTests
         var player = new RuntimePlayer(7, "pc:7", RuntimePlayerKind.Client);
         var options = RuntimePlayerPropsOptions.Default with
         {
-            NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+            NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
         };
 
         var error = Assert.Throws<NotSupportedException>(() =>

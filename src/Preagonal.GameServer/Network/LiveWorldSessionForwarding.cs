@@ -14,7 +14,7 @@ public sealed record LiveWorldForwardingDelivery(ushort PlayerId, byte[] Packet)
 public enum LiveWorldPlayerPropsForwardingStatus
 {
     Delivered,
-    Blocked
+    Blocked,
 }
 
 public sealed record LiveWorldPlayerPropsForwardingResult(
@@ -223,7 +223,7 @@ public static class LiveWorldSessionForwarder
                 WriteGCharString(payload, sender.Nickname);
                 return Deliver(
                     packet: PlayerPropertySerializer.BuildPlayerPropsPacket(payload.ToArray(), appendNewline: true),
-                    recipients: new[] { sender.Id },
+                    recipients: [sender.Id],
                     sinks);
 
             default:
@@ -314,7 +314,7 @@ public static class LiveWorldSessionForwarder
             PlayerPropertyId.GmapLevelX => "PLPROP_GMAPLEVELX",
             PlayerPropertyId.GmapLevelY => "PLPROP_GMAPLEVELY",
             PlayerPropertyId.Status => "PLPROP_STATUS",
-            _ => $"PLPROP_{(byte)propertyId}"
+            _ => $"PLPROP_{(byte)propertyId}",
         };
 }
 

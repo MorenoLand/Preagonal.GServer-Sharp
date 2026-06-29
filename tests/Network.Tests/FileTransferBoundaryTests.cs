@@ -159,7 +159,7 @@ public sealed class FileTransferBoundaryTests
             "pkg",
             [
                 new("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
-                new("b.txt", Size: 2, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("BC")))
+                new("b.txt", Size: 2, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("BC"))),
             ]);
         var session = new ClientSessionSkeleton(7);
 
@@ -177,7 +177,7 @@ public sealed class FileTransferBoundaryTests
             [
                 137, 35, 112, 107, 103, 32, 32, 32, 32, 34, 10,
                 132, 32, 32, 47, 10, 134, 32, 32, 32, 32, 34, 37, 98, 46, 116, 120, 116, 66, 67, 10,
-                138, 112, 107, 103, 10
+                138, 112, 107, 103, 10,
             ],
             session.TakeOutboundBytes());
     }
@@ -192,7 +192,7 @@ public sealed class FileTransferBoundaryTests
             "pkg",
             [
                 new("a.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("A"))),
-                new("b.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("B")))
+                new("b.txt", Size: 1, Checksum: Crc32.Compute(Encoding.ASCII.GetBytes("B"))),
             ]);
         var session = new ClientSessionSkeleton(7);
 

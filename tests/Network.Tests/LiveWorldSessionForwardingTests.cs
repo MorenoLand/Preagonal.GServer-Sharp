@@ -42,7 +42,7 @@ public sealed class LiveWorldSessionForwardingTests
         var updates = new[]
         {
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120),
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120),
         };
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -64,7 +64,7 @@ public sealed class LiveWorldSessionForwardingTests
                 48, 102,
                 110, 40, 128,
                 111, 40, 128,
-                10
+                10,
             },
             sinks[8].Packets.Single());
     }
@@ -83,7 +83,7 @@ public sealed class LiveWorldSessionForwardingTests
         var sinks = CreateSinks(7, 8, 9);
         var updates = new[]
         {
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120),
         };
 
         var deliveries = LiveWorldSessionForwarder.ApplyAndForwardConfirmedPlayerProps(
@@ -331,7 +331,7 @@ public sealed class LiveWorldSessionForwardingTests
             AsSinks(sinks),
             RuntimePlayerPropsOptions.Default with
             {
-                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
             });
 
         var expected = new GraalBinaryWriter();
@@ -370,7 +370,7 @@ public sealed class LiveWorldSessionForwardingTests
             AsSinks(sinks),
             RuntimePlayerPropsOptions.Default with
             {
-                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild
+                NicknamePolicy = RuntimeNicknameUpdatePolicy.WordFilterAllowedNoGuild,
             });
 
         var expectedGlobal = new GraalBinaryWriter();
@@ -410,7 +410,7 @@ public sealed class LiveWorldSessionForwardingTests
             sender,
             [
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, 70),
-                IncomingPlayerPropertyUpdate.String(PlayerPropertyId.Nickname, "Ruan")
+                IncomingPlayerPropertyUpdate.String(PlayerPropertyId.Nickname, "Ruan"),
             ],
             senderSupportsPreciseMovement: false,
             AsSinks(sinks));

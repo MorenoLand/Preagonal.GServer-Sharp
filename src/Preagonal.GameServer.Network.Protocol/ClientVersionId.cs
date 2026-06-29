@@ -62,5 +62,5 @@ public enum ClientVersionId
     ClientIphone15 = 57,
     ClientIphone111 = 58,
     ClientIphoneBelote15 = 59,
-    ClientWorlds = 60
+    ClientWorlds = 60,
 }

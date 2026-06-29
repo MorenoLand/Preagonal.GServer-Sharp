@@ -9,7 +9,7 @@ public static class RcProtectedFiles
         "accounts/defaultaccount.txt",
         "config/adminconfig.txt",
         "config/allowedversions.txt",
-        "config/rchelp.txt"
+        "config/rchelp.txt",
     };
 
     public static RcProtectedFileDecision EvaluateDownload(string path, AdminRight rights)

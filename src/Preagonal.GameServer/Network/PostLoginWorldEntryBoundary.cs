@@ -1,4 +1,5 @@
 using System.Text;
+using Preagonal.Common.Core;
 using Preagonal.GameServer.Network.Protocol;
 using Preagonal.GameServer.Persistence;
 
@@ -9,7 +10,7 @@ public sealed record LoginFlag(string Name, string Value);
 public enum LoginMapType
 {
     BigMap,
-    GMap
+    GMap,
 }
 
 public sealed record LoginMapFile(string MapName, LoginMapType Type);
@@ -49,12 +50,12 @@ public sealed record PostLoginPlayerSnapshot(
 
 public enum PostLoginClientStopPoint
 {
-    BeforeWarp
+    BeforeWarp,
 }
 
 public sealed record PostLoginClientBoundaryResult(
     bool Accepted,
-    byte[] ServerListAddPlayerPacket,
+    GByteBuffer ServerListAddPlayerPacket,
     PostLoginClientStopPoint StopPoint);
 
 public static class PostLoginWorldEntryBoundary
@@ -69,7 +70,7 @@ public static class PostLoginWorldEntryBoundary
         if (session.Lifecycle != SessionLifecycle.ReadyForWorldEntry)
             throw new InvalidOperationException("sendLoginClient boundary requires ReadyForWorldEntry.");
 
-        var serverListAddPlayerPacket = BuildServerListAddPlayerPacket(snapshot);
+        var serverListAddPlayerPacket = BuildServerListAddPlayerProperties(snapshot);
 
         var preClient21 = session.LoginPacket?.VersionId < ClientVersionId.Client21;
         var loginPropertyIds = preClient21
@@ -111,7 +112,7 @@ public static class PostLoginWorldEntryBoundary
         if (session.Lifecycle != SessionLifecycle.ReadyForWorldEntry)
             throw new InvalidOperationException("sendLoginRC boundary requires ReadyForWorldEntry.");
 
-        var serverListAddPlayerPacket = BuildServerListAddPlayerPacket(snapshot);
+        var serverListAddPlayerPacket = BuildServerListAddPlayerProperties(snapshot);
         session.QueuePacket(RcNcPackets.ClearWeapons());
 
         foreach (var line in LoadRcMessageLines(options))
@@ -205,12 +206,9 @@ public static class PostLoginWorldEntryBoundary
             session.QueuePacket(EnsureNewline(classPacket));
     }
 
-    public static byte[] BuildServerListAddPlayerPacket(PostLoginPlayerSnapshot snapshot)
+    public static GByteBuffer BuildServerListAddPlayerProperties(PostLoginPlayerSnapshot snapshot)
     {
         var writer = new GraalBinaryWriter();
-        writer.WriteGChar((byte)ServerToListServerPacketId.PlayerAdd);
-        writer.WriteGShort(snapshot.PlayerId);
-        writer.WriteGChar((byte)snapshot.Type);
         WriteProperty(writer, 34, snapshot.AccountNameProperty);
         WriteProperty(writer, 0, snapshot.NicknameProperty);
         WriteProperty(writer, 20, snapshot.CurrentLevelProperty);

@@ -10,7 +10,7 @@ public enum ClientCaptureMismatchKind
     ByteMismatch,
     LengthMismatch,
     LabelMismatch,
-    MissingStep
+    MissingStep,
 }
 
 public sealed record ClientCaptureStepComparison(

@@ -164,7 +164,7 @@ public sealed class EntityRuntimeBoundaryTests
                 40, 32,
                 41, 32,
                 42, 32,
-                10
+                10,
             },
             EntityRuntimePackets.BaddyProps(baddy, clientVersion: 217));
     }

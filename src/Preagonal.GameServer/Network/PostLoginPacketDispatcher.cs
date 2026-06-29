@@ -8,7 +8,7 @@ public enum PostLoginPacketDispatchStatus
     Handled,
     Blocked,
     InvalidPacket,
-    InvalidPacketLimitExceeded
+    InvalidPacketLimitExceeded,
 }
 
 public sealed record PostLoginPacketDispatchResult(
@@ -140,7 +140,7 @@ public sealed class PostLoginPacketDispatcher(RuntimePlayer player)
             PlayerPropertyId.GmapLevelX => "PLPROP_GMAPLEVELX",
             PlayerPropertyId.GmapLevelY => "PLPROP_GMAPLEVELY",
             PlayerPropertyId.Status => "PLPROP_STATUS",
-            _ => $"PLPROP_{(byte)propertyId}"
+            _ => $"PLPROP_{(byte)propertyId}",
         };
 
     private PostLoginPacketDispatchResult CountInvalidPacket(byte rawPacketId)
@@ -275,7 +275,7 @@ public sealed class PostLoginPacketDispatcher(RuntimePlayer player)
             [158] = "PLI_UPDATESCRIPT",
             [159] = "PLI_UPDATEPACKAGEREQUESTFILE",
             [160] = "PLI_RC_FOLDERDELETE",
-            [162] = "PLI_RC_UNKNOWN162"
+            [162] = "PLI_RC_UNKNOWN162",
         };
 
         public static bool IsAssigned(byte packetId) =>

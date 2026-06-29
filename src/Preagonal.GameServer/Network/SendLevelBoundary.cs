@@ -80,7 +80,7 @@ public enum SendLevelStopPoint
     BeforeDynamicLevelRuntime,
     BeforeGmapCorrection,
     BeforeNearbyPlayerProps,
-    BeforeRuntimeSimulation
+    BeforeRuntimeSimulation,
 }
 
 public sealed record SendLevelBoundaryResult(

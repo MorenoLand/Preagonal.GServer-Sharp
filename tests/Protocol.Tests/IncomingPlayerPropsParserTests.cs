@@ -198,7 +198,7 @@ public sealed class IncomingPlayerPropsParserTests
                 PlayerPropertyId.JoinLeaveLevel,
                 PlayerPropertyId.PlayerConnected,
                 PlayerPropertyId.Unknown81,
-                PlayerPropertyId.X
+                PlayerPropertyId.X,
             ],
             result.Updates.Select(update => update.PropertyId));
         Assert.All(result.Updates.Take(7), update =>
@@ -764,7 +764,7 @@ public sealed class IncomingPlayerPropsParserTests
             [
                 PlayerPropertyId.EffectColors,
                 PlayerPropertyId.EffectColors,
-                PlayerPropertyId.X
+                PlayerPropertyId.X,
             ],
             result.Updates.Select(update => update.PropertyId));
         Assert.All(result.Updates.Take(2), update =>
@@ -917,7 +917,7 @@ public sealed class IncomingPlayerPropsParserTests
         var updates = new[]
         {
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120),
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -937,7 +937,7 @@ public sealed class IncomingPlayerPropsParserTests
                 48, 102,
                 110, 40, 128,
                 111, 40, 128,
-                10
+                10,
             },
             packet);
     }
@@ -948,7 +948,7 @@ public sealed class IncomingPlayerPropsParserTests
         var updates = new[]
         {
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, 70),
-            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, 71)
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, 71),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -968,7 +968,7 @@ public sealed class IncomingPlayerPropsParserTests
                 111, 40, 144,
                 47, 102,
                 48, 103,
-                10
+                10,
             },
             packet);
     }
@@ -979,7 +979,7 @@ public sealed class IncomingPlayerPropsParserTests
         var updates = new[]
         {
             IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.X, 70),
-            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, 71)
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Y, 71),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -999,7 +999,7 @@ public sealed class IncomingPlayerPropsParserTests
                 48, 103,
                 110, 40, 128,
                 111, 40, 144,
-                10
+                10,
             },
             packet);
     }
@@ -1009,7 +1009,7 @@ public sealed class IncomingPlayerPropsParserTests
     {
         var updates = new[]
         {
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1027,7 +1027,7 @@ public sealed class IncomingPlayerPropsParserTests
                 40, 32, 39,
                 77, 78,
                 112, 32, 111,
-                10
+                10,
             },
             packet);
     }
@@ -1037,7 +1037,7 @@ public sealed class IncomingPlayerPropsParserTests
     {
         var updates = new[]
         {
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Z2, 79),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1055,7 +1055,7 @@ public sealed class IncomingPlayerPropsParserTests
                 40, 32, 39,
                 112, 32, 111,
                 77, 78,
-                10
+                10,
             },
             packet);
     }
@@ -1065,7 +1065,7 @@ public sealed class IncomingPlayerPropsParserTests
     {
         var updates = new[]
         {
-            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Z, 46)
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Z, 46),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1083,7 +1083,7 @@ public sealed class IncomingPlayerPropsParserTests
                 40, 32, 39,
                 112, 32, 97,
                 77, 78,
-                10
+                10,
             },
             packet);
     }
@@ -1093,7 +1093,7 @@ public sealed class IncomingPlayerPropsParserTests
     {
         var updates = new[]
         {
-            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Z, 46)
+            IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Z, 46),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1111,7 +1111,7 @@ public sealed class IncomingPlayerPropsParserTests
                 40, 32, 39,
                 77, 78,
                 112, 32, 97,
-                10
+                10,
             },
             packet);
     }
@@ -1122,7 +1122,7 @@ public sealed class IncomingPlayerPropsParserTests
         var updates = new[]
         {
             IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.X2, 1120),
-            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120)
+            IncomingPlayerPropertyUpdate.GShort(PlayerPropertyId.Y2, 1120),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1142,7 +1142,7 @@ public sealed class IncomingPlayerPropsParserTests
                 111, 40, 128,
                 47, 102,
                 48, 102,
-                10
+                10,
             },
             packet);
     }
@@ -1155,7 +1155,7 @@ public sealed class IncomingPlayerPropsParserTests
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.KillsCount),
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.DeathsCount),
             IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.OnlineSeconds),
-            IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.Unknown81)
+            IncomingPlayerPropertyUpdate.NoValue(PlayerPropertyId.Unknown81),
         };
 
         var packet = IncomingPlayerPropsForwarding.BuildOtherPlayerPropsPacket(
@@ -1228,7 +1228,7 @@ public sealed class IncomingPlayerPropsParserTests
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.MagicPoints, 88),
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.Alignment, 120),
                 IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.AdditionalFlags, 77),
-                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.HorseBushes, 6)
+                IncomingPlayerPropertyUpdate.GChar(PlayerPropertyId.HorseBushes, 6),
             ],
             senderSupportsPreciseMovement: true,
             appendNewline: true);
@@ -1366,7 +1366,7 @@ public sealed class IncomingPlayerPropsParserTests
             pixelZ: 0,
             [
                 new(PlayerPropertyId.SwordPower, GCharValue: 2, StringValue: "sword2.png"),
-                new(PlayerPropertyId.ShieldPower, GCharValue: 1, StringValue: "shield1.png")
+                new(PlayerPropertyId.ShieldPower, GCharValue: 1, StringValue: "shield1.png"),
             ],
             senderSupportsPreciseMovement: true,
             appendNewline: true);
@@ -1376,7 +1376,7 @@ public sealed class IncomingPlayerPropsParserTests
                 40, 32, 39,
                 40, 64, 42, 115, 119, 111, 114, 100, 50, 46, 112, 110, 103,
                 41, 43, 43, 115, 104, 105, 101, 108, 100, 49, 46, 112, 110, 103,
-                10
+                10,
             ],
             packet);
     }

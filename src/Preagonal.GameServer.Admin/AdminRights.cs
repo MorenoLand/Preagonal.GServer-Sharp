@@ -24,7 +24,7 @@ public enum AdminRight
     SetFolderOptions = 0x20000,
     SetFolderRights = 0x40000,
     NpcControl = 0x80000,
-    AnyRight = 0xFFFFFF
+    AnyRight = 0xFFFFFF,
 }
 
 public static class AdminRights

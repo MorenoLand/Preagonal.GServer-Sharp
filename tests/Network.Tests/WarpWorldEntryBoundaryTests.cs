@@ -50,7 +50,7 @@ public sealed class WarpWorldEntryBoundaryTests
             new byte[]
             {
                 47, (byte)'m', (byte)'i', (byte)'s', (byte)'s', (byte)'i', (byte)'n', (byte)'g', (byte)'.', (byte)'n', (byte)'w', 10,
-                46, 93, 94, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10
+                46, 93, 94, (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'.', (byte)'n', (byte)'w', 10,
             },
             session.TakeOutboundBytes());
     }
@@ -76,7 +76,7 @@ public sealed class WarpWorldEntryBoundaryTests
             new byte[]
             {
                 47, (byte)'m', (byte)'i', (byte)'s', (byte)'s', (byte)'i', (byte)'n', (byte)'g', (byte)'.', (byte)'n', (byte)'w', 10,
-                46, 92, 102, (byte)'o', (byte)'n', (byte)'l', (byte)'i', (byte)'n', (byte)'e', (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'.', (byte)'n', (byte)'w', 10
+                46, 92, 102, (byte)'o', (byte)'n', (byte)'l', (byte)'i', (byte)'n', (byte)'e', (byte)'s', (byte)'t', (byte)'a', (byte)'r', (byte)'t', (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'.', (byte)'n', (byte)'w', 10,
             },
             session.TakeOutboundBytes());
     }
@@ -217,7 +217,7 @@ public sealed class WarpWorldEntryBoundaryTests
         packet.WriteBytes("win"u8);
         Assert.True(session.ReceiveLoginPacket(packet.ToArray()));
         Assert.True(session.ReceiveServerListAuthResponse(
-            new("pc:Ruan", 7, PlayerSessionType.Client3, "SUCCESS")));
+            new("pc:Ruan", 7, (byte)PlayerSessionType.Client3, "SUCCESS")));
         Assert.True(PlayerSendLoginContinuation.Begin(
             session,
             new("pc:Ruan", false, "", false, false, true, ["0.0.0.0"], false),

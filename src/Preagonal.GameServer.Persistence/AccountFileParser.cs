@@ -83,7 +83,7 @@ public static class AccountFileParser
 
         var account = new AccountFileData
         {
-            AccountName = accountName
+            AccountName = accountName,
         };
 
         foreach (var rawLine in lines)

@@ -38,7 +38,7 @@ public static class RuntimePlayerInventoryState
             GlovePower = player.GlovePower,
             ShieldPower = player.ShieldPower,
             SwordPower = player.SwordPower,
-            Status = player.Status
+            Status = player.Status,
         };
 
     public static void Apply(RuntimePlayer player, DurablePlayerInventoryState state)
@@ -110,7 +110,7 @@ public static class BoardChangeRuntime
 {
     private static readonly HashSet<ushort> RespawningTiles =
     [
-        0x1ff, 0x3ff, 0x2ac, 0x002, 0x200, 0x022, 0x3de, 0x1a4, 0x14a, 0x674, 0x72a
+        0x1ff, 0x3ff, 0x2ac, 0x002, 0x200, 0x022, 0x3de, 0x1a4, 0x14a, 0x674, 0x72a,
     ];
 
     public static byte[] BuildBoardModifyPacket(ReadOnlySpan<byte> payload)
@@ -169,7 +169,7 @@ public enum BaddyMode : byte
     SwampShot = 6,
     HareJump = 7,
     OctoShot = 8,
-    Dead = 9
+    Dead = 9,
 }
 
 public sealed class RuntimeBaddy
@@ -180,7 +180,7 @@ public sealed class RuntimeBaddy
     private static readonly string[] Images =
     [
         "baddygray.png", "baddyblue.png", "baddyred.png", "baddyblue.png", "baddygray.png",
-        "baddyhare.png", "baddyoctopus.png", "baddygold.png", "baddylizardon.png", "baddydragon.png"
+        "baddyhare.png", "baddyoctopus.png", "baddygold.png", "baddylizardon.png", "baddydragon.png",
     ];
 
     private static readonly byte[] StartModes = [0, 0, 0, 0, 6, 7, 0, 0, 0, 0];
@@ -425,7 +425,7 @@ public sealed class RuntimeBaddy
         Dir = 7,
         VerseSight = 8,
         VerseHurt = 9,
-        VerseAttack = 10
+        VerseAttack = 10,
     }
 }
 

@@ -93,7 +93,7 @@ public enum PlayerToServerPacketId : byte
     RcFolderDelete = 160,
     RcUnknown162 = 162,
     SetEncryptionKey = 252,
-    Bundle = 253
+    Bundle = 253,
 }
 
 public enum ServerToPlayerPacketId : byte
@@ -206,7 +206,7 @@ public enum ServerToPlayerPacketId : byte
     ClearWeapons = 194,
     LoadGani = 195,
     SetEncryptionKey = 252,
-    Bundle = 253
+    Bundle = 253,
 }
 
 public enum ServerToListServerPacketId : byte
@@ -223,7 +223,7 @@ public enum ServerToListServerPacketId : byte
     ServerHqLevel = 24,
     RequestList = 26,
     RegisterV3 = 30,
-    SendText = 31
+    SendText = 31,
 }
 
 public enum ListServerToServerPacketId : byte
@@ -234,7 +234,7 @@ public enum ListServerToServerPacketId : byte
     RequestText = 19,
     SendText = 20,
     AssignPcId = 25,
-    Ping = 99
+    Ping = 99,
 }
 
 [Flags]
@@ -255,7 +255,7 @@ public enum PlayerSessionType
     AnyNpcControl = NpcControl,
     AnyControl = AnyRemoteControl | AnyNpcControl,
     AnyPlayer = AnyClient | AnyRemoteControl,
-    NonIterable = NpcServer | AnyNpcControl | External
+    NonIterable = NpcServer | AnyNpcControl | External,
 }
 
 public enum EncryptionGeneration : uint
@@ -265,12 +265,12 @@ public enum EncryptionGeneration : uint
     Gen3 = 2,
     Gen4 = 3,
     Gen5 = 4,
-    Gen6 = 5
+    Gen6 = 5,
 }
 
 public enum CompressionType : byte
 {
     Uncompressed = 0x02,
     Zlib = 0x04,
-    Bz2 = 0x06
+    Bz2 = 0x06,
 }

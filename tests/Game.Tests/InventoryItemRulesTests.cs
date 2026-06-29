@@ -14,7 +14,7 @@ public sealed class InventoryItemRulesTests
             Arrows = 10,
             Hitpoints = 2.5f,
             MaxPower = 5,
-            GlovePower = 1
+            GlovePower = 1,
         };
 
         Assert.Equal([35, 32, 32, 137], InventoryItemRules.BuildPickupPlayerProps(LevelItemType.GoldRupee, state));
@@ -34,7 +34,7 @@ public sealed class InventoryItemRulesTests
             Hitpoints = 1,
             ShieldPower = 2,
             SwordPower = 1,
-            Status = 0
+            Status = 0,
         };
 
         Assert.Equal([41, 34], InventoryItemRules.BuildPickupPlayerProps(LevelItemType.Shield, state));
@@ -80,7 +80,7 @@ public sealed class InventoryItemRulesTests
             GlovePower = 1,
             ShieldPower = 1,
             SwordPower = 1,
-            Status = 0
+            Status = 0,
         };
 
         InventoryItemRules.ApplyPickupPlayerProps(InventoryItemRules.BuildPickupPlayerProps(LevelItemType.GoldRupee, state), state);
@@ -136,7 +136,7 @@ public sealed class InventoryItemRulesTests
             Arrows = 5,
             Hitpoints = 1.5f,
             GlovePower = 2,
-            Status = PlayerStatus.HasSpin
+            Status = PlayerStatus.HasSpin,
         };
 
         Assert.True(InventoryItemRules.TryRemoveForPlayerDrop(LevelItemType.GoldRupee, state));
